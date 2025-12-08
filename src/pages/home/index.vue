@@ -1,5 +1,6 @@
 <template>
     <div class="big-container">
+        <NavBar />
         <div class="main-photo">
             <img src="../../assets/image/homepage-background.jpg" class='home-photo' />
             <div class="welcome-text">
@@ -28,6 +29,7 @@
                     <div class="text">
                         <div class="title">{{ item.title }}</div>
                         <div class="intro">{{ item.description }}</div>
+                        <div class="intro">{{ item.description }}</div>
                         <div class="info">
                             <div class="up-date">
                                 2024-06-01
@@ -50,6 +52,7 @@
 
 <script setup>
 import './index.css';
+import NavBar from '../../components/NavBar.vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ref } from 'vue';
 

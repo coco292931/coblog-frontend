@@ -9,6 +9,7 @@
     /*border :3px solid red;*/
     flex-direction: column;
     position: relative;
+    overflow-x: hidden;
 }
 
 /* 调试用中心线 - 上线前记得删除 */
@@ -26,38 +27,38 @@
 
 .big-container {
     .main-photo {
-        width: auto;
-        height: auto;
-        /*border: 1px solid #000;*/
-        /*padding: 20px 0 20px 0;*/
+        width: 100%;
+        height: 100vh;
+        max-height: min(100vh, 100vw * 1);
         display: flex;
-        /*gap: 20px;*/
-        border-radius: 15px;
         flex-direction: column;
         position: relative;
+        overflow: hidden;
 
         .home-photo {
-            object-fit: cover;
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            object-position: center;
         }
 
         .welcome-text {
             position: absolute;
-            bottom: 50%;
+            top: 50%;
             left: 50%;
-            transform: translate(-50%, 50%);
-            font-size: 45px;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
             color: white;
             font-weight: bold;
-
+            text-align: center;
+            white-space: nowrap;
         }
 
         .triangle {
             position: absolute;
-            bottom: 7%;
+            bottom: 2%;
             left: 50%;
-            transform: translate(-50%, 50%);
+            transform: translateX(-50%);
             width: 60px;
             height: 60px;
             opacity: 0.7;
@@ -74,9 +75,11 @@
     }
 
 }
+
 .content-container {
     width: auto;
     height: auto;
+    max-width: 100vw;
     border: 1px solid #000;
 
     /*padding: 20px 0 20px 0;*/
@@ -89,7 +92,7 @@
         display: flex;
         justify-content: center;
 
-        .line{
+        .line {
             width: 4px;
             height: 500px;
             background-color: grey;
@@ -104,6 +107,7 @@
         .article {
             width: 800px;
             height: auto;
+            max-width: 90vw;
             border: 1px solid gray;
             padding: 5px;
             margin-bottom: 10px;
@@ -113,31 +117,118 @@
             border-radius: 15px;
 
             .article-photo {
-                width: 100px;
-                height: auto;
+                width: 165px;
+                height: 110px;
                 border-radius: 10px;
-
+                object-fit: cover;
             }
 
             .text {
                 margin-left: 10px;
+
+                .title {
+                    font-size: 25px;
+                    font-weight: bold;
+                }
+
+                .intro {
+                    font-size: 20px;
+                }
+
                 .info {
                     display: flex;
                     flex-direction: row;
+                    font-size: 17px;
                 }
-
             }
         }
     }
 }
 
 @keyframes arrow-float {
-    0%, 100% {
-        transform: translate(-50%, 50%) translateY(0);
-        
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
     }
+
     50% {
-        transform: translate(-50%, 50%) translateY(-15px);
+        transform: translateX(-50%) translateY(-15px);
         opacity: 0.4;
     }
+}
+
+/* 响应式：小屏幕适配 */
+@media (max-width: 800px) {
+    .big-container {
+        .triangle {
+            width: 40px;
+            height: 40px;
+        }
+
+        .main-photo {
+            /*height: 100%;
+            aspect-ratio: 4 / 5;
+            min-height: 400px;
+            max-height: 100vh;*/
+
+            .home-photo {
+                object-position: center center;
+                object-fit: cover;
+            }
+
+            .welcome-text {
+                font-size: 35px;
+            }
+
+            .triangle {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    }
+
+    .content-container .article-line {
+        margin: 0 0 0 0;
+
+        .article {
+            .text {
+                .title {
+                    font-size: 18px;
+                }
+
+                .intro {
+                    font-size: 16px;
+                }
+
+                .info {
+                    font-size: 14px;
+                }
+            }
+
+            .article-photo {
+                width: 129px;
+                height: 86px;
+                border-radius: 10px;
+                object-fit: cover;
+            }
+        }
+    }
+
+    /* 隐藏 timeline */
+    .content-container .timeline {
+        display: none;
+    }
+}
+
+/*隐藏图片*/
+@media (max-width: 600px) {
+    .content-container .article-line .article .article-photo {
+        display: none;
+    }
+    .big-container .main-photo .triangle {
+        width: 40px;
+        height: 40px;
+    }
+
 }
