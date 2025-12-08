@@ -19,6 +19,11 @@ const routes = [
     component: HelloWorld
   },
   {
+    path: '/pages',
+    name: 'AllPages',
+    component: HelloWorld
+  },
+  {
     path: '/firstpage',
     name: 'Firstpage',
     component: TheWelcome
