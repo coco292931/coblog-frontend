@@ -1,0 +1,467 @@
+openapi: 3.0.0
+info:
+  title: 个人博客系统API
+  description: 带有账户系统的动态个人博客
+  version: 1.0.0
+  contact:
+    name: 博客开发团队
+    email: dev@blog.com
+
+servers:
+  - url: https://api.blog.com/v1
+    description: 生产服务器
+  - url: https://dev-api.blog.com/v1
+    description: 开发服务器
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [guest, user, deep_user, admin]
+        depth_enabled:
+          type: boolean
+        rss_token:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    Article:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        summary:
+          type: string
+        content:
+          type: string
+        content_html:
+          type: string
+        cover_image:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        is_public:
+          type: boolean
+        word_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ArticleList:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+    SiteInfo:
+      type: object
+      properties:
+        total_articles:
+          type: integer
+        total_words:
+          type: integer
+        total_visits:
+          type: integer
+        total_visitors:
+          type: integer
+        uptime:
+          type: string
+        run_days:
+          type: integer
+    Timeline:
+      type: object
+      properties:
+        year:
+          type: integer
+        month:
+          type: integer
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+    SearchResult:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        total:
+          type: integer
+        query:
+          type: string
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        details:
+          type: string
+
+paths:
+  # 认证相关接口
+  /auth/register:
+    post:
+      summary: 用户注册
+      tags: [认证]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, verification_code, username]
+              properties:
+                email:
+                  type: string
+                  format: email
+                verification_code:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                  message:
+                    type: string
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      summary: 用户登录
+      tags: [认证]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: 认证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/verification-code:
+    post:
+      summary: 发送验证码
+      tags: [认证]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, type]
+              properties:
+                email:
+                  type: string
+                  format: email
+                type:
+                  type: string
+                  enum: [register, reset_password]
+      responses:
+        '200':
+          description: 验证码发送成功
+        '400':
+          description: 请求过于频繁或邮箱错误
+
+  # 文章相关接口
+  /articles:
+    get:
+      summary: 获取文章列表
+      tags: [文章]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: tag
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取文章列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleList'
+
+  /articles/{article_id}:
+    get:
+      summary: 获取文章详情
+      tags: [文章]
+      parameters:
+        - name: article_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取文章详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '404':
+          description: 文章不存在
+
+  /articles/timeline:
+    get:
+      summary: 获取文章时间线（归档）
+      tags: [文章]
+      responses:
+        '200':
+          description: 成功获取时间线
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Timeline'
+
+  /search:
+    get:
+      summary: 搜索文章
+      tags: [文章]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 搜索成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResult'
+
+  # 网站信息接口
+  /site/info:
+    get:
+      summary: 获取网站基本信息
+      tags: [网站信息]
+      responses:
+        '200':
+          description: 成功获取网站信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteInfo'
+
+  # 用户相关接口
+  /user/profile:
+    get:
+      summary: 获取用户个人信息
+      tags: [用户]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功获取用户信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: 未授权
+
+    put:
+      summary: 更新用户个人信息
+      tags: [用户]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                depth_enabled:
+                  type: boolean
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: 未授权
+
+  /user/rss-token:
+    post:
+      summary: 重置RSS特征值
+      tags: [用户]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 重置成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rss_token:
+                    type: string
+        '401':
+          description: 未授权
+
+  /user/password:
+    put:
+      summary: 修改密码
+      tags: [用户]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [old_password, new_password]
+              properties:
+                old_password:
+                  type: string
+                new_password:
+                  type: string
+      responses:
+        '200':
+          description: 密码修改成功
+        '401':
+          description: 原密码错误
+
+  /user/account:
+    delete:
+      summary: 删除账号
+      tags: [用户]
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: 账号删除成功
+        '401':
+          description: 未授权
+
+  # RSS相关接口
+  /rss:
+    get:
+      summary: 获取RSS订阅
+      tags: [RSS]
+      parameters:
+        - name: token
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功获取RSS
+          content:
+            application/xml:
+              schema:
+                type: string
+        '403':
+          description: 无权限访问此RSS
