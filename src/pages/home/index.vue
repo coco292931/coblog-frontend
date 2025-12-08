@@ -1,6 +1,6 @@
 <template>
     <div class="big-container">
-        <NavBar />
+        <NavBar style="position: fixed;"/>
         <div class="main-photo">
             <img src="../../assets/image/homepage-background.jpg" class='home-photo' />
             <div class="welcome-text">
@@ -14,57 +14,100 @@
                 </svg>
             </div>
         </div>
-        <div class="content-container">
-            <div class="timeline">
-                <div class="line">
-                    <!-- Vertical Line -->
-                </div>
-                <!--剩下的用伪元素-->
-            </div>
-            <div class="article-line">
-                <!-- Article Line -->
-                <div class="article" v-for="item in articles" :key="item.id">
-                    <!--<img :src="item.photo" class='article-photo' />-->
-                    <img src='../../assets/image/article-placeholder.jpg' class='article-photo' />
-                    <div class="text">
-                        <div class="title">{{ item.title }}</div>
-                        <div class="intro">{{ item.description }}</div>
-                        <div class="intro">{{ item.description }}</div>
-                        <div class="info">
-                            <div class="up-date">
-                                2024-06-01
-                            </div>
-                            <div class="tags">
-                                标签1 标签2
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
+        <!-- 使用新的时间线组件 -->
+        <ArticleTimeline :articles="articles" />
 
-        <div class="bottom-bar" style="margin:20px 0 10px 0">
-            <!--大概率用组件实现-->
-            © 2024 Coco & Koko's Harbor. All rights reserved.
-        </div>
+        <Footer />
     </div>
 </template>
 
 <script setup>
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
+import Footer from '../../components/Footer.vue';
+import ArticleTimeline from '../../components/ArticleTimeline.vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
-//<!--据说正式上线就可以正确加载图片,暂时先注释掉动态加载-->
-const articles = ref([
-    { id: 1, photo: '../../assets/image/article-placeholder.jpg', title: 'News Item 1', description: 'Description for News Item 1' },
-    { id: 2, photo: '../../assets/image/article-placeholder.jpg', title: 'News Item 2', description: 'Description for News Item 2' },
-    { id: 3, photo: '../../assets/image/article-placeholder.jpg', title: 'News Item 3', description: 'Description for News Item 3' },
-]);
+// 文章列表数据
+const articles = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+// 获取文章列表
+const fetchArticles = async () => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+        // 替换成实际的API地址
+        const response = await fetch('/api/articles');
+        //page,page_size,category,tag,q 搜索共用
+        
+        if (!response.ok) {
+            throw new Error('获取文章列表失败');
+        }
+        
+        const result = await response.json();
+        
+        if (result.code === 0 && result.data && result.data.articles) {
+            // 转换API数据格式为组件所需格式
+            articles.value = result.data.articles.map(article => ({
+                id: article.id,
+                cover_image: article.cover_image || '',
+                title: article.title,
+                description: article.summary, // API用的是summary字段
+                published_at: article.created_at, // 使用created_at作为发布时间
+                created_at: article.created_at,
+                tags: article.categories || [] // API用的是categories字段
+            }));
+        } else {
+            throw new Error(result.message || '数据格式错误');
+        }
+    } catch (err) {
+        console.error('获取文章列表失败:', err);
+        error.value = err.message;
+        
+        // 使用默认示例数据
+        articles.value = [
+            { 
+                id: '1', 
+                cover_image: '',
+                title: 'Vue 3 组合式 API 最佳实践', 
+                description: 'Vue 3 带来了全新的组合式 API，让我们的代码更加灵活和可维护。本文将介绍一些最佳实践...',
+                published_at: '2024-06-01',
+                created_at: '2024-06-01',
+                tags: ['Vue', '前端']
+            },
+            { 
+                id: '2', 
+                cover_image: '', 
+                title: 'TypeScript 进阶技巧', 
+                description: 'TypeScript 为 JavaScript 带来了强类型系统，本文将深入探讨一些高级技巧和模式...',
+                published_at: '2024-05-15',
+                created_at: '2024-05-15',
+                tags: ['TypeScript', '进阶']
+            },
+            { 
+                id: '3', 
+                cover_image: '', 
+                title: 'CSS Grid 布局完全指南', 
+                description: 'CSS Grid 是现代网页布局的强大工具，通过本指南你将掌握 Grid 布局的所有核心概念...',
+                published_at: '2023-12-20',
+                created_at: '2023-12-20',
+                tags: ['CSS', '布局']
+            },
+        ];
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchArticles();
+});
 
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

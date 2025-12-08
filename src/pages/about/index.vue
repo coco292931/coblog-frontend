@@ -1,5 +1,6 @@
 <template>
     <div class="big-container">
+        <NavBar />
         <div class="content-container">
             <div class="left-container">
                 <div class="info">
@@ -35,12 +36,15 @@
             </div>
         </div>
     </div>
+    <Footer />
 </template>
 
 <script setup>
 import './index.css';
 import { useRouter, useRoute } from 'vue-router';
 import { ref } from 'vue';
+import NavBar from '../../components/NavBar.vue';
+import Footer from '../../components/Footer.vue';
 
 const router = useRouter();
 const route = useRoute();

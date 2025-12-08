@@ -3,16 +3,35 @@
         <div class="navbar-container">
             <div class="navbar-brand">
                 <router-link to="/" class="brand-link">
-                    Coco & Koko's Harbor
+                    Coco の 避风港
                 </router-link>
             </div>
-            
+
+            <div>//留给动态增加</div>
+
             <div class="navbar-menu" :class="{ 'is-active': isMenuOpen }">
-                <router-link to="/" class="navbar-item" @click="closeMenu">首页</router-link>
-                <router-link to="/about" class="navbar-item" @click="closeMenu">关于</router-link>
-                <router-link to="/firstpage" class="navbar-item" @click="closeMenu">页面</router-link>
+                <div class="search">
+                    <div id="seach-input" style="display: flex; position: relative; align-items: center;">
+                        <input type="text" v-model="searchQuery" id="search-input-text" placeholder="搜点什么..." />
+                        <router-link :to="`/search?q=${searchQuery}`" @click="closeMenu" id="search-icon">
+                            <IconSearch class="nav-icon" style="transform: scale(1.15)" />
+                        </router-link>
+                    </div>
+                </div>
+                <router-link :to="`/articles`" class="navbar-item" id="search-article-list" @click="closeMenu">
+                    <IconHistory class="nav-icon" />足迹
+                </router-link>
+                <router-link :to="`/rss`" class="navbar-item" id="search-rss" @click="closeMenu">
+                    <IconRSS class="nav-icon" style="transform: scale(0.9)" />RSS
+                </router-link>
+                <router-link to="/about" class="navbar-item" @click="closeMenu">
+                    <IconInfo class="nav-icon" style="transform: scale(1.6)" />关于
+                </router-link>
+                <router-link to="/me" class="navbar-item" @click="closeMenu">
+                    <IconUser class="nav-icon" style="transform: scale(1.8) translateY(0.5px)" />我的
+                </router-link>
             </div>
-            
+
             <div class="navbar-burger" @click="toggleMenu">
                 <span></span>
                 <span></span>
@@ -24,8 +43,15 @@
 
 <script setup>
 import { ref } from 'vue';
+import IconSearch from './icons/IconSearch.vue';
+import IconArticles from './icons/IconArticles.vue';
+import IconHistory from './icons/IconHistory.vue';
+import IconRSS from './icons/IconRSS.vue';
+import IconInfo from './icons/IconInfo.vue';
+import IconUser from './icons/IconUser.vue';
 
 const isMenuOpen = ref(false);
+const searchQuery = ref('');
 
 const toggleMenu = () => {
     isMenuOpen.value = !isMenuOpen.value;
@@ -42,7 +68,7 @@ const closeMenu = () => {
     top: 0;
     left: 0;
     right: 0;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
@@ -50,12 +76,13 @@ const closeMenu = () => {
 }
 
 .navbar-container {
-    max-width: 1200px;
+    max-width: 1500px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 60px;
+    opacity: 1;
 }
 
 .navbar-brand {
@@ -65,7 +92,7 @@ const closeMenu = () => {
 
 .brand-link {
     text-decoration: none;
-    color: rgb(31, 239, 239);
+    color: rgb(32, 236, 236);
     transition: color 0.3s;
 }
 
@@ -75,7 +102,7 @@ const closeMenu = () => {
 
 .navbar-menu {
     display: flex;
-    gap: 30px;
+    gap: 8px;
 }
 
 .navbar-item {
@@ -83,10 +110,29 @@ const closeMenu = () => {
     color: #333;
     font-size: 1rem;
     font-weight: 500;
-    padding: 8px 16px;
+    padding: 8px 8px;
     border-radius: 8px;
-    transition: all 0.3s;
+    transition: all 0s;
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-icon {
+    width: 18px;
+    height: 18px;
+    color: rgb(31, 239, 239);
+    fill: rgb(31, 239, 239);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon :deep(svg) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .navbar-item:hover {
@@ -127,12 +173,47 @@ const closeMenu = () => {
     transition: all 0.3s;
 }
 
+.search {
+    display: flex;
+    align-items: center;
+}
+
+#search-input-text {
+    outline: none;
+    padding: 0.4rem 0.4rem 0.4rem 0.75rem;
+    border-radius: 999px;
+    background-color: transparent;
+    border: 1px solid rgb(31, 239, 239);
+    width: 8rem;
+    font-family: inherit;
+}
+
+#search-icon .nav-icon {
+    position: absolute;
+    right: 0.1rem;
+    top: 0.135rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem;
+    cursor: pointer;
+    background-color: rgb(31, 239, 239);
+    border-radius: 0 50% 50% 0;
+    color: rgb(240, 248, 255) !important;
+    fill: rgb(240, 248, 255) !important;
+}
+
+#search-input-text:focus {
+    /*border: 1px solid rgb(31, 239, 239);*/
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
 /* 响应式：小屏幕 */
 @media (max-width: 800px) {
     .navbar-burger {
         display: flex;
     }
-    
+
     .navbar-menu {
         position: fixed;
         top: 60px;
@@ -148,16 +229,86 @@ const closeMenu = () => {
         visibility: hidden;
         transition: all 0.3s ease;
     }
-    
+
     .navbar-menu.is-active {
         transform: translateY(0);
         opacity: 1;
         visibility: visible;
     }
-    
+
     .navbar-item {
         padding: 12px 16px;
         width: 100%;
+        font-size: 1.5rem;
+        transition: all 0s;
+    }
+
+    #search-input-text {
+        display: none;
+    }
+
+    #seach-input {
+        position: static !important;
+    }
+
+    #search-icon {
+        position: static !important;
+        text-decoration: none;
+        color: #333;
+        font-size: 1.5rem;
+        font-weight: 500;
+        padding: 12px 16px;
+        border-radius: 8px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #search-icon::after {
+        content: "搜索";
+    }
+
+    #search-icon .nav-icon {
+        display: none;
+    }
+
+    .search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 1300px) {
+    .nav-icon {
+        display: none;
+    }
+}
+
+@media (max-width: 1100px) {
+    #search-input-text {
+        display: none;
+    }
+
+    #seach-input {
+        position: static !important;
+    }
+
+    #search-icon {
+        position: static !important;
+    }
+
+    #search-icon .nav-icon {
+        position: static !important;
+        padding: 0 !important;
+        background-color: transparent !important;
+        border-radius: 0 !important;
+        color: rgb(31, 239, 239) !important;
+        fill: rgb(31, 239, 239) !important;
+    }
+
+    .search {
+        display: flex;
+        align-items: center;
     }
 }
 </style>
