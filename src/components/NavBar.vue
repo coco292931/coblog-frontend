@@ -7,12 +7,12 @@
                 </router-link>
             </div>
 
-            <div>//留给动态增加</div>
+            <div><!--留给动态增加--></div>
 
             <div class="navbar-menu" :class="{ 'is-active': isMenuOpen }">
                 <div class="search">
-                    <div id="seach-input" style="display: flex; position: relative; align-items: center;">
-                        <input type="text" v-model="searchQuery" id="search-input-text" placeholder="搜点什么..." />
+                    <div id="search-input" style="display: flex; position: relative; align-items: center;">
+                        <input type="text" v-model="searchQuery" id="search-input-text" placeholder="搜点什么..." @keyup.enter="handleSearch" />
                         <router-link :to="`/search?q=${searchQuery}`" @click="closeMenu" id="search-icon">
                             <IconSearch class="nav-icon" style="transform: scale(1.15)" />
                         </router-link>
@@ -43,6 +43,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import IconSearch from './icons/IconSearch.vue';
 import IconArticles from './icons/IconArticles.vue';
 import IconHistory from './icons/IconHistory.vue';
@@ -50,6 +51,7 @@ import IconRSS from './icons/IconRSS.vue';
 import IconInfo from './icons/IconInfo.vue';
 import IconUser from './icons/IconUser.vue';
 
+const router = useRouter();
 const isMenuOpen = ref(false);
 const searchQuery = ref('');
 
@@ -60,19 +62,28 @@ const toggleMenu = () => {
 const closeMenu = () => {
     isMenuOpen.value = false;
 };
+/*搜索空值校验
+const handleSearch = () => {
+    if (searchQuery.value.trim()) {
+        router.push(`/search?q=${searchQuery.value}`);
+        closeMenu();
+    }
+};*/
 </script>
 
 <style scoped>
 .navbar {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
+    width: 100%;
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     padding: 0 20px;
+    box-sizing: border-box;
 }
 
 .navbar-container {
@@ -180,33 +191,45 @@ const closeMenu = () => {
 
 #search-input-text {
     outline: none;
-    padding: 0.4rem 0.4rem 0.4rem 0.75rem;
+    padding: 0.4rem 0.6rem 0.4rem 0.6rem;
     border-radius: 999px;
     background-color: transparent;
     border: 1px solid rgb(31, 239, 239);
     width: 8rem;
     font-family: inherit;
+    line-height: 1.2;
+    transition: all 0.3s ease-out;
+    color: #333;
+}
+
+#search-input-text::placeholder {
+color: rgba(124, 124, 124, 0.8);
 }
 
 #search-icon .nav-icon {
     position: absolute;
-    right: 0.1rem;
-    top: 0.135rem;
+    right: 1px;
+    top: 50%;
+    transform: translateY(-50%)!important;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0.3rem;
     cursor: pointer;
     background-color: rgb(31, 239, 239);
-    border-radius: 0 50% 50% 0;
+    border-radius: 0 999px 999px 0;
     color: rgb(240, 248, 255) !important;
     fill: rgb(240, 248, 255) !important;
+    aspect-ratio: 1;
+    transition: all 0.3s ease-out;
 }
 
 #search-input-text:focus {
     /*border: 1px solid rgb(31, 239, 239);*/
     background-color: rgba(255, 255, 255, 0.8);
+    transition: all 0.1s ease-in;
 }
+
 
 /* 响应式：小屏幕 */
 @media (max-width: 800px) {
@@ -267,6 +290,7 @@ const closeMenu = () => {
 
     #search-icon::after {
         content: "搜索";
+        color: rgb(30, 233, 233);
     }
 
     #search-icon .nav-icon {
@@ -282,14 +306,19 @@ const closeMenu = () => {
     .nav-icon {
         display: none;
     }
+
+    .navbar-item {
+        color: rgb(30, 233, 233);
+    }
 }
 
 @media (max-width: 1100px) {
+
     #search-input-text {
         display: none;
     }
 
-    #seach-input {
+    #search-input {
         position: static !important;
     }
 
@@ -304,6 +333,8 @@ const closeMenu = () => {
         border-radius: 0 !important;
         color: rgb(31, 239, 239) !important;
         fill: rgb(31, 239, 239) !important;
+        transform: translateY(0) !important;
+        transition:  all 0.3s ease-out;
     }
 
     .search {
