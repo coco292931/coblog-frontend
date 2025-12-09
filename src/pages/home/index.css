@@ -12,7 +12,7 @@
     overflow-x: hidden;
 }
 
-/* 调试用中心线 - 上线前记得删除 *
+/* 调试用中心线 - 上线前记得删除 */
 .big-container::before {
     content: "";
     position: fixed;
@@ -23,13 +23,13 @@
     background-color: red;
     z-index: 9999;
     pointer-events: none;
-}*/
+}
 
 .big-container {
     .main-photo {
         width: 100%;
         height: 100vh;
-        max-height: min(100vh, 100vw * 1);
+        max-height: min(100vh, 100vw * 0.9);
         display: flex;
         flex-direction: column;
         position: relative;
@@ -123,8 +123,14 @@
 
 /*隐藏图片*/
 @media (max-width: 600px) {
-    .big-container .main-photo .triangle {
-        width: 40px;
-        height: 40px;
+    .big-container .main-photo {
+        .welcome-text {
+            font-size: 29px;
+        }
+
+        .triangle {
+            width: 40px;
+            height: 40px;
+        }
     }
 }
