@@ -12,7 +12,7 @@
     overflow-x: hidden;
 }
 
-/* 调试用中心线 - 上线前记得删除 */
+/* 调试用中心线 - 上线前记得删除 *
 .big-container::before {
     content: "";
     position: fixed;
@@ -23,7 +23,7 @@
     background-color: red;
     z-index: 9999;
     pointer-events: none;
-}
+}*/
 
 .big-container {
     .main-photo {

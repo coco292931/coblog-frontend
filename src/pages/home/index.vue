@@ -53,15 +53,39 @@ const fetchArticles = async () => {
         
         if (result.code === 0 && result.data && result.data.articles) {
             // 转换API数据格式为组件所需格式
-            articles.value = result.data.articles.map(article => ({
+            const articleList = result.data.articles.map(article => ({
                 id: article.id,
                 cover_image: article.cover_image || '',
                 title: article.title,
                 description: article.summary, // API用的是summary字段
-                published_at: article.created_at, // 使用created_at作为发布时间
+                published_at: article.published_at || article.created_at, // 优先使用published_at，否则使用created_at
                 created_at: article.created_at,
+                updated_at: article.updated_at,
                 tags: article.categories || [] // API用的是categories字段
             }));
+            
+            // 按照时间降序排序（最新的在前）
+            // 优先级: updated_at > published_at > created_at
+            articles.value = articleList.sort((a, b) => {
+                const getLatestTime = (article) => {
+                    const times = [
+                        article.updated_at,
+                        article.published_at,
+                        article.created_at
+                    ].filter(Boolean).map(t => new Date(t).getTime());
+                    return Math.max(...times);
+                };
+                
+                return getLatestTime(b) - getLatestTime(a);
+            });
+            
+            console.log('排序后的文章列表:', articles.value.map(a => ({ 
+                id: a.id, 
+                title: a.title, 
+                published_at: a.published_at,
+                created_at: a.created_at,
+                updated_at: a.updated_at
+            })));
         } else {
             throw new Error(result.message || '数据格式错误');
         }
@@ -90,13 +114,13 @@ const fetchArticles = async () => {
                 tags: ['TypeScript', '进阶']
             },
             { 
-                id: '3', 
+                id: '0', 
                 cover_image: '', 
                 title: 'CSS Grid 布局完全指南', 
                 description: 'CSS Grid 是现代网页布局的强大工具，通过本指南你将掌握 Grid 布局的所有核心概念...',
-                published_at: '2023-12-20',
-                created_at: '2023-12-20',
-                tags: ['CSS', '布局']
+                published_at: '2223-12-20',
+                created_at: '2332-12-20',
+                tags: ['CSS','ts', '布局']
             },
         ];
     } finally {
