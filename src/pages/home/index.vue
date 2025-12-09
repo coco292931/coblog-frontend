@@ -42,52 +42,46 @@ const fetchArticles = async () => {
     
     try {
         // 替换成实际的API地址
-        const response = await fetch('/api/articles');
+        const url="http://127.0.0.1:4523/m1/7489100-7224477-6663459"
+        const response = await fetch(`${url}/api/articles`);
         //page,page_size,category,tag,q 搜索共用
         
         if (!response.ok) {
-            throw new Error('获取文章列表失败');
+            //throw new Error('获取文章列表失败');
+            console.error('获取文章列表失败，状态码:', response.status);
         }
         
         const result = await response.json();
         
-        if (result.code === 0 && result.data && result.data.articles) {
+        if (result.code === 200 && result.data && result.data.articles) {
             // 转换API数据格式为组件所需格式
-            const articleList = result.data.articles.map(article => ({
-                id: article.id,
-                cover_image: article.cover_image || '',
-                title: article.title,
-                description: article.summary, // API用的是summary字段
-                published_at: article.published_at || article.created_at, // 优先使用published_at，否则使用created_at
-                created_at: article.created_at,
-                updated_at: article.updated_at,
-                tags: article.categories || [] // API用的是categories字段
-            }));
-            
-            // 按照时间降序排序（最新的在前）
-            // 优先级: updated_at > published_at > created_at
-            articles.value = articleList.sort((a, b) => {
-                const getLatestTime = (article) => {
-                    const times = [
-                        article.updated_at,
-                        article.published_at,
-                        article.created_at
-                    ].filter(Boolean).map(t => new Date(t).getTime());
-                    return Math.max(...times);
-                };
+            articles.value = result.data.articles.map(article => {
+                // 获取最新时间（updated_at 和 created_at 中的最大值）
+                const updatedTime = new Date(article.updated_at).getTime();
+                const createdTime = new Date(article.created_at).getTime();
+                const latestTime = Math.max(updatedTime, createdTime);
                 
-                return getLatestTime(b) - getLatestTime(a);
+                return {
+                    id: article.id,
+                    cover_image: article.cover_image || '',
+                    title: article.title,
+                    description: article.summary, // API用的是summary字段
+                    published_at: new Date(latestTime).toISOString(), // 使用最新时间作为显示时间
+                    created_at: article.created_at,
+                    tags: article.categories || [] // API用的是categories字段
+                };
+            }).sort((a, b) => {
+                // 按照 published_at（即最新时间）降序排序
+                return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
             });
             
-            console.log('排序后的文章列表:', articles.value.map(a => ({ 
+            console.log('API文章列表:', articles.value.map(a => ({ 
                 id: a.id, 
-                title: a.title, 
-                published_at: a.published_at,
-                created_at: a.created_at,
-                updated_at: a.updated_at
+                title: a.title.substring(0, 10),
+                published_at: a.published_at 
             })));
         } else {
-            throw new Error(result.message || '数据格式错误');
+            throw new Error(`数据格式错误 ${result.message}`);
         }
     } catch (err) {
         console.error('获取文章列表失败:', err);
@@ -97,16 +91,16 @@ const fetchArticles = async () => {
         articles.value = [
             { 
                 id: '1', 
-                cover_image: '',
+                cover_image: "https://loremflickr.com/400/400?lock=3477017495111718",
                 title: 'Vue 3 组合式 API 最佳实践', 
                 description: 'Vue 3 带来了全新的组合式 API，让我们的代码更加灵活和可维护。本文将介绍一些最佳实践...',
                 published_at: '2024-06-01',
-                created_at: '2024-06-01',
+                created_at: '2026-06-01',
                 tags: ['Vue', '前端']
             },
             { 
                 id: '2', 
-                cover_image: '', 
+                cover_image: "https://loremflickr.com/400/400?lock=3477017495111714",
                 title: 'TypeScript 进阶技巧', 
                 description: 'TypeScript 为 JavaScript 带来了强类型系统，本文将深入探讨一些高级技巧和模式...',
                 published_at: '2024-05-15',
@@ -115,14 +109,20 @@ const fetchArticles = async () => {
             },
             { 
                 id: '0', 
-                cover_image: '', 
+                cover_image: "https://loremflickr.com/400/400?lock=3477017495111720", 
                 title: 'CSS Grid 布局完全指南', 
                 description: 'CSS Grid 是现代网页布局的强大工具，通过本指南你将掌握 Grid 布局的所有核心概念...',
                 published_at: '2223-12-20',
                 created_at: '2332-12-20',
-                tags: ['CSS','ts', '布局']
-            },
+                tags: ['CSS', '布局']
+            }
         ];
+        
+        console.log('测试数据文章列表:', articles.value.map(a => ({ 
+            id: a.id, 
+            title: a.title.substring(0, 10),
+            published_at: a.published_at 
+        })));
     } finally {
         loading.value = false;
     }
