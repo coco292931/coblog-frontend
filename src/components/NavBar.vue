@@ -11,7 +11,7 @@
 
             <div class="navbar-menu" :class="{ 'is-active': isMenuOpen }">
                 <div class="search">
-                    <div id="search-input" style="display: flex; position: relative; align-items: center;">
+                    <div id="search-input" style="display: flex; position: relative; align-items: center;overflow: hidden;border-radius: 999px;">
                         <input type="text" v-model="searchQuery" id="search-input-text" placeholder="搜点什么..." @keyup.enter="handleSearch" />
                         <router-link :to="`/search?q=${searchQuery}`" @click="closeMenu" id="search-icon">
                             <IconSearch class="nav-icon" style="transform: scale(1.15)" />
@@ -62,13 +62,13 @@ const toggleMenu = () => {
 const closeMenu = () => {
     isMenuOpen.value = false;
 };
-/*搜索空值校验
+//搜索空值校验
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
         router.push(`/search?q=${searchQuery.value}`);
         closeMenu();
     }
-};*/
+};
 </script>
 
 <style scoped>
@@ -147,8 +147,17 @@ const handleSearch = () => {
 }
 
 .navbar-item:hover {
-    background-color: rgba(31, 239, 239, 0.1);
-    color: rgb(31, 239, 239);
+    animation: navbar-item--hover 0.5s forwards;
+}
+@keyframes navbar-item--hover {
+    0% {}
+    60% {
+        color: rgb(31, 239, 239);
+    }
+    100% {
+        background-color: rgba(31, 239, 239, 0.1);
+        color: rgb(31, 239, 239);
+    }
 }
 
 .navbar-item.router-link-active {
@@ -208,13 +217,13 @@ color: rgba(124, 124, 124, 0.8);
 
 #search-icon .nav-icon {
     position: absolute;
-    right: 1px;
+    right: -0.1rem;
     top: 50%;
     transform: translateY(-50%)!important;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.3rem;
+    padding: 0.4rem;
     cursor: pointer;
     background-color: rgb(31, 239, 239);
     border-radius: 0 999px 999px 0;
@@ -302,28 +311,34 @@ color: rgba(124, 124, 124, 0.8);
     }
 }
 
-@media (max-width: 1300px) {
-    .nav-icon {
-        display: none;
-    }
-
-    .navbar-item {
-        color: rgb(30, 233, 233);
-    }
-}
-
 @media (max-width: 1100px) {
 
     #search-input-text {
-        display: none;
+        animation: search-text--hide 0.5s forwards;
+    }
+    @keyframes search-text--hide {
+        0% {
+        }
+        99% {
+            width: 0.4rem;
+            height:0.4rem;
+            font-size: 0.4rem;
+            opacity: 0;
+            transform: translateX(1.5rem);
+        }
+        100% {
+            display: none;
+        }
     }
 
     #search-input {
         position: static !important;
+        transition: all 0.3s ease-out;
     }
 
     #search-icon {
         position: static !important;
+        border-radius: 999px!important;
     }
 
     #search-icon .nav-icon {
@@ -335,6 +350,7 @@ color: rgba(124, 124, 124, 0.8);
         fill: rgb(31, 239, 239) !important;
         transform: translateY(0) !important;
         transition:  all 0.3s ease-out;
+        border-radius: 999px!important;
     }
 
     .search {
@@ -342,4 +358,15 @@ color: rgba(124, 124, 124, 0.8);
         align-items: center;
     }
 }
+
+@media (max-width: 1300px) {
+    .nav-icon {
+        display: none;
+    }
+
+    .navbar-item {
+        color: rgb(30, 233, 233);
+    }
+}
+
 </style>
