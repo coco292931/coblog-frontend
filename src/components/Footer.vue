@@ -125,8 +125,9 @@ onUnmounted(() => {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 30px 20px;
-    margin-top: 50px;
+    margin-top: auto;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .footer-content {
