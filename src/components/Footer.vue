@@ -9,8 +9,8 @@
                 <span class="separator">|</span>
                 <span class="stat-item">🍵 阅读时长 ≈ {{ readingTime }}</span>
             </div>
-            <div class="uptime">
-                已避风 {{ uptimeDisplay }}
+            <div class="uptime" >
+                {{ uptimeDisplay }}
             </div>
             <div class="powered">
                 Powered by Vue & GO
@@ -58,13 +58,18 @@ const readingTime = computed(() => {
     return `0:${mins.toString().padStart(2, '0')}`;
 });
 
+// 获取开放时间（后端数据或默认值）
+const openTime = computed(() => {
+    if (siteStats.value.started_time) {
+        return new Date(siteStats.value.started_time);
+    }
+    // 默认开放时间：2025年12月20日
+    return new Date('2025-12-20T00:00:00');
+});
+
 // 计算运行时长
 const uptimeDisplay = computed(() => {
-    if (!siteStats.value.started_time) {
-        return '0天0时0分0秒';
-    }
-    
-    const startTime = new Date(siteStats.value.started_time);
+    const startTime = openTime.value;
     const diff = currentTime.value - startTime;
     
     const seconds = Math.floor(diff / 1000);
@@ -76,17 +81,22 @@ const uptimeDisplay = computed(() => {
     const displayMinutes = minutes % 60;
     const displayHours = hours % 24;
     
-    return `${days}天${displayHours}时${displayMinutes}分${displaySeconds}秒`;
+        
+    if (diff > 0) {
+        return `已避风 ${days}天${displayHours}时${displayMinutes}分${displaySeconds}秒`;
+    }
+    return `本港湾还有 ${-days}天${-displayHours}时${-displayMinutes}分${-displaySeconds}秒 开放`;
 });
 
 // 获取网站统计数据
 const fetchSiteStats = async () => {
     try {
         // 这里替换成实际的API地址
-        const response = await fetch('/api/site/info');
+        const url="http://127.0.0.1:4523/m1/7489100-7224477-6663459"
+        const response = await fetch(`${url}/api/site/info`);
         if (response.ok) {
             const data = await response.json();
-            siteStats.value = data;
+            siteStats.value = data.data;
         }
     } catch (error) {
         console.error('获取网站统计数据失败:', error);
@@ -97,19 +107,19 @@ const fetchSiteStats = async () => {
             total_visits: 0,
             total_visitors: 0,
             uptime: '',
-            started_time: new Date().toISOString()
+            started_time: '' // 空字符串时使用默认开放时间 2025-12-20
         };
     }
 };
 
 onMounted(() => {
-    // 获取统计数据
-    fetchSiteStats();
-    
-    // 每秒更新一次时间
+    // 每秒更新一次时间（先启动定时器，确保即使API失败也能更新）
     timer = setInterval(() => {
         currentTime.value = new Date();
     }, 1000);
+    
+    // 获取统计数据
+    fetchSiteStats();
 });
 
 onUnmounted(() => {
@@ -125,7 +135,7 @@ onUnmounted(() => {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 30px 20px;
-    margin-top: auto;
+    margin-top: 60px;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
     box-sizing: border-box;
 }
