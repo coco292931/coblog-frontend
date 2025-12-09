@@ -5,6 +5,8 @@ import About from '../pages/about/index.vue'
 import Home from '../pages/home/index.vue'
 import Add from '../ADDD.vue'
 import Turn from '../Turn.vue'
+import Article from '../pages/article/index.vue'
+import Search from '../pages/search/index.vue'
 
 
 // // 简单的关于页面组件
@@ -52,6 +54,16 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/articles/:article_id',
+    name: 'Article',
+    component: Article
+  },
+  {
+    path: '/search',
+    name: 'Search',
+    component: Search
   }
 ]
 
