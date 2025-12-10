@@ -56,6 +56,11 @@ const routes = [
     component: Home
   },
   {
+    path: '/articles',
+    name: 'ArticleList',
+    component: Search
+  },
+  {
     path: '/articles/:article_id',
     name: 'Article',
     component: Article
