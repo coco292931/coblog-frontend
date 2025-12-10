@@ -43,7 +43,8 @@ npm run dev
 npm run build
 ```
 
-###绕过本地脚本运行策略
+### 绕过本地脚本运行策略
+
 ```
 powershell -ExecutionPolicy Bypass
 ```
