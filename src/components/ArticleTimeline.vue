@@ -31,7 +31,8 @@
         <!-- 文章列表部分 -->
         <div class="article-list" ref="articleListRef">
             <div v-for="(article, index) in articles" :key="article.id" class="article"
-                :ref="el => setArticleRef(el, index)">
+                :ref="el => setArticleRef(el, index)"
+                @click="goToArticle(article.id)">
                 <img v-if="article.cover_image" :src="article.cover_image" class="article-photo"
                     @error="handleImageError" @load="updateDotPositions" />
                 <img v-else src="../assets/image/article-placeholder.jpg" class="article-photo"
@@ -57,6 +58,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Props
 const props = defineProps({
@@ -72,6 +74,7 @@ const articleRefs = ref([]);
 const dotRefs = ref([]);
 const activeArticleIndex = ref(0);
 const timelineHeight = ref(0);
+const router = useRouter();
 
 // 设置文章引用
 const setArticleRef = (el, index) => {
@@ -219,6 +222,13 @@ const handleScroll = () => {
 // 图片加载错误处理
 const handleImageError = (e) => {
     e.target.src = '../assets/image/article-placeholder.jpg';
+};
+
+// 处理文章跳转
+const goToArticle = (id) => {
+    if (id) {
+        router.push(`/articles/${id}`);
+    }
 };
 
 // 监听文章数据变化
