@@ -31,9 +31,9 @@
             transform: translateX(-50%);
             text-align: left;
             color: white;
-            width: 80%;
-            max-width: 1000px;
-            padding: 10px 55px 15px;
+            width: 90%;
+            max-width: 1070px;
+            padding: 0.6rem 35px 15px;
             background: rgba(0, 0, 0, 0.3);
             /* 半透明黑底 */
             border-radius: 20px 20px 0 0;
@@ -41,16 +41,16 @@
 
             /* 文章标题 */
             .title {
-                font-size: 2.8rem;
+                font-size: 2.5rem;
                 font-weight: bold;
-                margin-bottom: 0.8rem;
+                margin-bottom: 0.2rem;
                 text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
             }
 
             /* 副标题 */
             .subtitle {
-                font-size: 1.2rem;
-                margin-bottom: 0.8rem;
+                font-size: 1.4rem;
+                margin-bottom: 0.6rem;
                 color: #ddd;
             }
 
@@ -123,12 +123,12 @@
                 line-height: 1.8;
                 font-size: 1.05rem;
                 color: #333;
-                margin-bottom: 30px;
+                margin-bottom: 20px;
 
                 .main-body {
                     h2 {
                         font-size: 2rem;
-                        margin: 40px 0 20px;
+                        margin: 30px 0 20px;
                         padding-bottom: 10px;
                         border-bottom: 2px solid #e0e0e0;
                         color: #2c3e50;
@@ -319,11 +319,17 @@
 @media (max-width: 1100px) {
     .big-container {
         .main-photo .summary {
-            width: 680px;
-            padding: 30px 20px;
+            width: 690px;
 
             .title {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
+            }
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            .info {
+                flex-direction: column;
+                gap: 10px;
             }
         }
 

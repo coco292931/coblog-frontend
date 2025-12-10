@@ -7,6 +7,7 @@ import Add from '../ADDD.vue'
 import Turn from '../Turn.vue'
 import Article from '../pages/article/index.vue'
 import Search from '../pages/search/index.vue'
+import RaL from '../pages/regAlogin/index.vue'
 
 
 // // 简单的关于页面组件
@@ -69,6 +70,16 @@ const routes = [
     path: '/search',
     name: 'Search',
     component: Search
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: RaL
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RaL
   }
 ]
 
