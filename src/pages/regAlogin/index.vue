@@ -6,40 +6,29 @@
                 <h2>{{ isLogin ? '登录' : '注册' }}</h2>
                 <form @submit.prevent="handleSubmit" class="form">
                     <div class="form-group">
-                        <input 
-                            type="email" 
-                            id="email" 
-                            class="form__input" 
-                            placeholder=" "
-                            v-model="formData.email"
-                            required
-                        />
+                        <input type="email" id="email" class="form__input" placeholder=" " v-model="formData.email"
+                            required />
                         <label for="email" class="form__label">邮箱</label>
                     </div>
 
                     <div class="form-group password-group">
-                        <input 
-                            :type="showPassword ? 'text' : 'password'" 
-                            id="password" 
-                            class="form__input" 
-                            placeholder=" "
-                            v-model="formData.password"
-                            required
-                        />
+                        <input :type="showPassword ? 'text' : 'password'" id="password" class="form__input"
+                            placeholder=" " v-model="formData.password" required />
                         <label for="password" class="form__label">密码</label>
-                        <button 
-                            type="button" 
-                            class="toggle-password"
-                            @click="showPassword = !showPassword"
-                            v-if="formData.password"
-                            :title="showPassword ? '隐藏密码' : '显示密码'"
-                        >
-                            <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <button type="button" class="toggle-password" @click="showPassword = !showPassword"
+                            v-if="formData.password" :title="showPassword ? '隐藏密码' : '显示密码'">
+                            <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                </path>
                                 <line x1="1" y1="1" x2="23" y2="23"></line>
                             </svg>
                         </button>
@@ -54,28 +43,24 @@
                     </div>
 
                     <div class="form-group password-group" v-if="!isLogin">
-                        <input 
-                            :type="showConfirmPassword ? 'text' : 'password'" 
-                            id="confirmPassword" 
-                            class="form__input" 
-                            placeholder=" "
-                            v-model="formData.confirmPassword"
-                            required
-                        />
+                        <input :type="showConfirmPassword ? 'text' : 'password'" id="confirmPassword"
+                            class="form__input" placeholder=" " v-model="formData.confirmPassword" required />
                         <label for="confirmPassword" class="form__label">确认密码</label>
-                        <button 
-                            type="button" 
-                            class="toggle-password"
-                            @click="showConfirmPassword = !showConfirmPassword"
-                            v-if="formData.confirmPassword"
-                            :title="showConfirmPassword ? '隐藏密码' : '显示密码'"
-                        >
-                            <svg v-if="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <button type="button" class="toggle-password"
+                            @click="showConfirmPassword = !showConfirmPassword" v-if="formData.confirmPassword"
+                            :title="showConfirmPassword ? '隐藏密码' : '显示密码'">
+                            <svg v-if="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                </path>
                                 <line x1="1" y1="1" x2="23" y2="23"></line>
                             </svg>
                         </button>
@@ -105,7 +90,7 @@
         </div>
         <Footer />
     </div>
-</template> 
+</template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
@@ -159,17 +144,17 @@ const handleSubmit = () => {
     } else {
         // 注册逻辑
         alertMessage.value = '';
-        
+
         if (formData.value.password !== formData.value.confirmPassword) {
             alertMessage.value = '两次输入的密码不一致，请重新输入！';
             return;
         }
-        
+
         if (formData.value.password.length < 6) {
             alertMessage.value = '密码长度至少需要6位字符！';
             return;
         }
-        
+
         console.log('注册:', {
             email: formData.value.email,
             password: formData.value.password
@@ -186,5 +171,4 @@ const handleForgotPassword = () => {
 };
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
