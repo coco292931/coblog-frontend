@@ -92,7 +92,7 @@ const uptimeDisplay = computed(() => {
 const fetchSiteStats = async () => {
     try {
         // 这里替换成实际的API地址
-        const url="http://127.0.0.1:4523/m1/7489100-7224477-6663459"
+        const url = import.meta.env.VITE_API_BASE_URL;
         const response = await fetch(`${url}/api/site/info`);
         if (response.ok) {
             const data = await response.json();
