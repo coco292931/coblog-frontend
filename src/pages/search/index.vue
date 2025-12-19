@@ -71,6 +71,7 @@ import ArticleTimeline from '../../components/ArticleTimeline.vue';
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
+import api from '../../api/index.js';
 
 // Router
 const router = useRouter();
@@ -83,82 +84,60 @@ const isArticleListMode = computed(() => route.path === '/articles');
 const searchQuery = ref('');
 const hasSearched = ref(false);
 const isLoading = ref(false);
-const useRealAPI = ref(true); // 是否使用真实API
 
-// 模拟文章数据（实际使用时应该从API获取）
-const articles = ref([
-    {
-        id: 1,
-        title: 'Vue 3 组合式 API 入门教程',
-        description: '深入浅出地介绍 Vue 3 的 Composition API，包括 setup、ref、reactive 等核心概念。',
-        cover_image: '',
-        published_at: '2024-03-15',
-        tags: ['Vue', '前端', '教程']
-    },
-    {
-        id: 2,
-        title: 'JavaScript 异步编程完全指南',
-        description: '从回调函数到 Promise，再到 async/await，全面讲解 JavaScript 异步编程的各种方式。',
-        cover_image: '',
-        published_at: '2024-03-10',
-        tags: ['JavaScript', '异步编程']
-    },
-    {
-        id: 3,
-        title: 'CSS Grid 布局实战技巧',
-        description: '通过实际案例学习 CSS Grid 布局系统，掌握现代网页布局的强大工具。',
-        cover_image: '',
-        published_at: '2024-03-05',
-        tags: ['CSS', '布局', '前端']
-    },
-    // 可以添加更多文章...
-]);
+// 文章列表数据
+const articles = ref([]);
 
 // 显示的文章列表（直接显示后端返回的数据）
 const displayArticles = computed(() => articles.value);
 
 // 从 API 获取文章数据
 const fetchArticles = async (query = '') => {
-    console.log('fetchArticles called, useRealAPI:', useRealAPI.value, 'query:', query);
-    if (!useRealAPI.value) {
-        // 使用模拟数据
-        //return;
-    }
-    console.log('fetchArticles called, useingRealAPI!');
     try {
-        const url = 'http://api.coco-29.wang';
-        // 如果有搜索关键词，添加到URL参数
-        const apiUrl = query ? `${url}/api/articles?q=${encodeURIComponent(query)}` : `${url}/api/articles`;
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error('获取文章失败');
-        }
-        const data = await response.json();
-        console.log('API返回数据:', data);
+        // 使用axios调用API，如果有搜索关键词则添加到URL参数
+        const apiUrl = query ? `/api/articles?q=${encodeURIComponent(query)}` : '/api/articles';
+        const result = await api.get(apiUrl);
         
-        // API 返回格式: { code: 200, message: "...", data: { articles: [...], total: 8, page: 23, page_size: 89 } }
-        if (data.code === 200 && data.data && Array.isArray(data.data.articles)) {
-            articles.value = data.data.articles.map(article => ({
-                id: article.id,
-                title: article.title,
-                description: article.summary, // summary 映射到 description
-                cover_image: article.cover_image,
-                published_at: article.created_at,
-                created_at: article.created_at,
-                updated_at: article.updated_at,
-                tags: article.categories || [], // categories 映射到 tags
-                word_count: article.word_count,
-                is_public: article.is_public
-            }));
+        console.log('API返回的原始数据:', result);
+        
+        if (result.code === 200 && result.data && result.data.articles) {
+            console.log('文章列表原始数据:', result.data.articles);
+            
+            // 转换API数据格式为组件所需格式（使用驼峰命名）
+            articles.value = result.data.articles.map(article => {
+                // 获取时间戳，如果解析失败则为 NaN
+                const updatedTime = new Date(article.updatedAt || 0).getTime();
+                const createdTime = new Date(article.createdAt || 0).getTime();
+                
+                // 使用最新时间，容错处理 NaN 的情况
+                const latestTime = !isNaN(updatedTime) && !isNaN(createdTime) 
+                    ? Math.max(updatedTime, createdTime)
+                    : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
+                
+                return {
+                    id: article.id,
+                    cover_image: article.cover_image || '',
+                    title: article.title,
+                    description: article.summary || '',
+                    published_at: new Date(latestTime).toISOString(),
+                    created_at: article.createdAt,
+                    tags: article.category ? (typeof article.category === 'string' ? JSON.parse(article.category) : article.category) : []
+                };
+            }).sort((a, b) => {
+                // 按照最新时间降序排序，容错处理无效时间
+                const timeA = new Date(b.published_at).getTime();
+                const timeB = new Date(a.published_at).getTime();
+                return (!isNaN(timeA) && !isNaN(timeB)) ? (timeA - timeB) : 0;
+            });
+            
+            console.log('转换后的文章数据:', articles.value);
             console.log('成功加载文章数量:', articles.value.length);
-        } else if (data.data && Array.isArray(data.data)) {
-            articles.value = data.data;
-        } else if (Array.isArray(data)) {
-            articles.value = data;
+        } else {
+            throw new Error(result.msg || result.message || '数据格式错误');
         }
     } catch (error) {
-        console.error('获取文章失败，使用模拟数据:', error);
-        useRealAPI.value = false; // 切换到模拟数据
+        console.error('获取文章失败:', error);
+        articles.value = [];
     }
 };
 

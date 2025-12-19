@@ -92,6 +92,7 @@ import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
+import api from '../../api/index.js';
 
 const route = useRoute();
 const articleId = ref(route.params.article_id);
@@ -129,56 +130,99 @@ const scrollToSection = (id) => {
 // 从后端获取文章数据
 const fetchArticleData = async () => {
     try {
-        // 调用后端API获取文章数据
-        const url = import.meta.env.VITE_API_BASE_URL;
-        const response = await fetch(`${url}/api/articles/${articleId.value}`);
+        // 使用axios调用API获取文章数据
+        const result = await api.get(`/api/articles/${articleId.value}`);
+        
+        console.log('API返回的原始数据:', result);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (result.code === 200 && result.data) {
+            const data = result.data;
+            console.log('文章详情数据:', data);
 
-        const result = await response.json();
-        console.log('获取到的完整响应:', result);
+            // 更新文章信息（使用驼峰命名）
+            articleTitle.value = data.title || '无标题';
+            articleSubtitle.value = data.subtitle || '';
+            articleHtml.value = data.content || '<p>暂无内容</p>';
+            
+            // 处理时间字段
+            createTime.value = data.createdAt ? formatDateTime(data.createdAt) : '';
+            updateTime.value = data.updatedAt ? formatDateTime(data.updatedAt) : '';
 
-        // 从响应中提取 data 字段
-        const data = result.data;
-        console.log('文章数据:', data);
+            // 处理分类（解析JSON字符串后转为显示字符串）
+            const categoryData = data.category ? (typeof data.category === 'string' ? JSON.parse(data.category) : data.category) : [];
+            categories.value = Array.isArray(categoryData) && categoryData.length > 0 ? categoryData.join(', ') : '未分类';
 
-        // 更新文章信息
-        articleTitle.value = data.title || '无标题';
-        articleSubtitle.value = data.subtitle || '';
-        articleHtml.value = data.content || '<p>暂无内容</p>';
-        createTime.value = data.created_at || '';
-        updateTime.value = data.updated_at || '';
+            // 处理标签（数组转字符串）
+            tags.value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
 
-        // 处理分类（数组转字符串）
-        categories.value = Array.isArray(data.categories) ? data.categories.join(', ') : (data.categories || '');
+            // 计算阅读时间（基于文章内容）
+            readingTime.value = calculateReadingTime(data.content || '', data.words);
+            author.value = data.author || 'coco_29';
 
-        // 处理标签（数组转字符串）
-        tags.value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
+            // 更新统计信息
+            views.value = data.views || 0;
+            likes.value = data.likes || 0;
+            comments.value = data.commentsCount || data.comments_count || 0;
 
-        readingTime.value = data.reading_time || 0;
-        author.value = data.author || 'coco_29';
+            // 如果后端返回了目录数据，则使用；否则可以从 HTML 中提取
+            if (data.toc && Array.isArray(data.toc)) {
+                tocList.value = data.toc;
+            } else {
+                // 自动从 HTML 中提取标题生成目录
+                generateTocFromHtml();
+            }
 
-        // 更新统计信息
-        views.value = data.views || 0;
-        likes.value = data.likes || 0;
-        comments.value = data.comments_count || 0;
-
-        // 如果后端返回了目录数据，则使用；否则可以从 HTML 中提取
-        if (data.toc && Array.isArray(data.toc)) {
-            tocList.value = data.toc;
+            console.log('文章数据加载成功');
         } else {
-            // 自动从 HTML 中提取标题生成目录
-            generateTocFromHtml();
+            throw new Error(result.msg || result.message || '数据格式错误');
         }
-
-        console.log('文章数据加载成功');
     } catch (error) {
         console.error('获取文章数据失败:', error);
         articleTitle.value = '加载失败';
         articleHtml.value = `<p style="color: red;">加载文章失败，请稍后重试。</p><p>错误信息：${error.message}</p>`;
     }
+};
+
+// 格式化日期时间
+const formatDateTime = (dateString) => {
+    if (!dateString) return '暂无';
+    const date = new Date(dateString);
+    // 检查是否为无效日期（如 0001-01-01）
+    if (date.getFullYear() < 2000) return '暂无';
+    return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+// 计算阅读时间
+const calculateReadingTime = (htmlContent, wordCount) => {
+    // 如果后端已提供字数，优先使用
+    let words = wordCount;
+    
+    // 如果后端没有提供字数，从 HTML 内容中提取
+    if (!words && htmlContent) {
+        // 创建临时 DOM 元素来提取纯文本
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        // 统计字数（中文字符 + 英文单词）
+        const chineseChars = textContent.match(/[\u4e00-\u9fa5]/g) || [];
+        const englishWords = textContent.match(/[a-zA-Z]+/g) || [];
+        
+        words = chineseChars.length + englishWords.length;
+    }
+    
+    // 按照中文阅读速度 400 字/分钟计算
+    const readingSpeed = 400;
+    const minutes = Math.ceil(words / readingSpeed);
+    
+    // 至少显示 1 分钟
+    return minutes > 0 ? minutes : 1;
 };
 
 // 从 HTML 内容中提取标题生成目录
