@@ -1,13 +1,13 @@
 <template>
-    <div class="timeline-container">
+    <div class="timeline-container" :class="{ 'empty-state': isEmptyList }">
         <!-- 时间线部分 -->
-        <div class="timeline">
+        <div class="timeline" v-if="!isEmptyList">
             <!-- TimeLine 标题 -->
             <div class="timeline-header">TimeLine</div>
 
             <!-- 时间线主体 -->
             <div class="timeline-line-wrapper">
-                <div class="timeline-line"></div>
+                <div class="timeline-line" ref="timelineLineRef"></div>
 
                 <!-- 年份标签 -->
                 <div v-for="(year, index) in yearMarkers" :key="`year-${year.year}`" class="year-marker"
@@ -20,7 +20,7 @@
                     :ref="el => setDotRef(el, index)"></div>
 
                 <!-- 结束三角形 -->
-                <div class="timeline-end" :style="{ top: timelineHeight + 90 + 'px' }">
+                <div class="timeline-end" :style="{ top: timelineHeight + 'px' }">
                     <svg viewBox="0 0 20 20" width="20" height="20">
                         <polygon points="10,0 0,10 20,10" fill="#888" />
                     </svg>
@@ -29,7 +29,7 @@
         </div>
 
         <!-- 文章列表部分 -->
-        <div class="article-list" ref="articleListRef">
+        <div class="article-list" ref="articleListRef" v-if="!isEmptyList">
             <div v-for="(article, index) in articles" :key="article.id" class="article"
                 :ref="el => setArticleRef(el, index)"
                 @click="goToArticle(article.id)">
@@ -70,11 +70,17 @@ const props = defineProps({
 
 // Refs
 const articleListRef = ref(null);
+const timelineLineRef = ref(null);
 const articleRefs = ref([]);
 const dotRefs = ref([]);
 const activeArticleIndex = ref(0);
 const timelineHeight = ref(0);
 const router = useRouter();
+
+// 计算属性：判断列表是否为空
+const isEmptyList = computed(() => {
+    return !props.articles || props.articles.length === 0;
+});
 
 // 设置文章引用
 const setArticleRef = (el, index) => {
@@ -167,12 +173,12 @@ const updateDotPositions = () => {
             }
         });
 
-        // 更新时间线高度（刚好到最后一个圆点位置）
-        if (dotRefs.value.length > 0) {
-            const lastDot = dotRefs.value[dotRefs.value.length - 1];
-            if (lastDot && lastDot.style.top) {
-                timelineHeight.value = parseFloat(lastDot.style.top) + 10;
-            }
+        // 更新时间线高度（基于时间线元素的实际高度）
+        if (timelineLineRef.value) {
+            // 获取时间线元素的实际高度
+            const lineHeight = timelineLineRef.value.offsetHeight;
+            // 三角形放在时间线底部
+            timelineHeight.value = lineHeight;
         }
 
         // 更新年份标签位置
@@ -260,6 +266,21 @@ onUnmounted(() => {
     position: relative;
     padding: 0;
     right:1%;
+}
+
+/* 空状态样式 */
+.timeline-container.empty-state {
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-container.empty-state::before {
+    content: '没有更多了…';
+    font-size: 18px;
+    color: #999;
+    text-align: center;
 }
 
 /* ========== 时间线样式 ========== */
