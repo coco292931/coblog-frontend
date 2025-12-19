@@ -92,6 +92,7 @@ import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const route = useRoute();
 const articleId = ref(route.params.article_id);

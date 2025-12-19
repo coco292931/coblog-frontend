@@ -126,7 +126,7 @@ const fetchArticles = async (query = '') => {
     }
     console.log('fetchArticles called, useingRealAPI!');
     try {
-        const url = 'http://api.coco-29.wang';
+        const url = import.meta.env.VITE_API_BASE_URL;
         // 如果有搜索关键词，添加到URL参数
         const apiUrl = query ? `${url}/api/articles?q=${encodeURIComponent(query)}` : `${url}/api/articles`;
         const response = await fetch(apiUrl);
