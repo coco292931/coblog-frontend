@@ -83,7 +83,7 @@ const isArticleListMode = computed(() => route.path === '/articles');
 const searchQuery = ref('');
 const hasSearched = ref(false);
 const isLoading = ref(false);
-const useRealAPI = ref(false); // 是否使用真实API
+const useRealAPI = ref(true); // 是否使用真实API
 
 // 模拟文章数据（实际使用时应该从API获取）
 const articles = ref([

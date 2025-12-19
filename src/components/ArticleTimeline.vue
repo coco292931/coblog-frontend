@@ -339,7 +339,7 @@ onUnmounted(() => {
 .timeline-end {
     position: absolute;
     left: 50%;
-    transform: translate(-50%,-6.5rem);
+    transform: translate(-50%,0);
     z-index: 2;
 }
 

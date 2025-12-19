@@ -9,7 +9,7 @@ import api from './index';
  * @returns {Promise}
  */
 export const login = (data) => {
-  return api.post('/auth/login/combo', {
+  return api.post('/api/auth/login/combo', {
     account: data.account,
     password: data.password,
     rememberMe: data.rememberMe || false,
@@ -26,7 +26,7 @@ export const login = (data) => {
  * @returns {Promise}
  */
 export const register = (data) => {
-  return api.post('/auth/register', {
+  return api.post('/api/auth/register', {
     account: data.account,
     password: data.password,
     username: data.username,
@@ -56,5 +56,5 @@ export const getUserInfo = () => {
  * @returns {Promise}
  */
 export const sendVerificationCode = (email) => {
-  return api.post('/auth/login/email/verify', { email })
+  return api.post('/api/auth/login/email/verify', { email })
 };
