@@ -72,6 +72,7 @@
                 text-decoration: none;
                 position: relative;
                 width: max-content;
+                cursor: pointer;
                 user-select: none;
             }
             .guid-link::before{
