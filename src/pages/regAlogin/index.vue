@@ -243,14 +243,17 @@ const handleSubmit = async () => {
             const response = await login({
                 account: formData.value.account,
                 password: formData.value.password,
-                rememberMe: formData.value.rememberMe
+                rememberMe: ""
             });
             
             // 检查响应code
             if (response.code === 200 && response.data) {
+                // 根据"记住我"选择存储位置
+                const storage = formData.value.rememberMe ? localStorage : sessionStorage;
+                
                 // 保存token
                 if (response.data.token) {
-                    localStorage.setItem('token', response.data.token);
+                    storage.setItem('token', response.data.token);
                 }
                 
                 // 保存用户信息
@@ -259,16 +262,7 @@ const handleSubmit = async () => {
                     username: response.data.username,
                     userType: response.data.userType
                 };
-                localStorage.setItem('userInfo', JSON.stringify(userInfo));
-                
-                // 如果选择记住我，保存账号
-                if (formData.value.rememberMe) {
-                    localStorage.setItem('rememberMe', 'true');
-                    localStorage.setItem('userAccount', formData.value.account);
-                } else {
-                    localStorage.removeItem('rememberMe');
-                    localStorage.removeItem('userAccount');
-                }
+                storage.setItem('userInfo', JSON.stringify(userInfo));
                 
                 alertMessage.value = response.message || '登录成功！';
                 

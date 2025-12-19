@@ -27,8 +27,8 @@ import './index.css';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import ArticleTimeline from '../../components/ArticleTimeline.vue';
-import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted } from 'vue';
+import api from '../../api/index.js';
 
 // 文章列表数据
 const articles = ref([]);
@@ -41,88 +41,50 @@ const fetchArticles = async () => {
     error.value = null;
     
     try {
-        // 替换成实际的API地址
-        const url = import.meta.env.VITE_API_BASE_URL;
-        const response = await fetch(`${url}/api/articles`);
-        //page,page_size,category,tag,q 搜索共用
+        // 使用axios调用API获取文章列表
+        const result = await api.get('/api/articles');
         
-        if (!response.ok) {
-            //throw new Error('获取文章列表失败');
-            console.error('获取文章列表失败，状态码:', response.status);
-        }
-        
-        const result = await response.json();
+        console.log('API返回的原始数据:', result);
         
         if (result.code === 200 && result.data && result.data.articles) {
+            console.log('文章列表原始数据:', result.data.articles);
+            
             // 转换API数据格式为组件所需格式
             articles.value = result.data.articles.map(article => {
-                // 获取最新时间（updated_at 和 created_at 中的最大值）
-                const updatedTime = new Date(article.updated_at).getTime();
-                const createdTime = new Date(article.created_at).getTime();
-                const latestTime = Math.max(updatedTime, createdTime);
+                // 获取时间戳，如果解析失败则为 NaN
+                const updatedTime = new Date(article.updatedAt || 0).getTime();
+                const createdTime = new Date(article.createdAt || 0).getTime();
+                
+                // 使用最新时间，容错处理 NaN 的情况
+                const latestTime = !isNaN(updatedTime) && !isNaN(createdTime) 
+                    ? Math.max(updatedTime, createdTime)
+                    : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
                 
                 return {
                     id: article.id,
                     cover_image: article.cover_image || '',
                     title: article.title,
-                    description: article.summary, // API用的是summary字段
-                    published_at: new Date(latestTime).toISOString(), // 使用最新时间作为显示时间
-                    created_at: article.created_at,
-                    tags: article.categories || [] // API用的是categories字段
+                    description: article.summary || '',
+                    published_at: new Date(latestTime).toISOString(),
+                    created_at: article.createdAt,
+                    tags: article.category ? (typeof article.category === 'string' ? JSON.parse(article.category) : article.category) : []
                 };
             }).sort((a, b) => {
-                // 按照 published_at（即最新时间）降序排序
-                return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
+                // 按照最新时间降序排序，容错处理无效时间
+                const timeA = new Date(b.published_at).getTime();
+                const timeB = new Date(a.published_at).getTime();
+                return (!isNaN(timeA) && !isNaN(timeB)) ? (timeA - timeB) : 0;
             });
             
-            console.log('API文章列表:', articles.value.map(a => ({ 
-                id: a.id, 
-                title: a.title.substring(0, 10),
-                published_at: a.published_at 
-            })));
+            console.log('转换后的文章数据:', articles.value);
+            console.log('获取文章列表成功，共', articles.value.length, '篇文章');
         } else {
-            throw new Error(`数据格式错误 ${result.message}`);
+            throw new Error(result.message || '数据格式错误');
         }
     } catch (err) {
         console.error('获取文章列表失败:', err);
-        error.value = err.message;
-        
-        // 使用默认示例数据
-        articles.value = [
-            { 
-                id: '1', 
-                cover_image: "https://loremflickr.com/400/400?lock=3477017495111718",
-                title: 'Vue 3 组合式 API 最佳实践', 
-                description: 'Vue 3 带来了全新的组合式 API，让我们的代码更加灵活和可维护。本文将介绍一些最佳实践...',
-                published_at: '2024-06-01',
-                created_at: '2026-06-01',
-                tags: ['Vue', '前端']
-            },
-            { 
-                id: '2', 
-                cover_image: "https://loremflickr.com/400/400?lock=3477017495111714",
-                title: 'TypeScript 进阶技巧', 
-                description: 'TypeScript 为 JavaScript 带来了强类型系统，本文将深入探讨一些高级技巧和模式...',
-                published_at: '2024-05-15',
-                created_at: '2024-05-15',
-                tags: ['TypeScript', '进阶']
-            },
-            { 
-                id: '0', 
-                cover_image: "https://loremflickr.com/400/400?lock=3477017495111720", 
-                title: 'CSS Grid 布局完全指南', 
-                description: 'CSS Grid 是现代网页布局的强大工具，通过本指南你将掌握 Grid 布局的所有核心概念...',
-                published_at: '2223-12-20',
-                created_at: '2332-12-20',
-                tags: ['CSS', '布局']
-            }
-        ];
-        
-        console.log('测试数据文章列表:', articles.value.map(a => ({ 
-            id: a.id, 
-            title: a.title.substring(0, 10),
-            published_at: a.published_at 
-        })));
+        error.value = err.message || '获取文章列表失败，请稍后重试';
+        articles.value = [];
     } finally {
         loading.value = false;
     }
