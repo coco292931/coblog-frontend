@@ -8,6 +8,7 @@ import Turn from '../Turn.vue'
 import Article from '../pages/article/index.vue'
 import Search from '../pages/search/index.vue'
 import RaL from '../pages/regAlogin/index.vue'
+import Me from '../pages/me/index.vue'
 
 
 // // 简单的关于页面组件
@@ -17,7 +18,7 @@ import RaL from '../pages/regAlogin/index.vue'
 
 const routes = [
   {
-    path: '/',
+    path: '/HelloWorld',
     name: 'HelloWorld',
     component: HelloWorld
   },
@@ -52,7 +53,7 @@ const routes = [
     component: Turn
   },
   {
-    path: '/home',
+    path: '/',
     name: 'Home',
     component: Home
   },
@@ -80,6 +81,24 @@ const routes = [
     path: '/register',
     name: 'register',
     component: RaL
+  },
+  {
+    path: '/me',
+    name: 'Me',
+    component: Me
+  },
+  {
+    path: '/rss',
+    name: 'RSS',
+    beforeEnter: (to, from, next) => {
+      // 从 localStorage 获取 rss_token（不是登录的 token）
+      const rssToken = localStorage.getItem('rss_token') || '';
+      // 获取 API 基础地址
+      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      // 直接跳转到后端 RSS 接口（使用 replace 避免产生历史记录）
+      window.location.replace(`${baseURL}/api/rss?token=${encodeURIComponent(rssToken)}`);
+      // 不调用 next()，阻止路由继续
+    }
   }
 ]
 
