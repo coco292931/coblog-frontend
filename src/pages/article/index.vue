@@ -130,7 +130,7 @@ const scrollToSection = (id) => {
 const fetchArticleData = async () => {
     try {
         // 调用后端API获取文章数据
-        const url = "http://127.0.0.1:4523/m1/7489100-7224477-6663459";
+        const url = import.meta.env.VITE_API_BASE_URL;
         const response = await fetch(`${url}/api/articles/${articleId.value}`);
 
         if (!response.ok) {

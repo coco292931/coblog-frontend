@@ -83,7 +83,7 @@ const isArticleListMode = computed(() => route.path === '/articles');
 const searchQuery = ref('');
 const hasSearched = ref(false);
 const isLoading = ref(false);
-const useRealAPI = ref(true); // 是否使用真实API
+const useRealAPI = ref(false); // 是否使用真实API
 
 // 模拟文章数据（实际使用时应该从API获取）
 const articles = ref([
@@ -122,11 +122,11 @@ const fetchArticles = async (query = '') => {
     console.log('fetchArticles called, useRealAPI:', useRealAPI.value, 'query:', query);
     if (!useRealAPI.value) {
         // 使用模拟数据
-        return;
+        //return;
     }
     console.log('fetchArticles called, useingRealAPI!');
     try {
-        const url = 'http://127.0.0.1:4523/m1/7489100-7224477-6663459';
+        const url = 'http://api.coco-29.wang';
         // 如果有搜索关键词，添加到URL参数
         const apiUrl = query ? `${url}/api/articles?q=${encodeURIComponent(query)}` : `${url}/api/articles`;
         const response = await fetch(apiUrl);
