@@ -132,7 +132,7 @@ onUnmounted(() => {
 <style scoped>
 .footer-container {
     width: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4ab1ed 0%, #5248b0 100%);
     color: white;
     padding: 30px 20px;
     margin-top: 60px;

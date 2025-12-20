@@ -314,7 +314,7 @@ onUnmounted(() => {
 
 .timeline-line {
     width: 4px;
-    background: linear-gradient(to bottom, #667eea, #764ba2);
+    background: linear-gradient(to bottom, #46a3d8 , #5248b0 );
     border-radius: 2px;
     position: absolute;
     top: 0;
@@ -327,7 +327,7 @@ onUnmounted(() => {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #4ab1ed , #5248b0 );
     color: white;
     padding: 5px 16px;
     /* 8px * 0.66 ≈ 5px, 16px * 0.66 ≈ 11px */
@@ -360,7 +360,7 @@ onUnmounted(() => {
 .timeline-end {
     position: absolute;
     left: 50%;
-    transform: translate(-50%,0);
+    transform: translate(-50%,-10%);
     z-index: 2;
 }
 

@@ -103,8 +103,9 @@ const handleSearch = () => {
 
 .brand-link {
     text-decoration: none;
-    color: rgb(32, 236, 236);
+    color: hwb(180 13% 7%);
     transition: color 0.3s;
+    text-shadow: 2px 2px 5px rgba(87, 87, 87, 0.25);
 }
 
 .brand-link:hover {
