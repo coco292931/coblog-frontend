@@ -17,7 +17,6 @@
         
         <!-- 使用新的时间线组件 -->
         <ArticleTimeline :articles="articles" />
-
         <Footer />
     </div>
 </template>

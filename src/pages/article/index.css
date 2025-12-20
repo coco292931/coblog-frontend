@@ -1,6 +1,8 @@
 /* 页面主容器，撑满视口高度，背景渐变 */
 .big-container {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background: linear-gradient(to bottom, #f5f7fa 0%, #ffffff 100%);
 
     /* 文章封面区域 */
@@ -108,6 +110,9 @@
         gap: 2rem;
         position: relative;
         z-index: 1;
+        width: 93%;
+        max-width: 1110px;
+        flex: 1 0 auto;
 
         /* 主内容区 */
         .main-content {
@@ -335,6 +340,7 @@
 
         .body-content {
             flex-direction: column;
+            width: 730px;
 
             .side-content {
                 width: 100%;
@@ -370,6 +376,7 @@
 
         .body-content {
             padding: 0 10px 40px;
+            width: 91%;
 
             .main-content .article-content {
                 padding: 30px 20px;
