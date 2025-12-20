@@ -15,23 +15,26 @@
                     </div>
                     <div class = 'guid-item'>
                         <a class="guid-link" :class="{ active: isActive('/about/friends') }" @click.prevent="handleLinkClick($event, '/about/friends')">我们的好朋友</a>
-                        
                     </div>
                 </div>
             </div>
             <div class="right-container">
                 <div class='us' v-if="tab =='/about/us'">
-                    <h1 class='title'>关于我们</h1>
-                    <p class="main-content">———————————————————<br>
+                    <h2 class='title'>关于我们</h2>
                     coco&koko<br>
-                    不知道写什么，<br>
-                    但总不能不写<br><br></p>
+                    暂时没想好。。。<br><br>
 
-                    <h1 class='title'>本港湾</h1>
+                    <h2 class='title'>关于本港湾</h2>
                     <p>温暖舒适的港湾，适合睡觉</p>
+                    <p>可以去访问第一篇帖子获取更详细介绍哦<br />
+                    >>><a href="/articles/4">click here</a><<<</p>
                 </div>
                 <div class='us' v-if="tab =='/about/friends'">
-                    <h1 class='title'>好朋友们</h1>
+                    <h2 class='title'>好朋友们</h2>
+                    <p class="main-content">
+                    这里是我们的一些好朋友的链接<br><br /></p>
+                    <p>诶？怎么是空的<br>
+                    <del>其实是前端没写(</del>  会补上的</p>
                 </div>
             </div>
         </div>
