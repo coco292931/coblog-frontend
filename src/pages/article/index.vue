@@ -31,6 +31,19 @@
 
         <!-- 文章主体内容区域 -->
         <div class="body-content">
+            <!-- 侧边栏目录 -->
+            <div class="side-content">
+                <div class="toc-container">
+                    <div class="toc-title">📑 目录</div>
+                    <div class="toc-list">
+                        <div v-for="(item, index) in tocList" :key="index"
+                            :class="['toc-item', `toc-level-${item.level}`]" @click="scrollToSection(item.id)">
+                            {{ item.text }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="main-content">
                 <!-- 文章内容 -->
                 <div class="article-content">
@@ -67,18 +80,7 @@
                 </div>
             </div>
 
-            <!-- 侧边栏目录 -->
-            <div class="side-content">
-                <div class="toc-container">
-                    <div class="toc-title">📑 目录</div>
-                    <div class="toc-list">
-                        <div v-for="(item, index) in tocList" :key="index"
-                            :class="['toc-item', `toc-level-${item.level}`]" @click="scrollToSection(item.id)">
-                            {{ item.text }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
         <Footer />
     </div>
