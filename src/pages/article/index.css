@@ -132,7 +132,7 @@
                 .main-body {
                     h2 {
                         font-size: 2rem;
-                        margin: 30px 0 20px;
+                        margin: 10px 0 20px;
                         padding-bottom: 10px;
                         border-bottom: 2px solid #e0e0e0;
                         color: #2c3e50;
@@ -206,15 +206,15 @@
             /* 文章统计信息 */
             .article-info {
                 background: white;
-                padding: 30px;
+                padding: 20px 20px 4px;
                 border-radius: 15px;
                 box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-                margin-bottom: 30px;
+                margin-bottom: 0px;
 
                 .info-title {
                     font-size: 1.3rem;
                     font-weight: bold;
-                    margin-bottom: 20px;
+                    margin-bottom: 10px;
                     color: #2c3e50;
                 }
 
@@ -237,6 +237,7 @@
                             font-weight: bold;
                             color: #3498db;
                             font-size: 1.1rem;
+                            transform: translate(0,0.1rem);
                         }
                     }
                 }
@@ -246,14 +247,15 @@
             .license-info {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
-                padding: 25px;
+                margin-top: 20px;
+                padding: 15px;
                 border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                /* box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1); */
 
                 .license-title {
-                    font-size: 1.2rem;
+                    font-size: 1.1rem;
                     font-weight: bold;
-                    margin-bottom: 15px;
+                    margin-bottom: 5px;
                 }
 
                 .license-text {
