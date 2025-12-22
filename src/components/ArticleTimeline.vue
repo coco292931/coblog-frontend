@@ -281,6 +281,7 @@ onUnmounted(() => {
     font-size: 18px;
     color: #999;
     text-align: center;
+    transform: translate(1.5rem,0);
 }
 
 /* ========== 时间线样式 ========== */

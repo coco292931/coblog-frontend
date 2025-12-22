@@ -50,7 +50,7 @@
                 .search-button {
                     background: linear-gradient(135deg, #667eea, #764ba2);
                     border: none;
-                    border-radius: 50%;
+                    border-radius: 40%;
                     width: 40px;
                     height: 40px;
                     display: flex;
@@ -59,6 +59,7 @@
                     cursor: pointer;
                     transition: all 0.3s ease;
                     color: white;
+                    transform: translate(5px);
 
                     &:hover {
                         transform: scale(1.1);

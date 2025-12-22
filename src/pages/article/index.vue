@@ -2,7 +2,7 @@
     <div class="big-container">
         <NavBar />
         <!-- 文章封面区域 -->
-        <div class="main-photo">
+        <div class="main-photo-article">
             <img src="../../assets/image/homepage-background.jpg" class='cover_image' />
             <div class="summary">
                 <div class="title">{{ articleTitle }}</div>
@@ -148,15 +148,13 @@ const fetchArticleData = async () => {
             createTime.value = data.createdAt ? formatDateTime(data.createdAt) : '';
             updateTime.value = data.updatedAt ? formatDateTime(data.updatedAt) : '';
 
-            // 处理分类（解析JSON字符串后转为显示字符串）
-            const categoryData = data.category ? (typeof data.category === 'string' ? JSON.parse(data.category) : data.category) : [];
-            categories.value = Array.isArray(categoryData) && categoryData.length > 0 ? categoryData.join(', ') : '未分类';
+            // 处理分类（数组转字符串）
+            categories.value = Array.isArray(data.categories) ? data.categories.join(', ') : (data.categories || '未分类');
 
             // 处理标签（数组转字符串）
             tags.value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
 
-            // 计算阅读时间（基于文章内容）
-            readingTime.value = calculateReadingTime(data.content || '', data.words);
+            readingTime.value = data.readingTime || data.reading_time || 0;
             author.value = data.author || 'coco_29';
 
             // 更新统计信息
@@ -185,10 +183,10 @@ const fetchArticleData = async () => {
 
 // 格式化日期时间
 const formatDateTime = (dateString) => {
-    if (!dateString) return '暂无';
+    if (!dateString) return '';
     const date = new Date(dateString);
     // 检查是否为无效日期（如 0001-01-01）
-    if (date.getFullYear() < 2000) return '暂无';
+    if (date.getFullYear() < 2000) return '';
     return date.toLocaleString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
@@ -196,33 +194,6 @@ const formatDateTime = (dateString) => {
         hour: '2-digit',
         minute: '2-digit'
     });
-};
-
-// 计算阅读时间
-const calculateReadingTime = (htmlContent, wordCount) => {
-    // 如果后端已提供字数，优先使用
-    let words = wordCount;
-    
-    // 如果后端没有提供字数，从 HTML 内容中提取
-    if (!words && htmlContent) {
-        // 创建临时 DOM 元素来提取纯文本
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlContent;
-        const textContent = tempDiv.textContent || tempDiv.innerText || '';
-        
-        // 统计字数（中文字符 + 英文单词）
-        const chineseChars = textContent.match(/[\u4e00-\u9fa5]/g) || [];
-        const englishWords = textContent.match(/[a-zA-Z]+/g) || [];
-        
-        words = chineseChars.length + englishWords.length;
-    }
-    
-    // 按照中文阅读速度 400 字/分钟计算
-    const readingSpeed = 400;
-    const minutes = Math.ceil(words / readingSpeed);
-    
-    // 至少显示 1 分钟
-    return minutes > 0 ? minutes : 1;
 };
 
 // 从 HTML 内容中提取标题生成目录

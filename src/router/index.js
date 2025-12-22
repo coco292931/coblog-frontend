@@ -96,7 +96,7 @@ const routes = [
       // 获取 API 基础地址，默认使用当前页面的 origin
       const baseURL = import.meta.env.VITE_API_BASE_URL || window.location.origin;
       // 直接跳转到后端 RSS 接口（使用 replace 避免产生历史记录）
-      window.location.replace(`${baseURL}/api/rss?token=${encodeURIComponent(rssToken)}`);
+      window.location.replace(`http://api.coco-29.wang/api/rss?token=${encodeURIComponent(rssToken)}`);
       // 不调用 next()，阻止路由继续
     }
   }

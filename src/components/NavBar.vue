@@ -103,7 +103,7 @@ const handleSearch = () => {
 
 .brand-link {
     text-decoration: none;
-    color: hwb(180 13% 7%);
+    color: hwb(180 31% 16%);
     transition: color 0.3s;
     text-shadow: 2px 2px 5px rgba(87, 87, 87, 0.25);
 }
