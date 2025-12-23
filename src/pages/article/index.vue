@@ -1,6 +1,6 @@
 <template>
     <div class="big-container">
-        <NavBar style="position: fixed;"/>
+        <NavBar style="position: fixed;" />
         <!-- 文章封面区域 -->
         <div class="main-photo-article">
             <img src="../../assets/image/homepage-background.jpg" class='cover_image' />
@@ -13,7 +13,7 @@
                     <span class="time-label" style="margin-left: 20px;">修改：</span>{{ updateTime }}
                 </div>
                 <div class="info">
-                    <div class="categories">
+                    <div class="categories" @click="handleCategoryClick" style="cursor: pointer;">
                         <IconDocumentation class="info-icon" style="transform: scale(1);transform: translateY(2px);" />
                         <span>{{ categories }}</span>
                     </div>
@@ -43,7 +43,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="main-content">
                 <!-- 文章内容 -->
                 <div class="article-content">
@@ -79,8 +79,6 @@
                     </div>
                 </div>
             </div>
-
-            
         </div>
         <Footer />
     </div>
@@ -134,7 +132,7 @@ const fetchArticleData = async () => {
     try {
         // 使用axios调用API获取文章数据
         const result = await api.get(`/api/articles/${articleId.value}`);
-        
+
         console.log('API返回的原始数据:', result);
 
         if (result.code === 200 && result.data) {
@@ -145,18 +143,34 @@ const fetchArticleData = async () => {
             articleTitle.value = data.title || '无标题';
             articleSubtitle.value = data.subtitle || '';
             articleHtml.value = data.content || '<p>暂无内容</p>';
-            
+
             // 处理时间字段
             createTime.value = data.createdAt ? formatDateTime(data.createdAt) : '';
             updateTime.value = data.updatedAt ? formatDateTime(data.updatedAt) : '';
 
             // 处理分类（数组转字符串）
-            categories.value = Array.isArray(data.categories) ? data.categories.join(', ') : (data.categories || '未分类');
+            categories.value = (() => {
+                try {
+                    const parsedCategory = JSON.parse(data.category);
+                    return Array.isArray(parsedCategory) ? parsedCategory.join(', ') : (parsedCategory || '未分类');
+                } catch (error) {
+                    console.error('解析分类数据失败:', error);
+                    return '未分类';
+                }
+            })();
 
             // 处理标签（数组转字符串）
             tags.value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '');
 
-            readingTime.value = data.readingTime || data.reading_time || 0;
+            if (data.words < 200) {
+                readingTime.value = 1;
+                //console.log('文章字数少于200字，阅读时间设为1分钟');
+            } else {
+                readingTime.value = Math.ceil(data.words / 200);
+            }
+
+
+            //readingTime.value = data.readingTime || data.reading_time || 0;
             author.value = data.author || 'coco_29';
 
             // 更新统计信息
@@ -221,6 +235,13 @@ const generateTocFromHtml = () => {
 
         tocList.value = toc;
     }, 100);
+};
+
+// 跳转函数
+const handleCategoryClick = () => {
+    // 在这里添加跳转逻辑
+    console.log('跳转到分类页面');
+    window.location.href = `/search?q=${categories.value}`;
 };
 
 onMounted(() => {

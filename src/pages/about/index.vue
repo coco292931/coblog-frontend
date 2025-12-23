@@ -20,14 +20,15 @@
             </div>
             <div class="right-container">
                 <div class='us' v-if="tab =='/about/us'">
-                    <h2 class='title'>关于我们</h2>
+                    <h2 class='title' style="outline:none;">关于我们</h2>
                     coco&koko<br>
-                    暂时没想好。。。<br><br>
+                    暂时没想好。。。<br>
+                    蛋柿，想我了可以戳👉<a href="mailto:coco@coco-29.wang" style="text-decoration: none;color:rgb(31, 239, 239);font-family: bold;font-weight: bold;font-size: 0.95rem;">这里</a>与我联系 :P <br>
 
                     <h2 class='title'>关于本港湾</h2>
                     <p>温暖舒适的港湾，适合睡觉</p>
                     <p>可以去访问第一篇帖子获取更详细介绍哦<br />
-                    >>><a href="/articles/4">click here</a><<<</p>
+                    >>><a href="/articles/4"style="text-decoration: none;color:rgb(31, 239, 239);font-family: bold;font-weight: bold;font-size: 0.95rem"> click here </a><<<</p>
                 </div>
                 <div class='us' v-if="tab =='/about/friends'">
                     <h2 class='title'>好朋友们</h2>

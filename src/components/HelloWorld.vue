@@ -30,6 +30,7 @@ const allRoutes = computed(() => {
       <a href="https://vuejs.org/" target="_blank" rel="noopener">Vue 3</a>.
     </h3>
     <h2>导航站 - 所有页面</h2>
+    <h4>你似乎发现了一个不得了的地方</h4>
     <div class="nav-container">
       <div
         v-for="route in allRoutes"
@@ -56,10 +57,17 @@ h1 {
 }
 
 h2 {
-  font-size: 1.8rem;
-  margin: 20px 0;
+  font-size: 2rem;
+  margin: 5px 0;
   text-align: center;
   color: #42b883;
+}
+
+h4 {
+  margin: 20px 0;
+  text-align: center;
+  color: #49c3e4;
+  text-shadow: #6cf6df 1px 1px 3px;
 }
 
 .greetings h1 {
