@@ -1,6 +1,6 @@
 <template>
     <div class="big-container">
-        <NavBar />
+        <NavBar style="position: fixed;"/>
         <!-- 文章封面区域 -->
         <div class="main-photo-article">
             <img src="../../assets/image/homepage-background.jpg" class='cover_image' />

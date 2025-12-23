@@ -21,9 +21,9 @@
                 <router-link :to="`/articles`" class="navbar-item" id="search-article-list" @click="closeMenu">
                     <IconHistory class="nav-icon" />足迹
                 </router-link>
-                <router-link :to="`/rss`" class="navbar-item" id="search-rss" @click="closeMenu">
+                <a :href="`/rss`" class="navbar-item" id="search-rss" @click="closeMenu">
                     <IconRSS class="nav-icon" style="transform: scale(0.9)" />RSS
-                </router-link>
+                </a>
                 <router-link to="/about" class="navbar-item" @click="closeMenu">
                     <IconInfo class="nav-icon" style="transform: scale(1.6)" />关于
                 </router-link>

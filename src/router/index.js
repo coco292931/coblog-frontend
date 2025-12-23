@@ -104,6 +104,12 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
-})
+});
+
+// 添加全局前置守卫，监听路由变化并滚动到页面顶部
+router.beforeEach((to, from, next) => {
+  window.scrollTo(0, 0);
+  next();
+});
 
 export default router
