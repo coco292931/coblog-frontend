@@ -90,14 +90,13 @@ const routes = [
   {
     path: '/rss',
     name: 'RSS',
-    beforeEnter: (to, from, next) => {
+    beforeEnter: () => {
       // 从 localStorage 获取 rss_token（不是登录的 token）
       const rssToken = localStorage.getItem('rss_token') || '';
       // 获取 API 基础地址，默认使用当前页面的 origin
       const baseURL = import.meta.env.VITE_API_BASE_URL || window.location.origin;
       // 直接跳转到后端 RSS 接口（使用 replace 避免产生历史记录）
-      window.location.replace(`http://api.coco-29.wang/api/rss?token=${encodeURIComponent(rssToken)}`);
-      // 不调用 next()，阻止路由继续
+      window.location.href = `${baseURL}/api/rss?token=${encodeURIComponent(rssToken)}`;
     }
   }
 ]
