@@ -57,6 +57,7 @@ import { useRouter } from 'vue-router';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import api from '../../api/index.js';
+import { getToken, removeToken, setRSSToken, isAuthenticated } from '../../utils/auth.js';
 import './index.css';
 
 const router = useRouter();
@@ -76,13 +77,13 @@ const fetchUserInfo = async () => {
         if (result.code === 200 && result.data) {
             userInfo.value = result.data;
             
-            // 保存 RSS token 到 localStorage（后端返回的是驼峰命名 rssToken）
+            // 使用封装的工具保存 RSS token
             const rssToken = result.data.rssToken || result.data.rss_token;
             console.log('rssToken from API:', rssToken);
             
             if (rssToken) {
-                localStorage.setItem('rss_token', rssToken);
-                console.log('RSS Token 已保存到 localStorage:', rssToken);
+                setRSSToken(rssToken);
+                console.log('RSS Token 已保存:', rssToken);
             } else {
                 console.warn('API未返回 rssToken');
             }
@@ -106,11 +107,9 @@ const fetchUserInfo = async () => {
 
 // 退出登录
 const handleLogout = () => {
-    // 删除本地 token 和其他用户信息（localStorage 和 sessionStorage 都清除）
-    localStorage.removeItem('token');
-    localStorage.removeItem('rss_token');
+    // 使用封装的工具清除所有token和用户信息
+    removeToken();
     localStorage.removeItem('userInfo');
-    sessionStorage.removeItem('token');
     sessionStorage.removeItem('userInfo');
     
     console.log('已退出登录');
@@ -121,17 +120,10 @@ const handleLogout = () => {
 
 // 页面加载时检查 token 并获取用户信息
 onMounted(() => {
-    // 先检查 localStorage，再检查 sessionStorage
-    const tokenFromLocal = localStorage.getItem('token');
-    const tokenFromSession = sessionStorage.getItem('token');
-    const token = tokenFromLocal || tokenFromSession;
-    
     console.log('=== /me 页面加载 ===');
-    console.log('localStorage.token:', tokenFromLocal);
-    console.log('sessionStorage.token:', tokenFromSession);
-    console.log('使用的token:', token);
     
-    if (!token) {
+    // 使用封装的工具检查登录状态
+    if (!isAuthenticated()) {
         // 没有 token，直接跳转到登录页面
         console.log('未登录（无token），跳转到登录页面');
         loading.value = false;
@@ -139,8 +131,10 @@ onMounted(() => {
         return;
     }
     
+    const token = getToken();
+    console.log('已登录，使用的token:', token);
+    
     // 有 token，获取用户信息
-    console.log('已登录，开始获取用户信息');
     fetchUserInfo();
 });
 </script>

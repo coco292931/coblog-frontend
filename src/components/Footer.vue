@@ -21,6 +21,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import api from '../api/index.js';
 
 // 网站统计数据
 const siteStats = ref({
@@ -91,12 +92,10 @@ const uptimeDisplay = computed(() => {
 // 获取网站统计数据
 const fetchSiteStats = async () => {
     try {
-        // 这里替换成实际的API地址
-        const url = import.meta.env.VITE_API_BASE_URL;
-        const response = await fetch(`${url}/api/site/info`);
-        if (response.ok) {
-            const data = await response.json();
-            siteStats.value = data.data;
+        // 使用封装的api实例
+        const result = await api.get('/site/info');
+        if (result && result.data) {
+            siteStats.value = result.data;
         }
     } catch (error) {
         console.error('获取网站统计数据失败:', error);

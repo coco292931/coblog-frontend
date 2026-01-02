@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getRSSToken } from '../utils/auth'
 import HelloWorld from '../components/HelloWorld.vue'
 import TheWelcome from '../components/TheWelcome.vue'
 import About from '../pages/about/index.vue'
@@ -9,12 +10,6 @@ import Article from '../pages/article/index.vue'
 import Search from '../pages/search/index.vue'
 import RaL from '../pages/regAlogin/index.vue'
 import Me from '../pages/me/index.vue'
-
-
-// // 简单的关于页面组件
-// const About = { 
-//   template: '<div style="padding: 20px; text-align: center;"><h1>关于我们</h1><p>这是关于我们页面</p></div>' 
-// }
 
 const routes = [
   {
@@ -91,8 +86,8 @@ const routes = [
     path: '/rss',
     name: 'RSS',
     beforeEnter: () => {
-      // 从 localStorage 获取 rss_token（不是登录的 token）
-      const rssToken = localStorage.getItem('rss_token') || '';
+      // 使用封装的工具获取RSS Token
+      const rssToken = getRSSToken() || '';
       // 获取 API 基础地址，默认使用当前页面的 origin
       const baseURL = import.meta.env.VITE_API_BASE_URL || window.location.origin;
       // 直接跳转到后端 RSS 接口（使用 replace 避免产生历史记录）

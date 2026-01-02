@@ -35,19 +35,11 @@ export const register = (data) => {
 };
 
 /**
- * 用户登出
- * @returns {Promise}
- */
-export const logout = () => {
-  return api.post('/logout');
-};
-
-/**
  * 获取用户信息
  * @returns {Promise}
  */
 export const getUserInfo = () => {
-  return api.get('/user/info');
+  return api.get('/user/info/');
 };
 
 /**

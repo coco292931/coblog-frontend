@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getToken, removeToken } from '../utils/auth';
 
 // 创建axios实例
 const api = axios.create({
@@ -12,8 +13,8 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    // 从localStorage或sessionStorage获取token
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    // 使用封装的Token工具获取token
+    const token = getToken();
     if (token) {
       config.headers.Authorization = token;
     }
@@ -37,8 +38,11 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           // 未授权，清除token并跳转到登录页
-          localStorage.removeItem('token');
-          window.location.href = '/login';
+          removeToken();
+          // 使用动态导入router避免循环依赖
+          import('../router').then(({ default: router }) => {
+            router.push('/login');
+          });
           break;
         case 403:
           console.error('没有权限访问');
