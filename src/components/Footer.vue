@@ -93,7 +93,7 @@ const uptimeDisplay = computed(() => {
 const fetchSiteStats = async () => {
     try {
         // 使用封装的api实例
-        const result = await api.get('/site/info');
+        const result = await api.get('api/site/info');
         if (result && result.data) {
             siteStats.value = result.data;
         }
