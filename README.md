@@ -39,16 +39,50 @@
 
 ## ✨ 核心特性
 
-### 1. Axios拦截器机制
+### 1. Token管理工具封装
+
+#### 统一的认证状态管理
+创建 `utils/auth.js` 工具模块，封装所有Token操作，避免直接操作localStorage/sessionStorage。
+
+**核心API：**
+```javascript
+import { getToken, setToken, removeToken, isAuthenticated } from '@/utils/auth';
+
+// 获取Token（自动查找localStorage和sessionStorage）
+const token = getToken();
+
+// 设置Token（支持"记住我"功能）
+setToken(token, rememberMe);  // rememberMe=true 永久存储
+
+// 清除Token（登出）
+removeToken();  // 同时清除localStorage和sessionStorage
+
+// 检查登录状态
+if (isAuthenticated()) { /* 已登录 */ }
+
+// RSS Token管理
+getRSSToken();
+setRSSToken(rssToken);
+```
+
+**技术优势：**
+- **单一职责**：Token逻辑集中在一个文件，易于维护
+- **智能存储**：根据"记住我"选项自动选择存储方式
+- **防止泄漏**：避免在多处硬编码localStorage.getItem('token')
+- **易于测试**：工具函数可独立单元测试
+
+### 2. Axios拦截器机制
 
 #### 统一请求/响应处理
 通过Axios拦截器实现**全局Token注入**和**统一错误处理**。
 
 **请求拦截器（Request Interceptor）：**
 ```javascript
-// 自动从localStorage获取Token并注入Authorization头
+import { getToken } from '../utils/auth';
+
+// 使用封装的工具自动注入Token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = getToken();  // 自动查找localStorage和sessionStorage
   if (token) {
     config.headers.Authorization = token;
   }
@@ -58,13 +92,17 @@ api.interceptors.request.use((config) => {
 
 **响应拦截器（Response Interceptor）：**
 ```javascript
+import { removeToken } from '../utils/auth';
+
 api.interceptors.response.use(
   (response) => response.data,  // 自动解包响应数据
   (error) => {
-    // 统一错误处理
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';  // 自动跳转登录
+      removeToken();  // 使用工具清除Token
+      // 动态导入router避免循环依赖
+      import('../router').then(({ default: router }) => {
+        router.push('/login');  // SPA路由跳转，不刷新页面
+      });
     }
     // 403/404/500等状态码统一处理...
   }
@@ -73,34 +111,35 @@ api.interceptors.response.use(
 
 **技术优势：**
 - **DRY原则**：所有API调用无需手动添加Token
-- **集中管理**：Token过期自动登出，统一跳转逻辑
+- **优雅跳转**：使用router.push而非window.location，保持SPA体验
+- **避免循环依赖**：动态导入router模块
 - **错误隔离**：业务代码无需关心HTTP状态码处理
 
-### 2. 环境配置系统
+### 3. 环境配置系统
 
 #### 多环境API地址管理
-支持通过环境变量动态配置API服务器地址。
+提供完整的环境变量配置文件，支持开发/生产环境自动切换。
 
-**配置方式：**
-```javascript
-// .env.development
+**配置文件：**
+```bash
+# .env.development（开发环境）
 VITE_API_BASE_URL=http://localhost:8080/api
+VITE_APP_ENV=development
 
-// .env.production
+# .env.production（生产环境）
 VITE_API_BASE_URL=https://api.coco-29.wang/api
+VITE_APP_ENV=production
+
+# .env.example（配置示例，不提交到Git）
 ```
 
 **使用方式：**
 ```javascript
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+// 自动根据 npm run dev/build 选择对应环境
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 ```
 
-**优势：**
-- 开发环境自动连接本地后端
-- 生产环境自动切换线上API
-- 无需修改代码即可切换环境
-
-### 3. Vue Router路由守卫
+**优势4. Vue Router路由守卫
 
 #### 智能路由处理
 实现了**动态路由参数**和**路由级别的业务逻辑**。
@@ -116,10 +155,12 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
 **路由守卫应用（RSS跳转）：**
 ```javascript
+import { getRSSToken } from '../utils/auth';
+
 {
   path: '/rss',
   beforeEnter: () => {
-    const rssToken = localStorage.getItem('rss_token') || '';
+    const rssToken = getRSSToken() || '';  // 使用工具获取Token
     const baseURL = import.meta.env.VITE_API_BASE_URL;
     window.location.href = `${baseURL}/api/rss?token=${rssToken}`;
   }
@@ -130,21 +171,40 @@ const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 - 支持URL参数传递（如文章ID）
 - 路由级别的权限控制
 - 外部资源智能跳转（RSS订阅）
+- 使用统一的Token管理工具
 
-### 4. 本地存储策略
+**特点：**
+- 支持URL参数传递（如文章ID）
+- 路由5. 本地存储策略
 
 #### Token双存储机制
-支持**临时会话（sessionStorage）**和**持久化登录（localStorage）**。
+通过 `utils/auth.js` 工具实现智能存储，支持**临时会话**和**持久化登录**。
 
 ```javascript
-// 记住我：永久存储
-if (rememberMe) {
-  localStorage.setItem('token', token);
-} else {
-  sessionStorage.setItem('token', token);  // 关闭浏览器后失效
-}
+import { setToken } from '@/utils/auth';
+
+// 登录成功后
+setToken(token, rememberMe);  
+// rememberMe=true  → localStorage（永久）
+// rememberMe=false → sessionStorage（关闭浏览器失效）
 ```
 
+**内部实现：**
+```javascript
+export const setToken = (token, rememberMe = false) => {
+  if (rememberMe) {
+    localStorage.setItem('token', token);
+    sessionStorage.removeItem('token');  // 避免重复存储
+  } else {
+    sessionStorage.setItem('token', token);
+    localStorage.removeItem('token');
+  }
+};
+```
+
+**应用场景：**
+- 登录Token（用户认证，支持"记住我"）
+- RSS Token（个性化订阅，永久存储
 **应用场景：**
 - 登录Token（用户认证）
 - RSS Token（个性化订阅）
@@ -188,6 +248,8 @@ src/
 ├── api/                 # API接口层
 │   ├── index.js         # Axios实例 + 拦截器
 │   └── auth.js          # 认证相关API
+├── utils/               # 工具函数
+│   └── auth.js          # Token管理工具（统一存储操作）
 ├── pages/               # 页面级组件
 │   ├── home/            # 首页
 │   ├── article/         # 文章详情
@@ -305,7 +367,10 @@ coblog-frontend/
 │   ├── router/          # Vue Router配置
 │   │   └── index.js     # 路由表
 │   │
-│   ├── api/             # API接口封装
+│   ├── api/             # API接口封装）
+│   │
+│   ├── utils/           # 工具函数
+│   │   └── auth.js      # Token管理工具
 │   │   ├── index.js     # Axios实例配置
 │   │   └── auth.js      # 认证API（login/register/logout）
 │   │
@@ -325,9 +390,13 @@ coblog-frontend/
 │   │
 │   └── assets/          # 样式和图片
 │       ├── main.css     # 全局样式
-│       ├── base.css     # 基础样式
-│       └── image/       # 图片资源
+├── 资料/                # 项目文档
+│   ├── blog.xmind       # 脑图设计
+│   └── blogAPI-v1.yaml  # API文档（OpenAPI格式）
 │
+├── .env.development     # 开发环境配置
+├── .env.production      # 生产环境配置
+└── .env.example         # 环境变量配置示例
 └── 资料/                # 项目文档
     ├── blog.xmind       # 脑图设计
     └── blogAPI-v1.yaml  # API文档（OpenAPI格式）
