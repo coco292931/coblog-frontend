@@ -196,6 +196,13 @@ watch(() => route.query.q, (newQuery) => {
     }
 });
 
+// 监听路由变化，确保在切换到文章列表模式时重新加载数据
+watch(() => route.path, (newPath) => {
+    if (newPath === '/articles') {
+        loadAllArticles();
+    }
+});
+
 // 页面加载时初始化
 onMounted(() => {
     if (isArticleListMode.value) {
