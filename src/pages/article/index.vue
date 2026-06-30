@@ -13,9 +13,13 @@
                     <span class="time-label" style="margin-left: 20px;">修改：</span>{{ updateTime }}
                 </div>
                 <div class="info">
-                    <div class="categories" @click="handleCategoryClick" style="cursor: pointer;">
+                    <div class="categories">
                         <IconDocumentation class="info-icon" style="transform: scale(1);transform: translateY(2px);" />
-                        <span>{{ categories }}</span>
+                        <span v-if="categories.length">
+                            <span v-for="(cat, index) in categories" :key="cat" class="category-chip"
+                                @click="goToCategory(cat)">{{ cat }}</span>
+                        </span>
+                        <span v-else>未分类</span>
                     </div>
                     <!--<div class="tags">
                         <span class="info-icon">🏷️</span>
@@ -86,7 +90,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
@@ -95,6 +99,7 @@ import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
 
 const route = useRoute();
+const router = useRouter();
 const articleId = ref(route.params.article_id);
 
 // 文章基本信息
@@ -102,7 +107,7 @@ const articleTitle = ref('加载中...');
 const articleSubtitle = ref('');
 const createTime = ref('');
 const updateTime = ref('');
-const categories = ref('');
+const categories = ref([]);
 const tags = ref('');
 const readingTime = ref(0);
 const author = ref('coco_29');
@@ -148,14 +153,16 @@ const fetchArticleData = async () => {
             createTime.value = data.createdAt ? formatDateTime(data.createdAt) : '';
             updateTime.value = data.updatedAt ? formatDateTime(data.updatedAt) : '';
 
-            // 处理分类（数组转字符串）
+            // 处理分类（解析为数组，供独立 chip 展示与跳转）
             categories.value = (() => {
+                if (!data.category) return [];
                 try {
-                    const parsedCategory = JSON.parse(data.category);
-                    return Array.isArray(parsedCategory) ? parsedCategory.join(', ') : (parsedCategory || '未分类');
-                } catch (error) {
-                    console.error('解析分类数据失败:', error);
-                    return '未分类';
+                    const parsed = JSON.parse(data.category);
+                    if (Array.isArray(parsed)) return parsed;
+                    return parsed ? [String(parsed)] : [];
+                } catch {
+                    // 非 JSON 时按逗号分割（兼容老数据）
+                    return data.category.split(/[,，]/).map(s => s.trim()).filter(Boolean);
                 }
             })();
 
@@ -237,11 +244,11 @@ const generateTocFromHtml = () => {
     }, 100);
 };
 
-// 跳转函数
-const handleCategoryClick = () => {
-    // 在这里添加跳转逻辑
-    console.log('跳转到分类页面');
-    window.location.href = `/search?q=${categories.value}`;
+// 点击分类：跳转到文章列表并按该分类筛选
+const goToCategory = (category) => {
+    if (category) {
+        router.push({ path: '/articles', query: { category } });
+    }
 };
 
 onMounted(() => {

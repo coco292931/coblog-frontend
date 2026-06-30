@@ -10,6 +10,7 @@ import Article from '../pages/article/index.vue'
 import Search from '../pages/search/index.vue'
 import RaL from '../pages/regAlogin/index.vue'
 import Me from '../pages/me/index.vue'
+import Write from '../pages/write/index.vue'
 
 const routes = [
   {
@@ -81,6 +82,11 @@ const routes = [
     path: '/me',
     name: 'Me',
     component: Me
+  },
+  {
+    path: '/write',
+    name: 'Write',
+    component: Write
   },
   {
     path: '/rss',

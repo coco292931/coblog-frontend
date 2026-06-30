@@ -44,9 +44,10 @@
                         <div class="up-date">
                             {{ formatDate(article.published_at || article.created_at) }}
                         </div>
-                        <div class="tags" v-if="article.tags && article.tags.length">
-                            <span v-for="tag in article.tags" :key="tag" class="tag">
-                                {{ tag }}
+                        <div class="tags" v-if="article.categories && article.categories.length">
+                            <span v-for="cat in article.categories" :key="cat" class="tag"
+                                @click.stop="goToCategory(cat)">
+                                {{ cat }}
                             </span>
                         </div>
                     </div>
@@ -237,10 +238,23 @@ const goToArticle = (id) => {
     }
 };
 
+// 点击标签/分类跳转到文章列表按分类筛选
+const goToCategory = (category) => {
+    if (category) {
+        router.push({ path: '/articles', query: { category } });
+    }
+};
+
 // 监听文章数据变化
 watch(() => props.articles, () => {
+    // 数据变化时清空旧的 DOM 引用，避免基于过期 ref 计算位置
+    articleRefs.value = [];
+    dotRefs.value = [];
     initYearMarkers();
-    updateDotPositions();
+    // 等 DOM 用新数据重新渲染后再计算位置
+    nextTick(() => {
+        updateDotPositions();
+    });
 }, { deep: true });
 
 onMounted(() => {
@@ -279,7 +293,7 @@ onUnmounted(() => {
 .timeline-container.empty-state::before {
     content: '没有更多了…';
     font-size: 18px;
-    color: #999;
+    color: var(--color-text-muted);
     text-align: center;
     transform: translate(1.5rem,0);
 }
@@ -298,7 +312,7 @@ onUnmounted(() => {
     font-size: 16px;
     /* 18px * 0.66 ≈ 12px */
     font-weight: bold;
-    color: #444;
+    color: var(--color-text-heading);
     margin-bottom: 5px;
     text-align: center;
     z-index: 2;
@@ -350,7 +364,7 @@ onUnmounted(() => {
     width: 16px;
     height: 16px;
     background-color: #888;
-    border: 3px solid white;
+    border: 3px solid var(--color-background);
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
@@ -380,14 +394,14 @@ onUnmounted(() => {
 .article {
     width: 100%;
     max-width: 90vw;
-    border: 1px solid gray;
+    border: 1px solid var(--color-border);
     padding: 5px;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     border-radius: 15px;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background: var(--color-card-bg);
+    box-shadow: 0 2px 8px var(--color-shadow-soft);
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -417,14 +431,14 @@ onUnmounted(() => {
     font-size: 17px;
     /* 25px * 0.66 ≈ 17px */
     font-weight: bold;
-    color: #333;
+    color: var(--color-text-heading);
     line-height: 1.4;
 }
 
 .intro {
     font-size: 13px;
     /* 20px * 0.66 ≈ 13px */
-    color: #666;
+    color: var(--color-text-secondary);
     line-height: 1.6;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -441,7 +455,7 @@ onUnmounted(() => {
     /* 15px * 0.66 ≈ 10px */
     font-size: 11px;
     /* 17px * 0.66 ≈ 11px */
-    color: #999;
+    color: var(--color-text-muted);
     margin-top: auto;
 }
 
@@ -452,14 +466,21 @@ onUnmounted(() => {
 }
 
 .tag {
-    background: #f0f0f0;
+    background: var(--color-background-mute);
     padding: 3px 7px;
     /* 4px * 0.66 ≈ 3px, 10px * 0.66 ≈ 7px */
     border-radius: 8px;
     /* 12px * 0.66 ≈ 8px */
     font-size: 8px;
     /* 12px * 0.66 ≈ 8px */
-    color: #666;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag:hover {
+    background: #667eea;
+    color: white;
 }
 
 /* ========== 响应式设计 ========== */
