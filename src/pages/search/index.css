@@ -21,8 +21,8 @@
             .search-bar {
                 display: flex;
                 align-items: center;
-                background: white;
-                border: 2px solid #e0e0e0;
+                background: var(--color-card-bg);
+                border: 2px solid var(--color-divider);
                 border-radius: 25px;
                 padding: 8px 15px;
                 transition: all 0.3s ease;
@@ -40,10 +40,10 @@
                     font-size: 16px;
                     padding: 8px 12px;
                     background: transparent;
-                    color: #333;
+                    color: var(--color-text);
 
                     &::placeholder {
-                        color: #999;
+                        color: var(--color-text-muted);
                     }
                 }
 
@@ -66,12 +66,110 @@
                         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
                     }
                 }
+
+                .filter-toggle {
+                    background: transparent;
+                    border: none;
+                    width: 38px;
+                    height: 38px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    color: var(--color-text-muted);
+                    border-radius: 50%;
+                    transition: all 0.2s ease;
+
+                    &:hover {
+                        background: var(--color-page-bg);
+                        color: #667eea;
+                    }
+
+                    &.active {
+                        color: #667eea;
+                    }
+                }
+            }
+
+            /* ========== 可折叠筛选面板 ========== */
+            .filter-panel {
+                margin-top: 14px;
+                padding: 18px;
+                background: var(--color-card-soft);
+                border: 1px solid var(--color-divider);
+                border-radius: 14px;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-end;
+                gap: 16px;
+
+                .filter-field {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    flex: 1 1 180px;
+
+                    label {
+                        font-size: 13px;
+                        color: var(--color-text-secondary);
+                        font-weight: bold;
+                    }
+
+                    input {
+                        border: 1px solid var(--color-divider);
+                        border-radius: 10px;
+                        padding: 8px 12px;
+                        font-size: 14px;
+                        outline: none;
+                        background: var(--color-card-bg);
+                        color: var(--color-text);
+                        transition: border-color 0.2s ease;
+
+                        &:focus {
+                            border-color: #667eea;
+                        }
+                    }
+                }
+
+                .filter-actions {
+                    display: flex;
+                    gap: 10px;
+
+                    button {
+                        border: none;
+                        border-radius: 20px;
+                        padding: 8px 18px;
+                        font-size: 14px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+
+                    .filter-apply {
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+
+                        &:hover {
+                            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                        }
+                    }
+
+                    .filter-reset {
+                        background: transparent;
+                        border: 1px solid #c7cbff;
+                        color: #667eea;
+
+                        &:hover {
+                            background: #667eea;
+                            color: white;
+                        }
+                    }
+                }
             }
 
             .search-hint {
                 margin-top: 10px;
                 font-size: 14px;
-                color: #999;
+                color: var(--color-text-muted);
                 text-align: center;
             }
         }
@@ -80,11 +178,16 @@
         .search-stats {
             margin-bottom: 20px;
             font-size: 16px;
-            color: #666;
+            color: var(--color-text-secondary);
 
             strong {
                 color: #667eea;
                 font-weight: bold;
+            }
+
+            .active-filter-text {
+                font-size: 14px;
+                color: var(--color-text-muted);
             }
         }
 
@@ -110,6 +213,27 @@
             margin-top: 20px;
         }
 
+        /* ========== 触底加载更多状态 ========== */
+        .load-more-status {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 0;
+            min-height: 40px;
+
+            .loading-spinner.small {
+                width: 28px;
+                height: 28px;
+                border-width: 3px;
+            }
+
+            .no-more-text {
+                font-size: 14px;
+                color: var(--color-text-muted);
+                letter-spacing: 1px;
+            }
+        }
+
         /* ========== 空状态和初始状态 ========== */
         .empty-state,
         .initial-state {
@@ -124,14 +248,14 @@
         .empty-message,
         .initial-message {
             font-size: 18px;
-            color: #666;
+            color: var(--color-text-secondary);
             margin: 20px 0 10px;
             font-weight: bold;
         }
 
         .empty-hint {
             font-size: 14px;
-            color: #999;
+            color: var(--color-text-muted);
             margin: 0;
         }
 
@@ -163,4 +287,24 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* 筛选面板展开/收起动画 */
+.filter-slide-enter-active,
+.filter-slide-leave-active {
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.filter-slide-enter-from,
+.filter-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+    max-height: 0;
+}
+
+.filter-slide-enter-to,
+.filter-slide-leave-from {
+    opacity: 1;
+    max-height: 300px;
 }
