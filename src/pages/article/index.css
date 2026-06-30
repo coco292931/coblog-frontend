@@ -3,7 +3,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(to bottom, #f5f7fa 0%, #ffffff 100%);
+    background: var(--color-page-gradient);
 
     /* 文章封面区域 */
     .main-photo-article {
@@ -91,6 +91,19 @@
                     gap: 8px;
                 }
 
+                .category-chip {
+                    cursor: pointer;
+                    padding: 1px 10px;
+                    margin-right: 6px;
+                    border-radius: 8px;
+                    background: rgba(255, 255, 255, 0.2);
+                    transition: all 0.2s ease;
+                }
+
+                .category-chip:hover {
+                    background: rgba(255, 255, 255, 0.4);
+                }
+
                 .info-icon {
                     width: 20px;
                     height: 20px;
@@ -122,13 +135,13 @@
 
             /* 文章内容 */
             .article-content {
-                background: white;
+                background: var(--color-card-bg);
                 padding:1rem;
                 border-radius: 20px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 10px 40px var(--color-shadow);
                 line-height: 1.8;
                 font-size: 1.05rem;
-                color: #333;
+                color: var(--color-text);
                 margin-bottom: 20px;
 
                 .main-body {
@@ -136,14 +149,14 @@
                         font-size: 2rem;
                         margin: 10px 0 20px;
                         padding-bottom: 10px;
-                        border-bottom: 2px solid #e0e0e0;
-                        color: #2c3e50;
+                        border-bottom: 2px solid var(--color-divider);
+                        color: var(--color-text-heading);
                     }
 
                     h3 {
                         font-size: 1.5rem;
                         margin: 30px 0 15px;
-                        color: #34495e;
+                        color: var(--color-text-subheading);
                     }
 
                     p {
@@ -162,7 +175,7 @@
                     }
 
                     code {
-                        background: #f4f4f4;
+                        background: var(--color-code-inline-bg);
                         padding: 2px 8px;
                         border-radius: 4px;
                         font-family: 'Consolas', 'Monaco', monospace;
@@ -185,12 +198,12 @@
                     }
 
                     blockquote {
-                        border-left: 4px solid #3498db;
+                        border-left: 4px solid var(--color-accent);
                         padding-left: 20px;
                         margin: 20px 0;
-                        color: #555;
+                        color: var(--color-text-secondary);
                         font-style: italic;
-                        background: #f9f9f9;
+                        background: var(--color-card-soft);
                         padding: 15px 20px;
                         border-radius: 4px;
                     }
@@ -200,24 +213,64 @@
                         height: auto;
                         border-radius: 8px;
                         margin: 20px 0;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                        box-shadow: 0 4px 12px var(--color-shadow);
+                    }
+
+                    /* GFM 表格 */
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin: 20px 0;
+                        font-size: 0.95rem;
+                    }
+
+                    th,
+                    td {
+                        border: 1px solid var(--color-divider);
+                        padding: 10px 14px;
+                        text-align: left;
+                    }
+
+                    th {
+                        background: var(--color-card-soft);
+                        font-weight: bold;
+                        color: var(--color-text-heading);
+                    }
+
+                    tr:nth-child(even) td {
+                        background: var(--color-card-soft);
+                    }
+
+                    /* GFM 任务列表 */
+                    li input[type="checkbox"] {
+                        margin-right: 8px;
+                    }
+
+                    ul:has(> li > input[type="checkbox"]) {
+                        list-style: none;
+                        padding-left: 10px;
+                    }
+
+                    /* 删除线 */
+                    del {
+                        color: var(--color-text-muted);
                     }
                 }
             }
 
             /* 文章统计信息 */
             .article-info {
-                background: white;
+                background: var(--color-card-bg);
                 padding: 20px 20px 4px;
                 border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 5px 20px var(--color-shadow-soft);
                 margin-bottom: 0px;
 
                 .info-title {
                     font-size: 1.3rem;
                     font-weight: bold;
                     margin-bottom: 10px;
-                    color: #2c3e50;
+                    color: var(--color-text-heading);
                 }
 
                 .info-items {
@@ -232,12 +285,12 @@
                         font-size: 1rem;
 
                         .info-label {
-                            color: #666;
+                            color: var(--color-text-secondary);
                         }
 
                         .info-value {
                             font-weight: bold;
-                            color: #3498db;
+                            color: var(--color-accent);
                             font-size: 1.1rem;
                             transform: translate(0,0.1rem);
                         }
@@ -274,10 +327,10 @@
             flex-shrink: 0;
 
             .toc-container {
-                background: white;
+                background: var(--color-card-bg);
                 padding: 25px;
                 border-radius: 15px;
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 5px 20px var(--color-shadow-soft);
                 position: sticky;
                 top: 100px;
 
@@ -285,21 +338,21 @@
                     font-size: 1.2rem;
                     font-weight: bold;
                     margin-bottom: 20px;
-                    color: #2c3e50;
+                    color: var(--color-text-heading);
                     padding-bottom: 10px;
-                    border-bottom: 2px solid #e0e0e0;
+                    border-bottom: 2px solid var(--color-divider);
                 }
 
                 .toc-list {
                     .toc-item {
                         padding: 8px 0;
                         cursor: pointer;
-                        color: #555;
+                        color: var(--color-text-secondary);
                         transition: all 0.3s ease;
                         font-size: 0.95rem;
 
                         &:hover {
-                            color: #3498db;
+                            color: var(--color-accent);
                             padding-left: 10px;
                         }
 

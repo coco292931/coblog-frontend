@@ -18,7 +18,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f0;
+    background-color: var(--color-page-bg);
     /*border :3px solid red;*/
     flex-direction: column;
     position: relative;
@@ -90,6 +90,34 @@
         transform: translateX(-50%) translateY(-15px);
         opacity: 0.4;
     }
+}
+
+.load-more-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 0 40px;
+    min-height: 40px;
+}
+
+.load-more-status .loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--color-page-bg);
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.load-more-status .no-more-text {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    letter-spacing: 1px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* 响应式：小屏幕适配 */

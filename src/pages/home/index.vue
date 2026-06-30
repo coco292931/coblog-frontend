@@ -17,6 +17,13 @@
         
         <!-- 使用新的时间线组件 -->
         <ArticleTimeline :articles="articles" />
+
+        <!-- 触底加载状态 -->
+        <div class="load-more-status">
+            <div v-if="isLoadingMore" class="loading-spinner"></div>
+            <span v-else-if="!hasMore && articles.length > 0" class="no-more-text">— 没有更多了 —</span>
+        </div>
+
         <Footer />
     </div>
 </template>
@@ -26,74 +33,102 @@ import './index.css';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import ArticleTimeline from '../../components/ArticleTimeline.vue';
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../../api/index.js';
 
+const PAGE_SIZE = 10;
 
-// 文章列表数据
 const articles = ref([]);
-const loading = ref(false);
-const error = ref(null);
+const total = ref(0);
+const page = ref(1);
+const isLoading = ref(false);
+const isLoadingMore = ref(false);
 
-// 获取文章列表
-const fetchArticles = async () => {
-    loading.value = true;
-    error.value = null;
-    
+const hasMore = computed(() => articles.value.length < total.value);
+
+const parseCategories = (raw) => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
     try {
-        // 使用axios调用API获取文章列表
-        const result = await api.get('/api/articles');
-        
-        console.log('API返回的原始数据:', result);
-        
-        if (result.code === 200 && result.data && result.data.articles) {
-            console.log('文章列表原始数据:', result.data.articles);
-            
-            // 转换API数据格式为组件所需格式
-            articles.value = result.data.articles.map(article => {
-                // 获取时间戳，如果解析失败则为 NaN
-                const updatedTime = new Date(article.updatedAt || 0).getTime();
-                const createdTime = new Date(article.createdAt || 0).getTime();
-                
-                // 使用最新时间，容错处理 NaN 的情况
-                const latestTime = !isNaN(updatedTime) && !isNaN(createdTime) 
-                    ? Math.max(updatedTime, createdTime)
-                    : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
-                
-                return {
-                    id: article.id,
-                    cover_image: article.cover_image || '',
-                    title: article.title,
-                    description: article.summary || '',
-                    published_at: new Date(latestTime).toISOString(),
-                    created_at: article.createdAt,
-                    tags: article.category ? (typeof article.category === 'string' ? JSON.parse(article.category) : article.category) : []
-                };
-            }).sort((a, b) => {
-                // 按照最新时间降序排序，容错处理无效时间
-                const timeA = new Date(b.published_at).getTime();
-                const timeB = new Date(a.published_at).getTime();
-                return (!isNaN(timeA) && !isNaN(timeB)) ? (timeA - timeB) : 0;
-            });
-            
-            console.log('转换后的文章数据:', articles.value);
-            console.log('获取文章列表成功，共', articles.value.length, '篇文章');
-        } else {
-            throw new Error(result.message || '数据格式错误');
-        }
-    } catch (err) {
-        console.error('获取文章列表失败:', err);
-        error.value = err.message || '获取文章列表失败，请稍后重试';
-        articles.value = [];
-    } finally {
-        loading.value = false;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : (parsed ? [String(parsed)] : []);
+    } catch {
+        return raw.split(/[,，]/).map(s => s.trim()).filter(Boolean);
     }
 };
 
+const mapArticle = (article) => {
+    const updatedTime = new Date(article.updatedAt || 0).getTime();
+    const createdTime = new Date(article.createdAt || 0).getTime();
+    const latestTime = !isNaN(updatedTime) && !isNaN(createdTime)
+        ? Math.max(updatedTime, createdTime)
+        : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
+    return {
+        id: article.id,
+        cover_image: article.cover_image || '',
+        title: article.title,
+        description: article.summary || '',
+        published_at: new Date(latestTime).toISOString(),
+        created_at: article.createdAt,
+        categories: parseCategories(article.category),
+    };
+};
+
+const fetchArticles = async (append = false) => {
+    if (append) {
+        isLoadingMore.value = true;
+    } else {
+        isLoading.value = true;
+        page.value = 1;
+    }
+
+    try {
+        const result = await api.get(`/api/articles?page=${page.value}&pageSize=${PAGE_SIZE}`);
+
+        if (result.code === 200 && result.data && result.data.articles) {
+            total.value = result.data.total ?? result.data.articles.length;
+            const mapped = result.data.articles.map(mapArticle)
+                .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+            if (append) {
+                articles.value = [...articles.value, ...mapped]
+                    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+            } else {
+                articles.value = mapped;
+            }
+        }
+    } catch (err) {
+        console.error('获取文章列表失败:', err);
+        if (!append) articles.value = [];
+    } finally {
+        isLoading.value = false;
+        isLoadingMore.value = false;
+        nextTick(() => {
+            if (hasMore.value && document.documentElement.scrollHeight <= window.innerHeight) {
+                loadMore();
+            }
+        });
+    }
+};
+
+const loadMore = async () => {
+    if (isLoading.value || isLoadingMore.value || !hasMore.value) return;
+    page.value += 1;
+    await fetchArticles(true);
+};
+
+const handleScroll = () => {
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const threshold = document.documentElement.scrollHeight - 300;
+    if (scrollBottom >= threshold) loadMore();
+};
+
 onMounted(() => {
-    fetchArticles();
+    fetchArticles(false);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+});
 </script>
-
-<style scoped></style>
