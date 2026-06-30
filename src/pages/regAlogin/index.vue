@@ -5,6 +5,18 @@
             <div class="login-box">
                 <h2>{{ isLogin ? '登录' : '注册' }}</h2>
                 <form @submit.prevent="handleSubmit" class="form">
+                    <div class="form-group" v-if="!isLogin">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form__input" 
+                            placeholder=" " 
+                            v-model="formData.username"
+                            required
+                        />
+                        <label for="username" class="form__label">用户名</label>
+                    </div>
+                    
                     <div class="form-group">
                         <input 
                             type="email" 
@@ -15,18 +27,6 @@
                             required
                         />
                         <label for="account" class="form__label">邮箱</label>
-                    </div>
-
-                    <div class="form-group" v-if="!isLogin">
-                        <input 
-                            type="text" 
-                            id="username" 
-                            class="form__input" 
-                            placeholder=" "
-                            v-model="formData.username"
-                            required
-                        />
-                        <label for="username" class="form__label">用户名</label>
                     </div>
 
                     <div class="form-group password-group">
@@ -84,25 +84,9 @@
                         </button>
                     </div>
 
-                    <div class="form-group verification-group" v-if="!isLogin">
-                        <input 
-                            type="text" 
-                            id="verificationCode" 
-                            class="form__input" 
-                            placeholder=" "
-                            v-model="formData.verification_code"
-                            required
-                        />
-                        <label for="verificationCode" class="form__label">验证码</label>
-                        <button 
-                            type="button" 
-                            class="send-code-btn"
-                            @click="handleSendCode"
-                            :disabled="codeSending || countdown > 0"
-                        >
-                            {{ countdown > 0 ? `${countdown}秒后重试` : (codeSending ? '发送中...' : '发送验证码') }}
-                        </button>
-                    </div>
+                    <p v-if="!isLogin" class="register-tip">
+                        注册成功后请使用邮件中的链接完成账户激活。
+                    </p>
 
                     <div class="alert-box" v-if="alertMessage">
                         <span class="alert-icon">⚠️</span>
@@ -136,7 +120,8 @@ import { useRoute, useRouter } from 'vue-router';
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
-import { login, register, sendVerificationCode } from '../../api/auth';
+import { login, register } from '../../api/auth';
+import { setToken } from '../../utils/auth.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -150,7 +135,6 @@ const formData = ref({
     password: '',
     confirmPassword: '',
     username: '',
-    verification_code: '',
     rememberMe: false
 });
 
@@ -164,11 +148,6 @@ const showConfirmPassword = ref(false);
 // 提交状态
 const isSubmitting = ref(false);
 
-// 验证码相关
-const codeSending = ref(false);
-const countdown = ref(0);
-let countdownTimer = null;
-
 // 监听路由变化，清空表单
 watch(() => route.path, () => {
     formData.value = {
@@ -176,60 +155,10 @@ watch(() => route.path, () => {
         password: '',
         confirmPassword: '',
         username: '',
-        verification_code: '',
         rememberMe: false
     };
     alertMessage.value = '';
-    countdown.value = 0;
-    if (countdownTimer) {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-    }
 });
-
-// 发送验证码
-const handleSendCode = async () => {
-    if (!formData.value.account) {
-        alertMessage.value = '请先输入邮箱地址！';
-        return;
-    }
-
-    // 邮箱格式验证
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.value.account)) {
-        alertMessage.value = '请输入有效的邮箱地址！';
-        return;
-    }
-
-    try {
-        codeSending.value = true;
-        alertMessage.value = '';
-        
-        await sendVerificationCode(formData.value.account);
-        
-        // 开始倒计时
-        countdown.value = 60;
-        countdownTimer = setInterval(() => {
-            countdown.value--;
-            if (countdown.value <= 0) {
-                clearInterval(countdownTimer);
-                countdownTimer = null;
-            }
-        }, 1000);
-
-        alertMessage.value = '验证码已发送，请查收邮箱！';
-        setTimeout(() => {
-            if (alertMessage.value === '验证码已发送，请查收邮箱！') {
-                alertMessage.value = '';
-            }
-        }, 3000);
-    } catch (error) {
-        console.error('发送验证码失败:', error);
-        alertMessage.value = error.response?.data?.message || '发送验证码失败，请稍后重试！';
-    } finally {
-        codeSending.value = false;
-    }
-};
 
 // 处理表单提交
 const handleSubmit = async () => {
@@ -243,40 +172,39 @@ const handleSubmit = async () => {
             const response = await login({
                 account: formData.value.account,
                 password: formData.value.password,
-                rememberMe: ""
+                rememberMe: formData.value.rememberMe
             });
             
             // 检查响应code
             if (response.code === 200 && response.data) {
-                // 根据"记住我"选择存储位置
-                const storage = formData.value.rememberMe ? localStorage : sessionStorage;
-                
-                // 保存token
                 if (response.data.token) {
-                    storage.setItem('token', response.data.token);
+                    setToken(response.data.token, formData.value.rememberMe);
                 }
                 
                 // 保存用户信息
                 const userInfo = {
-                    userId: response.data.userId,
+                    userID: response.data.userID,
+                    userId: response.data.userID,
                     username: response.data.username,
-                    userType: response.data.userType
+                    userType: response.data.userType,
+                    activated: !!response.data.activated,
                 };
+                const storage = formData.value.rememberMe ? localStorage : sessionStorage;
                 storage.setItem('userInfo', JSON.stringify(userInfo));
                 
-                alertMessage.value = response.message || '登录成功！';
+                alertMessage.value = response.msg || '登录成功！';
                 
-                // 跳转到首页
+                // 跳转到我的页面，让前端通过 userinfo 获取真实激活状态
                 setTimeout(() => {
-                    router.push('/');
+					router.push('/me');
                 }, 1000);
             } else {
-                alertMessage.value = response.message || '登录失败！';
+                alertMessage.value = response.msg || '登录失败！';
             }
             
         } catch (error) {
             console.error('登录失败:', error);
-            alertMessage.value = error.response?.data?.message || '登录失败，请检查账号和密码！';
+            alertMessage.value = error.response?.data?.msg || '登录失败，请检查账号和密码！';
         } finally {
             isSubmitting.value = false;
         }
@@ -297,11 +225,6 @@ const handleSubmit = async () => {
             return;
         }
         
-        if (!formData.value.verification_code) {
-            alertMessage.value = '请输入验证码！';
-            return;
-        }
-        
         try {
             isSubmitting.value = true;
             
@@ -309,19 +232,21 @@ const handleSubmit = async () => {
                 account: formData.value.account,
                 password: formData.value.password,
                 username: formData.value.username,
-                verification_code: formData.value.verification_code
             });
-            
-            alertMessage.value = response.message || '注册成功！即将跳转到登录页...';
-            
-            // 跳转到登录页
-            setTimeout(() => {
-                router.push('/login');
-            }, 1500);
+
+            if (response.code === 200) {
+                alertMessage.value = response.msg || '注册成功，激活邮件已发送！';
+
+                setTimeout(() => {
+					router.push('/login');
+                }, 1200);
+            } else {
+                alertMessage.value = response.msg || '注册失败，请稍后重试！';
+            }
             
         } catch (error) {
             console.error('注册失败:', error);
-            alertMessage.value = error.response?.data?.message || '注册失败，请稍后重试！';
+            alertMessage.value = error.response?.data?.msg || '注册失败，请稍后重试！';
         } finally {
             isSubmitting.value = false;
         }

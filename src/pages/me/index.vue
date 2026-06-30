@@ -8,6 +8,27 @@
             </div>
 
             <div v-else-if="userInfo" class="user-info-card">
+                <div v-if="!userInfo.activated" class="activation-inline-card">
+                    <div class="activation-header">
+                        <div class="activation-badge">账户待激活</div>
+                        <h2>请先完成邮箱激活</h2>
+                        <p>未激活的账户的权限跟未登录时一致</p>
+                    </div>
+
+                    <div class="activation-actions">
+                        <button
+                            class="activation-button"
+                            @click="handleResendActivation"
+                            :disabled="resendLoading || resendCountdown > 0"
+                        >
+                            {{ resendCountdown > 0 ? `${resendCountdown}秒后可重发` : (resendLoading ? '发送中...' : '重新发送激活邮件') }}
+                        </button>
+                    </div>
+
+                    <p v-if="activationMessage" class="activation-message">{{ activationMessage }}</p>
+
+                </div>
+
                 <div class="user-header">
                     <div class="avatar">
                         <img v-if="userInfo.avatar" :src="userInfo.avatar" alt="头像" />
@@ -20,6 +41,13 @@
                     <div class="info-item">
                         <span class="info-label">📧 邮箱：</span>
                         <span class="info-value">{{ userInfo.email }}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">✅ 账户激活状态：</span>
+                        <span class="info-value" :class="userInfo.activated ? 'status-enabled' : 'status-disabled'">
+                            {{ userInfo.activated ? '已激活' : '未激活' }}
+                        </span>
                     </div>
                     
                     <div class="info-item">
@@ -46,23 +74,41 @@
                     <button class="logout-button" @click="handleLogout">退出登录</button>
                 </div>
             </div>
+
+            <div v-else class="activation-card">
+                <div class="activation-header">
+                    <div class="activation-badge">未登录</div>
+                    <h2>请先登录</h2>
+                    <p>需要先登录后，才能在“我的”页面查看账户激活状态。</p>
+                </div>
+
+                <div class="activation-actions">
+                    <router-link to="/login" class="activation-link-button">返回登录</router-link>
+                    <router-link to="/register" class="activation-link-button">去注册</router-link>
+                </div>
+            </div>
         </div>
         <Footer />
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import api from '../../api/index.js';
+import { resendActivationEmail } from '../../api/auth.js';
 import { getToken, removeToken, setRSSToken, isAuthenticated } from '../../utils/auth.js';
 import './index.css';
 
 const router = useRouter();
 const loading = ref(true);
 const userInfo = ref(null);
+const resendLoading = ref(false);
+const resendCountdown = ref(0);
+const activationMessage = ref('');
+let resendTimer = null;
 
 // 获取用户信息
 const fetchUserInfo = async () => {
@@ -87,11 +133,17 @@ const fetchUserInfo = async () => {
             } else {
                 console.warn('API未返回 rssToken');
             }
+
+            if (!result.data.activated) {
+                activationMessage.value = '当前账户尚未激活，权限组仍为 GUEST。完成邮箱激活后会自动升级为 USER。';
+            } else {
+                activationMessage.value = '';
+            }
             
             console.log('用户信息加载成功:', userInfo.value);
         } else {
             // 获取失败，跳转到登录页面
-            console.error('获取用户信息失败 - code不是200:', result.message || result.msg);
+            console.error('获取用户信息失败 - code不是200:', result.msg);
             console.error('完整响应:', result);
             router.push('/login');
         }
@@ -118,6 +170,52 @@ const handleLogout = () => {
     router.push('/login');
 };
 
+const startResendCountdown = () => {
+    resendCountdown.value = 60;
+    if (resendTimer) {
+        clearInterval(resendTimer);
+    }
+    resendTimer = setInterval(() => {
+        resendCountdown.value -= 1;
+        if (resendCountdown.value <= 0) {
+            clearInterval(resendTimer);
+            resendTimer = null;
+        }
+    }, 1000);
+};
+
+const handleResendActivation = async () => {
+    if (!userInfo.value?.email) {
+        activationMessage.value = '缺少待激活邮箱，请重新注册或登录。';
+        return;
+    }
+
+    try {
+        resendLoading.value = true;
+        const result = await resendActivationEmail(userInfo.value.email);
+
+        if (result.code === 200) {
+            activationMessage.value = result.msg || '激活邮件已发送。';
+            if (result.data?.alreadyActivated) {
+                userInfo.value = {
+                    ...userInfo.value,
+                    activated: true,
+                    permGroupID: 2,
+                };
+                return;
+            }
+            startResendCountdown();
+        } else {
+            activationMessage.value = result.msg || '重发失败，请稍后再试。';
+        }
+    } catch (error) {
+        console.error('重发激活邮件失败:', error);
+        activationMessage.value = error.response?.data?.msg || '重发失败，请稍后再试。';
+    } finally {
+        resendLoading.value = false;
+    }
+};
+
 // 页面加载时检查 token 并获取用户信息
 onMounted(() => {
     console.log('=== /me 页面加载 ===');
@@ -136,6 +234,13 @@ onMounted(() => {
     
     // 有 token，获取用户信息
     fetchUserInfo();
+});
+
+onBeforeUnmount(() => {
+    if (resendTimer) {
+        clearInterval(resendTimer);
+        resendTimer = null;
+    }
 });
 </script>
 

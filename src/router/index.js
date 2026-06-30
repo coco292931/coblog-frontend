@@ -11,6 +11,7 @@ import Search from '../pages/search/index.vue'
 import RaL from '../pages/regAlogin/index.vue'
 import Me from '../pages/me/index.vue'
 import Write from '../pages/write/index.vue'
+import Activate from '../pages/activate/index.vue'
 
 const routes = [
   {
@@ -82,6 +83,11 @@ const routes = [
     path: '/me',
     name: 'Me',
     component: Me
+  },
+  {
+    path: '/activate',
+    name: 'Activate',
+    component: Activate
   },
   {
     path: '/write',

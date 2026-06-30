@@ -227,6 +227,16 @@
     flex: 1;
 }
 
+.register-tip {
+    margin: -0.5rem 0 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    background: rgba(102, 126, 234, 0.12);
+    color: var(--color-text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
 /* 密码显示/隐藏按钮 */
 .password-group {
     position: relative;
@@ -255,92 +265,6 @@
 
 .toggle-password svg {
     display: block;
-}
-/* ��֤�������� */
-.verification-group {
-    position: relative;
-}
-
-.send-code-btn {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0.5rem 1rem;
-    white-space: nowrap;
-    z-index: 10;
-}
-
-.send-code-btn:hover:not(:disabled) {
-    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-    transform: translateY(-50%) scale(1.02);
-}
-
-.send-code-btn:active:not(:disabled) {
-    transform: translateY(-50%) scale(0.98);
-}
-
-.send-code-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.submit-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.submit-btn:disabled:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-/* ��֤�������� */
-.verification-group {
-    position: relative;
-}
-
-.send-code-btn {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 0.4rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0.5rem 1rem;
-    white-space: nowrap;
-    z-index: 10;
-}
-
-.send-code-btn:hover:not(:disabled) {
-    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-    transform: translateY(-50%) scale(1.02);
-}
-
-.send-code-btn:active:not(:disabled) {
-    transform: translateY(-50%) scale(0.98);
-}
-
-.send-code-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
 }
 
 .submit-btn:disabled {
