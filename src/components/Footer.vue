@@ -2,7 +2,7 @@
     <div class="footer-container">
         <div class="footer-content">
             <div class="copyright">
-                © 2025 coco_29. All Rights Reserved.
+                © 2025-2026 coco_29. All Rights Reserved.
             </div>
             <div class="stats">
                 <span class="stat-item">🖊️ 站点总字数 ≈ {{ formatNumber(siteStats.total_words) }}</span>
@@ -131,11 +131,13 @@ onUnmounted(() => {
 <style scoped>
 .footer-container {
     width: 100%;
-    background: linear-gradient(135deg, #4ab1ed 0%, #5248b0 100%);
-    color: white;
-    padding: 30px 20px;
+    background:
+        linear-gradient(180deg, rgba(31, 239, 239, 0.04) 0%, transparent 60%),
+        var(--color-background-soft);
+    color: var(--color-text-secondary);
+    padding: 32px 20px;
     margin-top: 60px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    border-top: 2px solid rgba(31, 239, 239, 0.5);
     box-sizing: border-box;
 }
 
@@ -151,7 +153,12 @@ onUnmounted(() => {
 .copyright {
     font-size: 14px;
     font-weight: 500;
-    opacity: 0.95;
+    color: var(--color-text);
+}
+
+.copyright::before {
+    content: "⚓ ";
+    color: rgb(31, 239, 239);
 }
 
 .stats {
@@ -160,7 +167,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 10px;
     font-size: 13px;
-    opacity: 0.9;
+    color: var(--color-text-secondary);
 }
 
 .stat-item {
@@ -169,21 +176,27 @@ onUnmounted(() => {
 }
 
 .separator {
-    opacity: 0.6;
+    color: rgba(31, 239, 239, 0.6);
     display: inline-flex;
     align-items: center;
 }
 
 .uptime {
     font-size: 13px;
-    opacity: 0.9;
+    color: var(--color-text-secondary);
     font-family: 'Courier New', monospace;
 }
 
 .powered {
     font-size: 12px;
-    opacity: 0.8;
+    color: var(--color-text-muted);
     font-style: italic;
+}
+
+.powered::after {
+    content: "♥";
+    color: rgb(31, 239, 239);
+    font-style: normal;
 }
 
 /* 响应式设计 */

@@ -21,6 +21,9 @@
                 <router-link :to="`/articles`" class="navbar-item" id="search-article-list" @click="closeMenu">
                     <IconHistory class="nav-icon" />足迹
                 </router-link>
+                <router-link v-if="loggedIn" to="/write" class="navbar-item" @click="closeMenu">
+                    <IconArticles class="nav-icon" />写作
+                </router-link>
                 <a :href="`/rss`" class="navbar-item" id="search-rss" @click="closeMenu">
                     <IconRSS class="nav-icon" style="transform: scale(0.9)" />RSS
                 </a>
@@ -30,6 +33,10 @@
                 <router-link to="/me" class="navbar-item" @click="closeMenu">
                     <IconUser class="nav-icon" style="transform: scale(1.8) translateY(0.5px)" />我的
                 </router-link>
+                <button class="navbar-item theme-toggle" @click="toggleTheme" :title="isDark ? '切换到亮色' : '切换到暗色'">
+                    <IconStyleMoon v-if="isDark" class="nav-icon" style="transform: scale(1.2)" />
+                    <IconStyleSun v-else class="nav-icon" style="transform: scale(1.5)" />
+                </button>
             </div>
 
             <div class="navbar-burger" @click="toggleMenu">
@@ -42,18 +49,32 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { isAuthenticated } from '../utils/auth.js';
+import { useTheme } from '../composables/useTheme.js';
 import IconSearch from './icons/IconSearch.vue';
 import IconArticles from './icons/IconArticles.vue';
 import IconHistory from './icons/IconHistory.vue';
 import IconRSS from './icons/IconRSS.vue';
 import IconInfo from './icons/IconInfo.vue';
 import IconUser from './icons/IconUser.vue';
+import IconStyleMoon from './icons/IconStyleMoon.vue';
+import IconStyleSun from './icons/IconStyleSun.vue';
 
 const router = useRouter();
+const route = useRoute();
 const isMenuOpen = ref(false);
 const searchQuery = ref('');
+const loggedIn = ref(isAuthenticated());
+
+// 路由变化时重新检测登录态（登录/登出后导航栏不会重建，需主动刷新）
+watch(() => route.fullPath, () => {
+    loggedIn.value = isAuthenticated();
+});
+
+const { theme, toggle: toggleTheme } = useTheme();
+const isDark = computed(() => theme.value === 'dark');
 
 const toggleMenu = () => {
     isMenuOpen.value = !isMenuOpen.value;
@@ -62,7 +83,7 @@ const toggleMenu = () => {
 const closeMenu = () => {
     isMenuOpen.value = false;
 };
-//搜索空值校验
+
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
         router.push(`/search?q=${searchQuery.value}`);
@@ -78,7 +99,7 @@ const handleSearch = () => {
     left: 0;
     right: 0;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: var(--color-background-glass);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
@@ -103,13 +124,27 @@ const handleSearch = () => {
 
 .brand-link {
     text-decoration: none;
-    color: hwb(180 31% 16%);
-    transition: color 0.3s;
-    text-shadow: 2px 2px 5px rgba(87, 87, 87, 0.25);
+    color: rgb(31, 239, 239);
+    font-weight: bold;
+    transition: color 0.3s, text-shadow 0.3s;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    letter-spacing: 0.5px;
 }
 
 .brand-link:hover {
     color: rgb(20, 180, 180);
+    text-shadow: 0 1px 6px rgba(31, 239, 239, 0.3);
+}
+
+/* 暗色模式：深底上用聚拢的青色辉光，避免亮色下那种浑浊光晕 */
+html[data-theme="dark"] .brand-link {
+    color: rgb(80, 245, 245);
+    text-shadow: 0 0 12px rgba(31, 239, 239, 0.55);
+}
+
+html[data-theme="dark"] .brand-link:hover {
+    color: rgb(120, 250, 250);
+    text-shadow: 0 0 18px rgba(31, 239, 239, 0.8);
 }
 
 .navbar-menu {
@@ -119,7 +154,7 @@ const handleSearch = () => {
 
 .navbar-item {
     text-decoration: none;
-    color: #333;
+    color: var(--color-text);
     font-size: 1rem;
     font-weight: 500;
     padding: 8px 8px;
@@ -189,7 +224,7 @@ const handleSearch = () => {
     display: block;
     width: 100%;
     height: 3px;
-    background-color: #333;
+    background-color: var(--color-text);
     border-radius: 2px;
     transition: all 0.3s;
 }
@@ -209,7 +244,7 @@ const handleSearch = () => {
     font-family: inherit;
     line-height: 1.2;
     transition: all 0.3s ease-out;
-    color: #333;
+    color: var(--color-text);
 }
 
 #search-input-text::placeholder {
@@ -235,9 +270,15 @@ color: rgba(124, 124, 124, 0.8);
 }
 
 #search-input-text:focus {
-    /*border: 1px solid rgb(31, 239, 239);*/
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--color-background-soft);
     transition: all 0.1s ease-in;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 8px;
 }
 
 
@@ -252,7 +293,7 @@ color: rgba(124, 124, 124, 0.8);
         top: 60px;
         left: 0;
         right: 0;
-        background-color: rgba(255, 255, 255, 0.98);
+        background-color: var(--color-background-overlay);
         flex-direction: column;
         gap: 0;
         padding: 20px;
@@ -287,7 +328,7 @@ color: rgba(124, 124, 124, 0.8);
     #search-icon {
         position: static !important;
         text-decoration: none;
-        color: #333;
+        color: var(--color-text);
         font-size: 1.5rem;
         font-weight: 500;
         padding: 12px 16px;
@@ -365,7 +406,15 @@ color: rgba(124, 124, 124, 0.8);
         display: none;
     }
 
+    .theme-toggle .nav-icon {
+        display: flex;
+    }
+
     .navbar-item {
+        color: rgb(30, 233, 233);
+    }
+
+    .theme-toggle {
         color: rgb(30, 233, 233);
     }
 }
