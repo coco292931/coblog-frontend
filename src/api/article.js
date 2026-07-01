@@ -28,6 +28,7 @@ export const uploadImage = (file) => {
   formData.append('file', file);
   return api.post('/api/upload/image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000, // 图片压缩可能耗时较长，单独放宽到 2 分钟
   });
 };
 
