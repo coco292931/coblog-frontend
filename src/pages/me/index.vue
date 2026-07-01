@@ -135,7 +135,7 @@ const fetchUserInfo = async () => {
             }
 
             if (!result.data.activated) {
-                activationMessage.value = '当前账户尚未激活，权限组仍为 GUEST。完成邮箱激活后会自动升级为 USER。';
+                activationMessage.value = '当前账户尚未激活，权限和访客一致。请完成激活以提升权限。';
             } else {
                 activationMessage.value = '';
             }
