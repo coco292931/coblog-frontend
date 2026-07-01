@@ -3,7 +3,7 @@ import { getToken, removeToken } from '../utils/auth';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
