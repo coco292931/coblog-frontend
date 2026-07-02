@@ -36,6 +36,14 @@ import ArticleTimeline from '../../components/ArticleTimeline.vue';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../../api/index.js';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+const resolveImageUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//.test(url)) return url;
+    return API_BASE.replace(/\/$/, '') + url;
+};
+
 const PAGE_SIZE = 10;
 
 const articles = ref([]);
@@ -65,7 +73,7 @@ const mapArticle = (article) => {
         : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
     return {
         id: article.id,
-        cover_image: article.cover_image || '',
+        cover_image: resolveImageUrl(article.cover_image || ''),
         title: article.title,
         description: article.summary || '',
         published_at: new Date(latestTime).toISOString(),

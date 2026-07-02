@@ -35,7 +35,7 @@
                 @click="goToArticle(article.id)">
                 <img v-if="article.cover_image" :src="article.cover_image" class="article-photo"
                     @error="handleImageError" @load="updateDotPositions" />
-                <img v-else src="../assets/image/article-placeholder.jpg" class="article-photo"
+                <img v-else :src="placeholderImg" class="article-photo"
                     @load="updateDotPositions" />
                 <div class="text">
                     <div class="title">{{ article.title }}</div>
@@ -60,6 +60,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import placeholderImg from '../assets/image/article-placeholder.jpg';
 
 // Props
 const props = defineProps({
@@ -228,7 +229,9 @@ const handleScroll = () => {
 
 // 图片加载错误处理
 const handleImageError = (e) => {
-    e.target.src = '../assets/image/article-placeholder.jpg';
+    if (e.target.src !== placeholderImg) {
+        e.target.src = placeholderImg;
+    }
 };
 
 // 处理文章跳转

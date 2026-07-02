@@ -3,7 +3,7 @@
         <NavBar style="position: fixed;" />
         <!-- 文章封面区域 -->
         <div class="main-photo-article">
-            <img src="../../assets/image/homepage-background.jpg" class='cover_image' />
+            <img :src="coverImage" class='cover_image' @error="onCoverError" />
             <div class="summary">
                 <div class="title">{{ articleTitle }}</div>
                 <div class="subtitle">{{ articleSubtitle }}</div>
@@ -97,6 +97,14 @@ import Footer from '../../components/Footer.vue';
 import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
+import fallbackCover from '../../assets/image/homepage-background.jpg';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const resolveImageUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//.test(url)) return url;
+    return API_BASE.replace(/\/$/, '') + url;
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -105,6 +113,7 @@ const articleId = ref(route.params.article_id);
 // 文章基本信息
 const articleTitle = ref('加载中...');
 const articleSubtitle = ref('');
+const coverImage = ref(fallbackCover);
 const createTime = ref('');
 const updateTime = ref('');
 const categories = ref([]);
@@ -147,6 +156,7 @@ const fetchArticleData = async () => {
             // 更新文章信息（使用驼峰命名）
             articleTitle.value = data.title || '无标题';
             articleSubtitle.value = data.subtitle || '';
+            coverImage.value = resolveImageUrl(data.cover_image || '') || fallbackCover;
             articleHtml.value = data.content || '<p>暂无内容</p>';
 
             // 处理时间字段
@@ -248,6 +258,12 @@ const generateTocFromHtml = () => {
 const goToCategory = (category) => {
     if (category) {
         router.push({ path: '/articles', query: { category } });
+    }
+};
+
+const onCoverError = (e) => {
+    if (e.target.src !== fallbackCover) {
+        e.target.src = fallbackCover;
     }
 };
 
