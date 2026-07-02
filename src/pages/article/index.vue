@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
@@ -100,10 +100,20 @@ import api from '../../api/index.js';
 import fallbackCover from '../../assets/image/homepage-background.jpg';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const SITE_HOST = 'coco-29.wang';
 const resolveImageUrl = (url) => {
     if (!url) return '';
     if (/^https?:\/\//.test(url)) return url;
     return API_BASE.replace(/\/$/, '') + url;
+};
+
+const isExternalLink = (href) => {
+    try {
+        const url = new URL(href, window.location.origin);
+        return url.protocol.startsWith('http') && url.hostname !== SITE_HOST && !url.hostname.endsWith(`.${SITE_HOST}`);
+    } catch {
+        return false;
+    }
 };
 
 const route = useRoute();
@@ -203,6 +213,8 @@ const fetchArticleData = async () => {
                 generateTocFromHtml();
             }
 
+            configureExternalLinks();
+
             console.log('文章数据加载成功');
         } else {
             throw new Error(result.msg || result.message || '数据格式错误');
@@ -212,6 +224,24 @@ const fetchArticleData = async () => {
         articleTitle.value = '加载失败';
         articleHtml.value = `<p style="color: red;">加载文章失败，请稍后重试。</p><p>错误信息：${error.message}</p>`;
     }
+};
+
+// 站外链接在新窗口打开，站内链接保持当前窗口跳转
+const configureExternalLinks = async () => {
+    await nextTick();
+
+    const articleContent = document.querySelector('.article-content');
+    if (!articleContent) return;
+
+    articleContent.querySelectorAll('a[href]').forEach((link) => {
+        if (isExternalLink(link.getAttribute('href'))) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+        } else {
+            link.removeAttribute('target');
+            link.removeAttribute('rel');
+        }
+    });
 };
 
 // 格式化日期时间
