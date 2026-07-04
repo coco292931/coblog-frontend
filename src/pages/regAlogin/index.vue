@@ -162,6 +162,10 @@ watch(() => route.path, () => {
 
 // 处理表单提交
 const handleSubmit = async () => {
+    if (isSubmitting.value) {
+        return;
+    }
+
     alertMessage.value = '';
     
     if (isLogin.value) {

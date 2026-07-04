@@ -185,6 +185,10 @@ const startResendCountdown = () => {
 };
 
 const handleResendActivation = async () => {
+    if (resendLoading.value || resendCountdown.value > 0) {
+        return;
+    }
+
     if (!userInfo.value?.email) {
         activationMessage.value = '缺少待激活邮箱，请重新注册或登录。';
         return;
