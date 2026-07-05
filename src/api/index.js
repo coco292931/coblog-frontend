@@ -37,7 +37,7 @@ api.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          // 未授权，清除token并跳转到登录页
+          // 未授权，清除登录/RSS token 并跳转到登录页
           removeToken();
           // 使用动态导入router避免循环依赖
           import('../router').then(({ default: router }) => {

@@ -21,6 +21,9 @@ export const getToken = () => {
  * @param {boolean} rememberMe - 是否持久化存储（记住我）
  */
 export const setToken = (token, rememberMe = false) => {
+  localStorage.removeItem(RSS_TOKEN_KEY);
+  sessionStorage.removeItem(RSS_TOKEN_KEY);
+
   if (rememberMe) {
     localStorage.setItem(TOKEN_KEY, token);
     sessionStorage.removeItem(TOKEN_KEY); // 避免重复存储
@@ -31,11 +34,13 @@ export const setToken = (token, rememberMe = false) => {
 };
 
 /**
- * 移除认证Token（登出）
+ * 移除认证Token（登出 / 登录失效）
  */
 export const removeToken = () => {
   localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(RSS_TOKEN_KEY);
+  sessionStorage.removeItem(RSS_TOKEN_KEY);
 };
 
 /**
@@ -67,4 +72,5 @@ export const setRSSToken = (token) => {
  */
 export const removeRSSToken = () => {
   localStorage.removeItem(RSS_TOKEN_KEY);
+  sessionStorage.removeItem(RSS_TOKEN_KEY);
 };
