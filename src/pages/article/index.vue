@@ -53,9 +53,9 @@
             </div>
 
             <div class="main-content">
-                <!-- 文章内容 -->
-                <div class="article-content">
-                    <div class="main-body" v-html="articleHtml">
+                <!-- 文章内容：与写作页预览共用 article-prose 排版 -->
+                <div class="article-content" @click="onContentClick" @error.capture="onContentError">
+                    <div class="main-body article-prose" v-html="articleHtml">
                     </div>
                     <!-- 版权信息 -->
                     <div class="license-info">
@@ -92,6 +92,10 @@
             </div>
         </div>
         <Footer />
+
+        <!-- 图片查看器：点击正文图片打开，支持缩放、查看原图与下载 -->
+        <ImageLightbox v-model:open="lightboxOpen" :src="lightboxSrc" :original="lightboxOriginal"
+            :alt="lightboxAlt" />
     </div>
 </template>
 
@@ -105,6 +109,7 @@ import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
 import { isAuthenticated } from '../../utils/auth.js';
+import ImageLightbox from '../../components/ImageLightbox.vue';
 import fallbackCover from '../../assets/image/homepage-background.jpg';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -156,6 +161,12 @@ const comments = ref(0);
 
 // 目录数据
 const tocList = ref([]);
+
+// 图片查看器状态
+const lightboxOpen = ref(false);
+const lightboxSrc = ref('');
+const lightboxOriginal = ref('');
+const lightboxAlt = ref('');
 
 // 滚动到指定章节
 const scrollToSection = (id) => {
@@ -228,6 +239,7 @@ const fetchArticleData = async () => {
             }
 
             configureExternalLinks();
+            setupContentImages();
 
             console.log('文章数据加载成功');
         } else {
@@ -256,6 +268,88 @@ const configureExternalLinks = async () => {
             link.removeAttribute('rel');
         }
     });
+};
+
+/**
+ * 处理正文图片：
+ * 1. 懒加载：滚动到位置才开始请求
+ * 2. 显示压缩图：正文里存的是原图地址，这里换成后端生成的压缩图 `xxx_c.*`
+ *    （后端规则：png 保持 png，其余格式统一转 jpg），首屏更省流量；
+ *    原图地址保留在 data-original，供「查看大图 / 下载原图」使用
+ * 3. 点击放大：用容器上的事件委托（见 onContentClick），
+ *    因为 v-html 的节点由 Vue 管理，逐个 addEventListener 会在重渲染后失效
+ */
+const setupContentImages = async () => {
+    await nextTick();
+
+    const articleContent = document.querySelector('.article-content');
+    if (!articleContent) return;
+
+    articleContent.querySelectorAll('img').forEach((img) => {
+        const original = img.getAttribute('src');
+        img.setAttribute('loading', 'lazy');
+        img.setAttribute('decoding', 'async');
+        img.classList.add('content-image');
+
+        if (!original) return;
+        img.dataset.original = original;
+
+        const thumb = toThumbUrl(original);
+        if (thumb !== original) {
+            img.setAttribute('src', thumb);
+            // 压缩图缺失（老数据等）时回退到原图，避免白图
+            img.addEventListener('error', function onThumbError() {
+                img.removeEventListener('error', onThumbError);
+                img.setAttribute('src', original);
+            });
+        }
+    });
+};
+
+/**
+ * 由原图地址推导后端生成的压缩图地址。
+ * 与后端 fileService 的命名规则保持一致：
+ *   - png 保持 png（保留透明通道）→ xxx.png  -> xxx_c.png
+ *   - 其余格式统一转 jpg          → xxx.webp -> xxx_c.jpg
+ * 已是压缩图则原样返回；外链图片没有对应的压缩版本，也原样返回。
+ */
+const toThumbUrl = (url) => {
+    if (!url || !url.includes('/static/uploads/')) return url;
+    if (/_c\.(png|jpe?g|webp|gif)$/i.test(url)) return url;
+
+    const isPng = /\.png(\?.*)?$/i.test(url);
+    const suffix = isPng ? '_c.png' : '_c.jpg';
+    return url.replace(/\.[a-zA-Z0-9]+(\?.*)?$/, suffix + '$1');
+};
+
+/**
+ * 正文点击事件委托：命中图片则打开灯箱。
+ * 绑定在容器（而非图片本身），因此不受 v-html 重渲染影响。
+ */
+const onContentClick = (e) => {
+    const target = e.target;
+    if (target?.tagName === 'IMG') {
+        // 优先用原图；外链图片没有 data-original，回退到当前 src
+        const original = target.dataset.original || target.getAttribute('src');
+        if (original) {
+            openLightbox(original, target.getAttribute('alt') || '');
+        }
+    }
+};
+
+/** 图片加载失败时给个可见占位（同样用委托，避免监听器丢失） */
+const onContentError = (e) => {
+    if (e.target?.tagName === 'IMG') {
+        e.target.classList.add('image-broken');
+    }
+};
+
+const openLightbox = (originalUrl, alt) => {
+    lightboxAlt.value = alt;
+    lightboxOriginal.value = originalUrl;
+    // 先展示压缩图（外链图片没有压缩版本，与原图相同）
+    lightboxSrc.value = toThumbUrl(originalUrl);
+    lightboxOpen.value = true;
 };
 
 // 格式化日期时间
@@ -297,7 +391,6 @@ const generateTocFromHtml = () => {
         tocList.value = toc;
     }, 100);
 };
-
 // 点击分类：跳转到文章列表并按该分类筛选
 const goToCategory = (category) => {
     if (category) {
