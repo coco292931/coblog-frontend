@@ -52,6 +52,15 @@ html[data-theme="light"] {
   --color-shadow-soft: rgba(0, 0, 0, 0.08);
   --color-accent: #3498db;
 
+  /* 青色系交互色（新增交互统一使用；与 NavBar 品牌青保持一致） */
+  --color-cyan: #0e9a9a;         /* 主色：亮底上可读的青色 */
+  --color-cyan-hover: #0b7d7d;
+  --color-cyan-bright: #1fefff;  /* 品牌亮青，用于填充/深底 */
+  --color-cyan-soft: rgba(14, 154, 154, 0.12);
+  --color-cyan-border: rgba(14, 154, 154, 0.4);
+  --color-cyan-shadow: rgba(14, 154, 154, 0.28);
+  --color-cyan-gradient: linear-gradient(135deg, #1fefff 0%, #0e9a9a 100%);
+
   --section-gap: 160px;
 }
 
@@ -83,6 +92,15 @@ html[data-theme="dark"] {
   --color-shadow: rgba(0, 0, 0, 0.4);
   --color-shadow-soft: rgba(0, 0, 0, 0.3);
   --color-accent: #4aa3e0;
+
+  /* 青色系交互色（深色主题） */
+  --color-cyan: #4fe9e9;
+  --color-cyan-hover: #7ef3f3;
+  --color-cyan-bright: #1fefff;
+  --color-cyan-soft: rgba(31, 239, 239, 0.16);
+  --color-cyan-border: rgba(31, 239, 239, 0.45);
+  --color-cyan-shadow: rgba(31, 239, 239, 0.3);
+  --color-cyan-gradient: linear-gradient(135deg, #1fefff 0%, #16b0b0 100%);
 }
 
 /* 跟随系统：未手动指定主题时按系统偏好取深色 */
@@ -114,6 +132,15 @@ html[data-theme="dark"] {
     --color-shadow: rgba(0, 0, 0, 0.4);
     --color-shadow-soft: rgba(0, 0, 0, 0.3);
     --color-accent: #4aa3e0;
+
+    /* 青色系交互色（跟随系统深色） */
+    --color-cyan: #4fe9e9;
+    --color-cyan-hover: #7ef3f3;
+    --color-cyan-bright: #1fefff;
+    --color-cyan-soft: rgba(31, 239, 239, 0.16);
+    --color-cyan-border: rgba(31, 239, 239, 0.45);
+    --color-cyan-shadow: rgba(31, 239, 239, 0.3);
+    --color-cyan-gradient: linear-gradient(135deg, #1fefff 0%, #16b0b0 100%);
   }
 }
 
