@@ -1,0 +1,158 @@
+.big-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-page-gradient);
+}
+
+.rss-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 72px 20px 40px;
+}
+
+.rss-card {
+    width: min(680px, 100%);
+    padding: 38px 34px;
+    border: 1px solid var(--color-cyan-border);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at top right, var(--color-cyan-soft), transparent 38%),
+        var(--color-card-bg);
+    box-shadow: 0 18px 45px var(--color-shadow);
+}
+
+.rss-badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--color-cyan-soft);
+    color: var(--color-cyan);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+}
+
+.rss-card h1 {
+    margin: 0 0 14px;
+    color: var(--color-text-heading);
+    font-size: 32px;
+    line-height: 1.25;
+}
+
+.rss-intro,
+.rss-note {
+    margin: 0;
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+}
+
+.rss-url-box {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    margin: 28px 0 20px;
+    padding: 8px;
+    border: 1px solid var(--color-divider);
+    border-radius: 14px;
+    background: var(--color-card-soft);
+}
+
+.rss-url {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    color: var(--color-text-heading);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-all;
+}
+
+.rss-url-box button,
+.primary-link,
+.secondary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.rss-url-box button {
+    width: 78px;
+    flex: 0 0 78px;
+    padding: 0;
+}
+
+.rss-url-box button,
+.primary-link {
+    border: none;
+    background: var(--color-cyan-gradient);
+    color: #fff;
+}
+
+.rss-url-box button:hover,
+.primary-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px var(--color-cyan-shadow);
+}
+
+.rss-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.secondary-link {
+    color: var(--color-cyan);
+    border: 1px solid var(--color-cyan-border);
+    background: transparent;
+}
+
+.secondary-link:hover {
+    color: #fff;
+    background: var(--color-cyan);
+}
+
+.rss-note {
+    padding-top: 18px;
+    border-top: 1px solid var(--color-divider);
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .rss-page {
+        padding: 36px 16px 24px;
+    }
+
+    .rss-card {
+        padding: 28px 20px;
+    }
+
+    .rss-card h1 {
+        font-size: 26px;
+    }
+
+    .rss-url-box,
+    .rss-actions {
+        flex-direction: column;
+    }
+
+    .rss-url-box button {
+        width: 100%;
+        flex: 0 0 auto;
+        padding: 0 18px;
+    }
+}
