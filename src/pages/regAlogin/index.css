@@ -277,3 +277,11 @@
     transform: none;
     box-shadow: none;
 }
+
+/* ===== 新增交互：统一使用青色系配色 ===== */
+
+.login-options-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

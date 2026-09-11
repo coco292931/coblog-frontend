@@ -57,7 +57,9 @@
                             <input type="checkbox" v-model="formData.rememberMe" />
                             <span>记住我</span>
                         </label>
-                        <a href="#" class="forgot-password" @click.prevent="handleForgotPassword">忘记密码？</a>
+                        <div class="login-options-right">
+                            <router-link to="/forgot-password" class="forgot-password">忘记密码？</router-link>
+                        </div>
                     </div>
 
                     <div class="form-group password-group" v-if="!isLogin">
@@ -129,13 +131,19 @@ const router = useRouter();
 // 判断是登录还是注册
 const isLogin = computed(() => route.path === '/login');
 
+// 登录前被拦截的原始地址（全局守卫写入），登录成功后优先回跳
+const redirectTarget = computed(() => {
+    const target = route.query.redirect;
+    return typeof target === 'string' && target ? target : '';
+});
+
 // 表单数据
 const formData = ref({
     account: '',
     password: '',
     confirmPassword: '',
     username: '',
-    rememberMe: false
+    rememberMe: false,
 });
 
 // 警示消息
@@ -155,10 +163,34 @@ watch(() => route.path, () => {
         password: '',
         confirmPassword: '',
         username: '',
-        rememberMe: false
+        rememberMe: false,
     };
     alertMessage.value = '';
 });
+
+// 登录成功后的统一处理：存 token、存用户信息、回跳
+const handleLoginSuccess = (data, msg) => {
+    if (data.token) {
+        setToken(data.token, formData.value.rememberMe);
+    }
+
+    const userInfo = {
+        userID: data.userID,
+        userId: data.userID,
+        username: data.username,
+        userType: data.userType,
+        activated: !!data.activated,
+    };
+    const storage = formData.value.rememberMe ? localStorage : sessionStorage;
+    storage.setItem('userInfo', JSON.stringify(userInfo));
+
+    alertMessage.value = msg || '登录成功！';
+
+    const target = redirectTarget.value || '/me';
+    setTimeout(() => {
+        router.push(target);
+    }, 1000);
+};
 
 // 处理表单提交
 const handleSubmit = async () => {
@@ -172,40 +204,18 @@ const handleSubmit = async () => {
         // 登录逻辑
         try {
             isSubmitting.value = true;
-            
+
             const response = await login({
                 account: formData.value.account,
                 password: formData.value.password,
-                rememberMe: formData.value.rememberMe
+                rememberMe: formData.value.rememberMe,
             });
-            
-            // 检查响应code
+
             if (response.code === 200 && response.data) {
-                if (response.data.token) {
-                    setToken(response.data.token, formData.value.rememberMe);
-                }
-                
-                // 保存用户信息
-                const userInfo = {
-                    userID: response.data.userID,
-                    userId: response.data.userID,
-                    username: response.data.username,
-                    userType: response.data.userType,
-                    activated: !!response.data.activated,
-                };
-                const storage = formData.value.rememberMe ? localStorage : sessionStorage;
-                storage.setItem('userInfo', JSON.stringify(userInfo));
-                
-                alertMessage.value = response.msg || '登录成功！';
-                
-                // 跳转到我的页面，让前端通过 userinfo 获取真实激活状态
-                setTimeout(() => {
-					router.push('/me');
-                }, 1000);
+                handleLoginSuccess(response.data, response.msg);
             } else {
                 alertMessage.value = response.msg || '登录失败！';
             }
-            
         } catch (error) {
             console.error('登录失败:', error);
             alertMessage.value = error.response?.data?.msg || '登录失败，请检查账号和密码！';
@@ -255,13 +265,6 @@ const handleSubmit = async () => {
             isSubmitting.value = false;
         }
     }
-};
-
-// 处理忘记密码
-const handleForgotPassword = () => {
-    console.log('忘记密码');
-    // TODO: 跳转到忘记密码页面或显示重置密码弹窗
-    alert('忘记密码功能开发中...');
 };
 </script>
 
