@@ -5,7 +5,7 @@
         <!--两种动态样式-->
         <!--检测按钮按下-->
         <div class="navigate-selection" @click="tab = 'News'"
-        :style="tab==='News'? {color:'blue'} : undefined">
+        :style="tab==='News'? {color:'var(--color-cyan)'} : undefined">
         News
       </div>
         <div class="navigate-selection" @click="tab = 'Video'"
@@ -92,6 +92,6 @@ const videos = ref([
 }
 
 .active{
-  color: blue;
+  color: var(--color-cyan);
 }
 </style>

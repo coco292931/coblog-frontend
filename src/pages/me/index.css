@@ -106,13 +106,13 @@
     border: none;
     cursor: pointer;
     color: #fff;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+    background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
+    box-shadow: 0 4px 12px var(--color-cyan-border);
 }
 
 .activation-button:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.42);
+    box-shadow: 0 8px 16px var(--color-cyan-shadow);
 }
 
 .activation-button:disabled {
@@ -122,14 +122,14 @@
 }
 
 .activation-link-button {
-    color: #667eea;
-    border: 1px solid rgba(102, 126, 234, 0.35);
+    color: var(--color-cyan);
+    border: 1px solid var(--color-cyan-border);
     background: transparent;
 }
 
 .activation-link-button:hover {
     color: #fff;
-    background: #667eea;
+    background: var(--color-cyan);
 }
 
 .activation-message {
@@ -177,7 +177,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
     color: white;
     font-size: 40px;
     font-weight: bold;
@@ -415,7 +415,7 @@
 }
 
 .logout-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
     color: white;
     border: none;
     padding: 12px 40px;
@@ -424,12 +424,12 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px var(--color-cyan-shadow);
 }
 
 .logout-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 6px 16px var(--color-cyan-shadow);
 }
 
 .logout-button:active {

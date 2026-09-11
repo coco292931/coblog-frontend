@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getRSSToken, isAuthenticated } from '../utils/auth'
+import { isAuthenticated } from '../utils/auth'
 import HelloWorld from '../components/HelloWorld.vue'
 import TheWelcome from '../components/TheWelcome.vue'
 import About from '../pages/about/index.vue'
@@ -14,6 +14,7 @@ import Write from '../pages/write/index.vue'
 import Activate from '../pages/activate/index.vue'
 import ForgotPassword from '../pages/forgotPassword/index.vue'
 import NotFound from '../pages/notFound/index.vue'
+import RSS from '../pages/rss/index.vue'
 
 // 需要登录才能访问的路由，统一通过 meta.requiresAuth 标记
 const routes = [
@@ -40,6 +41,11 @@ const routes = [
   {
     path: '/about/us',
     name: 'AboutUs',
+    component: About
+  },
+  {
+    path: '/about/friends',
+    name: 'AboutFriends',
     component: About
   },
   {
@@ -115,20 +121,7 @@ const routes = [
   {
     path: '/rss',
     name: 'RSS',
-    beforeEnter: () => {
-      // 获取 API 基础地址，默认使用当前页面的 origin
-      const baseURL = import.meta.env.VITE_API_BASE_URL || window.location.origin;
-      const rssURL = new URL('/api/rss', baseURL);
-      // 只有当前仍处于登录态时才携带 RSS Token，避免退出后使用残留 token。
-      if (isAuthenticated()) {
-        const rssToken = getRSSToken();
-        if (rssToken) {
-          rssURL.searchParams.set('token', rssToken);
-        }
-      }
-      // 直接跳转到后端 RSS 接口（使用 replace 避免产生历史记录）
-      window.location.href = rssURL.toString();
-    }
+    component: RSS
   },
   {
     // 404 兜底：必须放在最后，Vue Router 会优先匹配更具体的路由

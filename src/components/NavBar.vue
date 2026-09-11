@@ -24,9 +24,9 @@
                 <router-link v-if="loggedIn" to="/write" class="navbar-item" @click="closeMenu">
                     <IconArticles class="nav-icon" />写作
                 </router-link>
-                <a :href="`/rss`" class="navbar-item" id="search-rss" @click="closeMenu">
+                <router-link to="/rss" class="navbar-item" id="search-rss" @click="closeMenu">
                     <IconRSS class="nav-icon" style="transform: scale(0.9)" />RSS
-                </a>
+                </router-link>
                 <router-link to="/about" class="navbar-item" @click="closeMenu">
                     <IconInfo class="nav-icon" style="transform: scale(1.6)" />关于
                 </router-link>
@@ -133,7 +133,7 @@ const handleSearch = () => {
 
 .brand-link:hover {
     color: rgb(20, 180, 180);
-    text-shadow: 0 1px 6px rgba(31, 239, 239, 0.3);
+    text-shadow: 0 1px 6px var(--color-cyan-shadow);
 }
 
 /* 暗色模式：深底上用聚拢的青色辉光，避免亮色下那种浑浊光晕 */
@@ -191,7 +191,7 @@ html[data-theme="dark"] .brand-link:hover {
         color: rgb(31, 239, 239);
     }
     100% {
-        background-color: rgba(31, 239, 239, 0.1);
+        background-color: var(--color-cyan-soft);
         color: rgb(31, 239, 239);
     }
 }

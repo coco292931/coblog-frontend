@@ -332,7 +332,7 @@ onUnmounted(() => {
 
 .timeline-line {
     width: 4px;
-    background: linear-gradient(to bottom, #46a3d8 , #5248b0 );
+    background: linear-gradient(to bottom, var(--color-cyan-bright) , var(--color-cyan) );
     border-radius: 2px;
     position: absolute;
     top: 0;
@@ -345,7 +345,7 @@ onUnmounted(() => {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #4ab1ed , #5248b0 );
+    background: linear-gradient(135deg, var(--color-cyan-bright) , var(--color-cyan) );
     color: white;
     padding: 5px 16px;
     /* 8px * 0.66 ≈ 5px, 16px * 0.66 ≈ 11px */
@@ -354,7 +354,7 @@ onUnmounted(() => {
     font-weight: bold;
     font-size: 14px;
     /* 16px * 0.66 ≈ 11px */
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px var(--color-cyan-shadow);
     z-index: 3;
     white-space: nowrap;
 }
@@ -410,7 +410,7 @@ onUnmounted(() => {
 }
 
 .article:hover {
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 4px 16px var(--color-cyan-shadow);
     transform: translateY(-2px);
 }
 
@@ -482,7 +482,7 @@ onUnmounted(() => {
 }
 
 .tag:hover {
-    background: #667eea;
+    background: var(--color-cyan);
     color: white;
 }
 
