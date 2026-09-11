@@ -6,6 +6,7 @@
                 <div class="notfound-code">404</div>
                 <h1>{{ title }}</h1>
                 <p>{{ message }}</p>
+                <p class="notfound-tips">{{ tips }}</p>
                 <p class="notfound-path">当前地址：{{ currentPath }}</p>
 
                 <div class="notfound-actions">
@@ -33,6 +34,7 @@ const currentPath = computed(() => route.fullPath);
 
 const title = '这里什么都没有';
 const message = '你要找的页面可能已被移动、删除，或者从未存在过。';
+const tips = '也可能只是coco太饿，已经吃到肚子里了';
 
 const goBack = () => {
     // 直接打开该地址时没有历史记录，回退到首页
