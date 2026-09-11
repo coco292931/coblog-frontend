@@ -5,6 +5,10 @@
         <div class="main-photo-article">
             <img :src="coverImage" class='cover_image' @error="onCoverError" />
             <div class="summary">
+                <!-- 管理入口：登录用户可见，置于封面标题区右上角，不与统计信息混在一起 -->
+                <button v-if="loggedIn" class="manage-btn" @click="goToEdit" title="编辑这篇文章">
+                    ✏️ 编辑
+                </button>
                 <div class="title">{{ articleTitle }}</div>
                 <div class="subtitle">{{ articleSubtitle }}</div>
                 <div class="splitline"></div>
@@ -55,11 +59,14 @@
                     </div>
                     <!-- 版权信息 -->
                     <div class="license-info">
-                        <div class="license-title">📄 版权声明</div>
-                        <div class="license-text">
-                            本文作者：{{ author }}<br>
-                            本文链接：{{ articleUrl }}<br>
-                            版权声明：本博客所有文章除特别声明外，均采用 CC BY-NC-SA 4.0 许可协议。转载请注明出处！
+                        <div class="license-icon">📄</div>
+                        <div class="license-body">
+                            <div class="license-title">版权声明</div>
+                            <div class="license-text">
+                                本文作者：{{ author }}<br>
+                                本文链接：<span class="license-link">{{ articleUrl }}</span><br>
+                                除特别声明外，本文采用 <span class="license-strong">CC BY-NC-SA 4.0</span> 许可协议，转载请注明出处。
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -89,7 +96,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
@@ -97,6 +104,7 @@ import Footer from '../../components/Footer.vue';
 import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
+import { isAuthenticated } from '../../utils/auth.js';
 import fallbackCover from '../../assets/image/homepage-background.jpg';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -119,6 +127,12 @@ const isExternalLink = (href) => {
 const route = useRoute();
 const router = useRouter();
 const articleId = ref(route.params.article_id);
+
+// 编辑入口仅对登录用户展示，无权限时由后端返回的业务 code 兜底提示
+const loggedIn = ref(isAuthenticated());
+watch(() => route.fullPath, () => {
+    loggedIn.value = isAuthenticated();
+});
 
 // 文章基本信息
 const articleTitle = ref('加载中...');
@@ -291,6 +305,11 @@ const goToCategory = (category) => {
     }
 };
 
+// 进入编辑器修改当前文章
+const goToEdit = () => {
+    router.push(`/write/${articleId.value}`);
+};
+
 const onCoverError = (e) => {
     if (e.target.src !== fallbackCover) {
         e.target.src = fallbackCover;
@@ -301,5 +320,4 @@ onMounted(() => {
     fetchArticleData();
 });
 </script>
-
 <style scoped></style>
