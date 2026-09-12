@@ -549,6 +549,27 @@
 
 /* ========== 响应式 ========== */
 @media (max-width: 768px) {
+    /* 窄屏收内边距，把宽度还给内容：原来 .write-page padding 10px +
+       .meta-section padding 24px，375px 下输入框只剩 263px 宽。 */
+    .write-page {
+        width: 100%;
+        padding: 0 14px 48px;
+        margin: 20px auto 0;
+    }
+
+    .meta-section,
+    .editor-section {
+        padding: 14px;
+    }
+
+    .preview-scroll {
+        padding: 14px 16px;
+    }
+
+    .actions {
+        padding: 14px 0;
+    }
+
     .field-row {
         flex-direction: column;
         gap: 0;
