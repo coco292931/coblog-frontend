@@ -76,7 +76,7 @@ html[data-theme="light"] {
 
   /* 品牌青（导航栏品牌名/图标等强调处）：
      亮色主题下用深青，否则原来的荧光青在半透明浅色导航栏上几乎看不清 */
-  --color-brand: #0e9a9a;
+  --color-brand: #17bebb;
 
   /* 语义色：危险 / 成功 / 警告。
      以前同一个删除按钮在 write 用 #e74c3c、在 me 用 #ff4d4f，

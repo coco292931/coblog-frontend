@@ -236,10 +236,10 @@ html[data-theme="dark"] .brand-link:hover {
 
 #search-input-text {
     outline: none;
-    padding: 0.4rem 0.6rem 0.4rem 0.6rem;
+    padding: 0.4rem 2rem 0.4rem 0.7rem;
     border-radius: 999px;
     background-color: transparent;
-    border: 1px solid var(--color-brand);
+    border: 2px solid var(--color-brand);
     width: 10rem;
     font-family: inherit;
     line-height: 1.2;
