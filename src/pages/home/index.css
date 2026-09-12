@@ -101,24 +101,10 @@
     min-height: 40px;
 }
 
-.load-more-status .loading-spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid var(--color-page-bg);
-    border-top: 3px solid var(--color-cyan);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
 .load-more-status .no-more-text {
     font-size: 14px;
     color: var(--color-text-muted);
     letter-spacing: 1px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* 响应式：小屏幕适配 */
