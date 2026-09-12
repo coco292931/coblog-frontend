@@ -382,14 +382,10 @@
             flex-direction: column;
             width: 730px;
 
-            /* 竖排后目录会跑到正文之前（DOM 里 side-content 在前），
-               用 order 把它压到正文之后，手机上不会一进文章就看目录。 */
-            .main-content {
-                order: 1;
-            }
-
+            /* 竖排后目录保持在正文之前（DOM 里 side-content 在前，即默认顺序）。
+               曾用 order 把它压到正文之后，但那会连带落到文章统计的最底部，
+               等文章读完才看到“目录”，反而更奇怪。 */
             .side-content {
-                order: 2;
                 width: 100%;
 
                 .toc-container {
@@ -528,7 +524,7 @@
                 }
             }
 
-            /* 目录位置由上面的 order 控制（跟在正文之后） */
+            /* 目录在正文之前（默认顺序），手机上相当于“本页导航” */
             .side-content {
                 width: 100%;
 
