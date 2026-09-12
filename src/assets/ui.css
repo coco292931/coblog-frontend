@@ -1,0 +1,54 @@
+/**
+ * 跨页面复用的 UI 组件样式
+ *
+ * 目前包含 .primary-link / .secondary-link —— activate / notFound / rss
+ * 三个页面的「胶囊按钮」。
+ *
+ * 这三处原本各写一份，且已经漂移（渐变一个手写一个用变量、阴影一个用
+ * --color-cyan-border 一个用 --color-cyan-shadow、字号字重尺寸都不同）。
+ * 这里按信息最全的那版统一。
+ *
+ * 选择器用 :is(...) 限定在三个页面的根类下，避免将来别的页面出现
+ * 同名类时被误命中（本项目页面 CSS 构建后是全局合并的）。
+ */
+
+:is(.page-activate, .page-not-found, .page-rss) {
+
+    .primary-link,
+    .secondary-link {
+        min-width: 132px;
+        min-height: 44px;
+        padding: 0 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        text-decoration: none;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .primary-link {
+        color: #fff;
+        background: var(--color-cyan-gradient);
+        box-shadow: 0 4px 12px var(--color-cyan-shadow);
+    }
+
+    .primary-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px var(--color-cyan-shadow);
+    }
+
+    .secondary-link {
+        color: var(--color-cyan);
+        border: 1px solid var(--color-cyan-border);
+    }
+
+    .secondary-link:hover {
+        background: var(--color-cyan);
+        color: #fff;
+    }
+}

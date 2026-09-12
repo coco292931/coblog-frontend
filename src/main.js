@@ -4,6 +4,8 @@ import './assets/main.css'
 import './assets/article-prose.css'
 // 表单共享样式：登录/注册页与找回密码页共用
 import './assets/form.css'
+// UI 组件共享样式（胶囊按钮等）
+import './assets/ui.css'
 import router from './router/'
 import { createApp } from 'vue'
 import App from './App.vue'

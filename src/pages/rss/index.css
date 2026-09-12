@@ -79,37 +79,26 @@
     word-break: break-all;
 }
 
-.rss-url-box button,
-.primary-link,
-.secondary-link {
+/* 复制按钮：方形图标按钮，尺寸不与 .primary-link 共用 */
+.rss-url-box button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 42px;
-    padding: 0 18px;
     border-radius: 999px;
     font-family: inherit;
     font-weight: 800;
-    text-decoration: none;
     cursor: pointer;
     transition: all 0.25s ease;
-}
-
-.rss-url-box button {
     width: 78px;
     flex: 0 0 78px;
     padding: 0;
-}
-
-.rss-url-box button,
-.primary-link {
     border: none;
     background: var(--color-cyan-gradient);
     color: #fff;
 }
 
-.rss-url-box button:hover,
-.primary-link:hover {
+.rss-url-box button:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 18px var(--color-cyan-shadow);
 }
@@ -121,16 +110,7 @@
     margin-bottom: 18px;
 }
 
-.secondary-link {
-    color: var(--color-cyan);
-    border: 1px solid var(--color-cyan-border);
-    background: transparent;
-}
-
-.secondary-link:hover {
-    color: #fff;
-    background: var(--color-cyan);
-}
+/* .primary-link / .secondary-link 已抽到 src/assets/ui.css */
 
 .rss-note {
     padding-top: 18px;
