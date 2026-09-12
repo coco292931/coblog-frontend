@@ -1,5 +1,5 @@
 /* 调试用中心线 - 上线前记得删除 
-.big-container::before {
+.page-home::before {
     content: "";
     position: fixed;
     left: 50%;
@@ -11,7 +11,8 @@
     pointer-events: none;
 }*/
 
-.big-container {
+/* 页面专属根类：样式收在 .page-home 下，避免与其它页面同名类互相覆盖 */
+.page-home {
     width: 100%;
     min-height: 100vh !important;
 

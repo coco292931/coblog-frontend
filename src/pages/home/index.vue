@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-home">
         <NavBar style="position: fixed;"/>
         <div class="main-photo">
             <img src="../../assets/image/homepage-background.jpg" class='home-photo' />
