@@ -1,12 +1,14 @@
-.big-container {
+.page-about {
     width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* 页面底色跟随主题。注意：.big-container 是多个页面共用的类名，
-       构建后 CSS 会合并成一个文件，后加载页面的同名规则会覆盖这里，
-       所以不要在此写死颜色（原来写死的 rgb(49, 49, 49) 从未生效过）。 */
+    /* 下面几个属性以前是「借」来的：根类还叫 .big-container 时（9 个页面共用），
+       这些值其实是别的页面的同名规则提供的。改成专属根类后必须自己声明，
+       否则布局会变（已用样式快照对比验证过）。 */
+    justify-content: center;
+    position: relative;
     background: var(--color-page-gradient);
 
     .content-container {

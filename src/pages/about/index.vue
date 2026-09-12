@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-about">
         <NavBar />
         <div class="content-container">
             <div class="left-container">

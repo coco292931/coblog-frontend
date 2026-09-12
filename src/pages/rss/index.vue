@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-rss">
         <NavBar />
         <main class="rss-page">
             <section class="rss-card">

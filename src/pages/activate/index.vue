@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-activate">
         <NavBar />
         <div class="activate-page">
             <div class="activate-card">

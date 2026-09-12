@@ -1,7 +1,14 @@
-.big-container {
+/* 页面专属根类：样式收在 .page-activate 下，避免与其它页面同名类互相覆盖。
+   本页以前连背景渐变都是借的（自己只写了 min-height / display / flex-direction），
+   这里一并显式声明。 */
+.page-activate {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--color-page-gradient);
 }
 
 .activate-page {

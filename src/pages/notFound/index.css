@@ -1,7 +1,13 @@
-.big-container {
+/* 页面专属根类：样式收在 .page-not-found 下，避免与其它页面同名类互相覆盖。
+   align-items / justify-content / position 以前是借别的页面 .big-container 规则生效的，
+   现在显式声明，保证改名前后观感一致。 */
+.page-not-found {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     background: var(--color-page-gradient);
 }
 

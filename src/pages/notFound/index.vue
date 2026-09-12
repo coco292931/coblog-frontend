@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-not-found">
         <NavBar />
         <div class="notfound-page">
             <div class="notfound-card">
