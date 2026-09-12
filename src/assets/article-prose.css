@@ -249,3 +249,84 @@ html[data-theme="dark"] {
 .article-prose sub {
     font-size: 0.75em;
 }
+
+/* ===== 手机端排版（<=640px）=====
+   窄屏可读性优化，桌面端规则完全不受影响：
+   - 标题字号整体降一档，避免 1.85rem 的 h2 在 375px 下撑满整行、失去层次；
+   - 正文改为左对齐 —— 中文在窄列里用 justify 会被拉出难看的字距；
+   - 代码块 / 表格 / 引用收紧内边距，把宽度还给内容；
+   - 图片与代码块圆角同步缩小，视觉上不显得笨重。 */
+@media (max-width: 640px) {
+    .article-prose {
+        font-size: 1rem;
+        line-height: 1.85;
+    }
+
+    /* 中文正文在窄屏 justify 会拉开字距，手机上改为左对齐 */
+    .article-prose p {
+        text-align: left;
+    }
+
+    .article-prose h1 {
+        font-size: 1.6rem;
+        margin: 24px 0 14px;
+    }
+
+    .article-prose h2 {
+        font-size: 1.5rem;
+        margin: 26px 0 14px;
+        padding-bottom: 8px;
+        border-bottom-width: 1px;
+    }
+
+    .article-prose h3 {
+        font-size: 1.25rem;
+        margin: 22px 0 10px;
+    }
+
+    .article-prose h4 {
+        font-size: 1.08rem;
+        margin: 18px 0 8px;
+    }
+
+    .article-prose ul,
+    .article-prose ol {
+        padding-left: 22px;
+    }
+
+    .article-prose pre {
+        padding: 14px;
+        margin: 16px 0;
+        border-radius: 8px;
+    }
+
+    .article-prose pre code {
+        font-size: 0.82rem;
+    }
+
+    .article-prose blockquote {
+        padding: 9px 14px;
+        margin: 12px 0;
+        border-left-width: 3px;
+    }
+
+    .article-prose table {
+        margin: 16px 0;
+        font-size: 0.88rem;
+    }
+
+    .article-prose th,
+    .article-prose td {
+        padding: 8px 10px;
+    }
+
+    .article-prose img,
+    .article-prose video {
+        border-radius: 8px;
+        margin: 16px auto;
+    }
+
+    .article-prose hr {
+        margin: 22px 0;
+    }
+}
