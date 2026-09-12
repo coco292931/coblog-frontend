@@ -203,9 +203,7 @@ watch(() => props.open, (open) => {
         didDrag = false;
         pointerActive = false;
         showingOriginal.value = !hasDistinctOriginal.value;
-        document.body.style.overflow = 'hidden';
     } else {
-        document.body.style.overflow = '';
         // 关闭时复位交互状态，避免下次打开残留 didDrag 导致单击失效
         isDragging.value = false;
         pointerActive = false;
@@ -247,15 +245,33 @@ const onWheel = (e) => {
     zoomBy(e.deltaY < 0 ? 0.15 : -0.15);
 };
 
+/**
+ * 灯箱打开期间锁住页面滚动。
+ *
+ * ⚠️ 不能用 body { overflow: hidden }：main.css 给 html 设了 overflow-y: scroll，
+ * 此时 body 的 overflow 不会传播到视口，改成 hidden 只是把 body 自己变成裁剪容器，
+ * 文档可滚动高度会瞬间塌成一个视口，滚动位置被强制归零且关掉后无法恢复
+ * （表现就是「看完图回到文章，位置跳回了顶部」）。
+ *
+ * 因此这里改成拦截输入：滚轮用模板上的 @wheel.prevent，
+ * 触摸用样式里的 touch-action: none，滚动类按键在这里拦掉。
+ */
+const SCROLL_KEYS = [
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'Home', 'End',
+];
+
 const onKeydown = (e) => {
-    if (props.open && e.key === 'Escape') close();
+    if (!props.open) return;
+    if (e.key === 'Escape') {
+        close();
+        return;
+    }
+    // 遮罩下面就是文章正文，别让空格 / 方向键把背景滚走
+    if (SCROLL_KEYS.includes(e.key)) e.preventDefault();
 };
 
 window.addEventListener('keydown', onKeydown);
-onBeforeUnmount(() => {
-    window.removeEventListener('keydown', onKeydown);
-    document.body.style.overflow = '';
-});
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
 /**
  * 下载图片。
@@ -308,6 +324,8 @@ const download = async () => {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    /* 触摸也不该滚动背景（touch-action 会同时作用于后代） */
+    touch-action: none;
 }
 
 .lightbox-toolbar {
