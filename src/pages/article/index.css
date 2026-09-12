@@ -175,7 +175,7 @@
             /* 文章内容 */
             .article-content {
                 background: var(--color-card-bg);
-                padding: 1rem;
+                padding: 0.1rem 1rem 1rem 1rem;
                 border-radius: 20px;
                 box-shadow: 0 10px 40px var(--color-shadow);
                 margin-bottom: 20px;
