@@ -124,7 +124,7 @@ const handleSearch = () => {
 
 .brand-link {
     text-decoration: none;
-    color: rgb(31, 239, 239);
+    color: var(--color-brand);
     font-weight: bold;
     transition: color 0.3s, text-shadow 0.3s;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
@@ -132,7 +132,7 @@ const handleSearch = () => {
 }
 
 .brand-link:hover {
-    color: rgb(20, 180, 180);
+    color: var(--color-cyan);
     text-shadow: 0 1px 6px var(--color-cyan-shadow);
 }
 
@@ -169,8 +169,8 @@ html[data-theme="dark"] .brand-link:hover {
 .nav-icon {
     width: 18px;
     height: 18px;
-    color: rgb(31, 239, 239);
-    fill: rgb(31, 239, 239);
+    color: var(--color-brand);
+    fill: var(--color-brand);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -188,16 +188,16 @@ html[data-theme="dark"] .brand-link:hover {
 @keyframes navbar-item--hover {
     0% {}
     60% {
-        color: rgb(31, 239, 239);
+        color: var(--color-brand);
     }
     100% {
         background-color: var(--color-cyan-soft);
-        color: rgb(31, 239, 239);
+        color: var(--color-brand);
     }
 }
 
 .navbar-item.router-link-active {
-    color: rgb(31, 239, 239);
+    color: var(--color-brand);
 }
 
 .navbar-item.router-link-active::after {
@@ -207,7 +207,7 @@ html[data-theme="dark"] .brand-link:hover {
     left: 16px;
     right: 16px;
     height: 2px;
-    background-color: rgb(31, 239, 239);
+    background-color: var(--color-brand);
     border-radius: 1px;
 }
 
@@ -239,7 +239,7 @@ html[data-theme="dark"] .brand-link:hover {
     padding: 0.4rem 0.6rem 0.4rem 0.6rem;
     border-radius: 999px;
     background-color: transparent;
-    border: 1px solid rgb(31, 239, 239);
+    border: 1px solid var(--color-brand);
     width: 10rem;
     font-family: inherit;
     line-height: 1.2;
@@ -261,7 +261,7 @@ color: rgba(124, 124, 124, 0.8);
     justify-content: center;
     padding: 0.2rem;
     cursor: pointer;
-    background-color: rgb(31, 239, 239);
+    background-color: var(--color-brand);
     border-radius: 0 999px 999px 0;
     color: rgb(240, 248, 255) !important;
     fill: rgb(240, 248, 255) !important;
@@ -341,7 +341,7 @@ color: rgba(124, 124, 124, 0.8);
 
     #search-icon::after {
         content: "搜索";
-        color: rgb(30, 233, 233);
+        color: var(--color-brand);
     }
 
     #search-icon .nav-icon {
@@ -388,8 +388,8 @@ color: rgba(124, 124, 124, 0.8);
         padding: 0 !important;
         background-color: transparent !important;
         border-radius: 0 !important;
-        color: rgb(31, 239, 239) !important;
-        fill: rgb(31, 239, 239) !important;
+        color: var(--color-brand) !important;
+        fill: var(--color-brand) !important;
         transform: translateY(0) !important;
         transition:  all 0.3s ease-out;
         border-radius: 999px!important;
@@ -411,11 +411,11 @@ color: rgba(124, 124, 124, 0.8);
     }
 
     .navbar-item {
-        color: rgb(30, 233, 233);
+        color: var(--color-brand);
     }
 
     .theme-toggle {
-        color: rgb(30, 233, 233);
+        color: var(--color-brand);
     }
 }
 

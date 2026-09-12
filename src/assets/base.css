@@ -74,6 +74,10 @@ html[data-theme="light"] {
   --color-cyan-shadow: rgba(23, 190, 187, 0.22);
   --color-cyan-gradient: linear-gradient(135deg, #1fefff 0%, #17bebb 100%);
 
+  /* 品牌青（导航栏品牌名/图标等强调处）：
+     亮色主题下用深青，否则原来的荧光青在半透明浅色导航栏上几乎看不清 */
+  --color-brand: #0e9a9a;
+
   --section-gap: 160px;
 }
 
@@ -114,6 +118,9 @@ html[data-theme="dark"] {
   --color-cyan-border: rgba(22, 176, 176, 0.36);
   --color-cyan-shadow: rgba(22, 176, 176, 0.24);
   --color-cyan-gradient: linear-gradient(135deg, #29d6d6 0%, #0e9a9a 100%);
+
+  /* 品牌青：暗色主题保留原来的荧光青（#1fefef，与旧硬编码值一致） */
+  --color-brand: #1fefef;
 }
 
 /* 跟随系统：未手动指定主题时按系统偏好取深色 */
@@ -154,6 +161,9 @@ html[data-theme="dark"] {
     --color-cyan-border: rgba(22, 176, 176, 0.36);
     --color-cyan-shadow: rgba(22, 176, 176, 0.24);
     --color-cyan-gradient: linear-gradient(135deg, #29d6d6 0%, #0e9a9a 100%);
+
+    /* 品牌青（跟随系统深色） */
+    --color-brand: #1fefef;
   }
 }
 
