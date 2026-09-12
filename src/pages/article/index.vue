@@ -13,8 +13,8 @@
                 <div class="subtitle">{{ articleSubtitle }}</div>
                 <div class="splitline"></div>
                 <div class="time">
-                    <span class="time-label">创建：</span>{{ createTime }}
-                    <span class="time-label" style="margin-left: 20px;">修改：</span>{{ updateTime }}
+                    <span class="time-item"><span class="time-label">创建：</span>{{ createTime }}</span>
+                    <span class="time-item"><span class="time-label">修改：</span>{{ updateTime }}</span>
                 </div>
                 <div class="info">
                     <div class="categories">
