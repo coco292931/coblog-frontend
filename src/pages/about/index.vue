@@ -18,17 +18,17 @@
                     </div>
                 </div>
             </div>
-            <div class="right-container">
+            <div class="right-container article-prose">
                 <div class='us' v-if="tab =='/about/us'">
                     <h2 class='title' style="outline:none;">关于我们</h2>
                     coco&koko<br>
                     暂时没想好。。。<br>
-                    蛋柿，想我了可以戳👉<a href="mailto:coco@coco-29.wang" style="text-decoration: none;color:rgb(31, 239, 239);font-family: bold;font-weight: bold;font-size: 0.95rem;">这里</a>与我联系 :P <br>
+                    蛋柿，想我了可以戳👉<a class="prose-link" type="button" @click="copyEmail" href="mailto:coco@coco-29.wang">这里</a>与我联系 :P <br>
 
                     <h2 class='title'>关于本港湾</h2>
                     <p>温暖舒适的港湾，适合睡觉</p>
                     <p>可以去访问第一篇帖子获取更详细介绍哦<br />
-                    >>><a href="/articles/4"style="text-decoration: none;color:rgb(31, 239, 239);font-family: bold;font-weight: bold;font-size: 0.95rem"> click here </a><<<</p>
+                    >>> <a class="prose-link" href="/articles/4"> click here </a> <<<</p>
                 </div>
                 <div class='us' v-if="tab =='/about/friends'">
                     <h2 class='title'>好朋友们</h2>
@@ -57,6 +57,9 @@ let tab = ref(route.path); // 动态变量，F: '/about/us'
 if (tab.value === '/about') {
   tab.value = '/about/us';
 }
+
+// 复制邮箱后的短暂反馈状态（供 copyEmail 使用）
+const copied = ref(false);
 
 // 判断当前路径，决定激活态
 /*这行代码的解释汪~
@@ -92,6 +95,19 @@ const handleMouseLeave = (event) => {
     /*const link = event.currentTarget;
     link.classList.remove('clicked');*/
 };
+
+const copyEmail = async () => {
+    try {
+        await navigator.clipboard.writeText('coco@coco-29.wang');
+        copied.value = true;
+        window.setTimeout(() => {
+            copied.value = false;
+        }, 1600);
+    } catch (error) {
+        console.error('复制邮箱地址失败:', error);
+    }
+};
+
 </script>
 
 <style scoped>
