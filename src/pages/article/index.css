@@ -125,10 +125,11 @@
                 .category-chip {
                     cursor: pointer;
                     padding: 1px 10px;
-                    margin-right: 6px;
+                    margin: 6px 3px;
                     border-radius: 8px;
                     background: rgba(255, 255, 255, 0.2);
                     transition: all 0.2s ease;
+                    font-size: 0.8rem;
                 }
 
                 .category-chip:hover {

@@ -22,7 +22,7 @@
                 <!-- 结束三角形 -->
                 <div class="timeline-end" :style="{ top: timelineHeight + 'px' }">
                     <svg viewBox="0 0 20 20" width="20" height="20">
-                        <polygon points="10,0 0,10 20,10" fill="#888" />
+                        <polygon points="10,0 0,10 20,10" fill=var(--color-cyan-bright) />
                     </svg>
                 </div>
             </div>
@@ -366,10 +366,10 @@ onUnmounted(() => {
     transform: translateX(-50%);
     width: 16px;
     height: 16px;
-    background-color: #888;
-    border: 3px solid var(--color-background);
+    background-color: var(--color-background-soft);
+    border: 3px solid var(--color-cyan-bright);
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(252, 60, 60, 0.2);
     transition: all 0.3s ease;
     z-index: 2;
 }
