@@ -321,6 +321,7 @@
             .stats-bar {
                 flex-wrap: wrap;
                 gap: 8px;
+                margin-bottom: 0px;
 
                 .search-stats {
                     font-size: 14px;
@@ -331,6 +332,19 @@
         /* 手机设备 */
         @media (max-width: 600px) {
             padding: 5px;
+
+            .stats-bar .sort-bar {
+                .sort-label {
+                    font-size: 12px;
+                }
+
+                .sort-options {
+                    .sort-option {
+                        font-size: 12px;
+                        padding: 5px 12px;
+                    }
+                }
+            }
         }
     }
 }

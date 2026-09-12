@@ -494,21 +494,28 @@ onUnmounted(() => {
 /* ========== 响应式设计 ========== */
 @media (max-width: 800px) {
     .timeline-container {
-        padding: 0;
-        margin: 0;
+        padding: 0 12px;
+        margin: 0 auto;
+        right: 0;
+        width: 100%;
     }
 
     .timeline {
         display: none;
     }
 
+    .timeline-container.empty-state::before {
+        transform: none;
+    }
+
     .article-list {
         gap: 10px;
-        margin: 20px;
+        margin: 20px 0;
     }
 
     .article {
-        padding: 5px;
+        padding: 5px 10px;
+        max-width: 100%;
     }
 
     .article-photo {
@@ -533,6 +540,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 600px) {
+    .text {
+        gap: 5px;
+    }
+
     .article-photo {
         display: none;
     }
