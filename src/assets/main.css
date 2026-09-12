@@ -5,11 +5,72 @@ body,html,#app {
     padding:0;
 }
 
-/* 永远保留纵向滚动条占位。
-   原因：不强制滚动条时，「内容不足一屏的页面」（首页/列表/关于/RSS/404…）
-   视口可用宽度 = 窗口宽度，而「内容超过一屏的页面」（写作页、文章详情页）
-   会因为出现滚动条少掉约 15px，导致整页竖直中心线（连同导航栏）向左偏移。
-   强制占位后所有页面 clientWidth 一致，中心线不再跳动。 */
+/* 永远显示滚动条，否则各页可用宽度不一致，整页中心线会左右跳 */
 html {
     overflow-y: scroll;
+}
+
+/* ========== 滚动条 ========== */
+
+/* 原生控件（含滚动条）跟随主题；不写的话暗色下滚动条是白的 */
+html {
+    color-scheme: light;
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        color-scheme: dark;
+    }
+}
+
+/* 细滚动条（Chrome / Edge / Safari），全局生效，内部滚动区也会跟着变。
+   ⚠️ 一旦声明 scrollbar-width / scrollbar-color，Chrome 会忽略下面这套，别混用 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar-thumb);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Firefox 兜底：只能给颜色和 thin，没有圆角 */
+@supports not selector(::-webkit-scrollbar) {
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-scrollbar-thumb) transparent;
+    }
+}
+
+/* 首页隐藏滚动条：首图和导航栏要满幅，滚动条占位会把它们切掉 8px。
+   ⚠️ 页面内容画不进滚动条那一列（Chrome 在 client 边缘就裁掉），
+   所以只有让滚动条不占位，才能满幅。
+   padding-right 补回 8px，保证导航栏里的按钮与其它页面完全对齐。 */
+html:has(.page-home) {
+    scrollbar-width: none;
+}
+
+html:has(.page-home)::-webkit-scrollbar {
+    display: none;
+}
+
+html:has(.page-home) .navbar {
+    padding-right: 28px;
 }
