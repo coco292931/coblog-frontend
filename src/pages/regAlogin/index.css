@@ -6,11 +6,18 @@
     padding: 0;
 }
 
-.big-container {
+/* 登录/注册页专属根类（同时服务 /login 与 /register）。
+   下列对齐/定位/背景值原本是借 home 页面的 .big-container 规则生效的，
+   根类改名后必须自己声明（已用样式快照对比确认无视觉变化）。 */
+.page-login {
     min-height: 100vh;
     min-height: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: var(--color-page-bg);
 }
 
 .login-container {

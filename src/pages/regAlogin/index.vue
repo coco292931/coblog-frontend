@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-login">
         <NavBar />
         <div class="login-container">
             <div class="login-box">

@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-forgot-password">
         <NavBar />
         <div class="forgot-container">
             <div class="forgot-box">

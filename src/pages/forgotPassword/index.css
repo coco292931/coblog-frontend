@@ -8,10 +8,17 @@
     padding: 0;
 }
 
-.big-container {
+/* 找回密码页专属根类。
+   下列对齐/定位/背景值原本是借 home 页面的 .big-container 规则生效的，
+   根类改名后必须自己声明（已用样式快照对比确认无视觉变化）。 */
+.page-forgot-password {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: var(--color-page-bg);
 }
 
 .forgot-container {
