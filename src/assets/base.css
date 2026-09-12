@@ -1,3 +1,16 @@
+/* 全局 reset。
+   原本它是被 regAlogin / forgotPassword 两个页面的 CSS 各自引入的，
+   而构建后所有页面 CSS 会合并成一个文件 → 事实上一直全站生效。
+   与其让它藏在页面文件里（看起来没有、实际有），不如收到这里显式化。
+   （* 选择器特异性最低，不会盖住任何类样式） */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;
@@ -144,9 +157,10 @@ html[data-theme="dark"] {
   }
 }
 
-/* 注意：此文件本次为支持暗色模式才引入，原站从未应用过它。
-   因此刻意不加全局 * reset 和 body 字体/布局声明，避免覆盖原站观感，
-   只保留主题颜色变量，以及 body 的前景/背景色与切换过渡。 */
+/* 注意：本文件原本只保留主题颜色变量，刻意不加全局 * reset。
+   但后来 regAlogin / forgotPassword 两个页面各自引入了 * reset，
+   构建后 CSS 合并 → 事实上全站都已生效。现已把它收拢到本文件顶部，
+   避免“看起来没有、实际有”的隐式行为。 */
 body {
   color: var(--color-text);
   background: var(--color-background);

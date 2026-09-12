@@ -1,13 +1,5 @@
 /* 找回密码页：新页面的交互统一使用青色系配色 */
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 /* 找回密码页专属根类。
    下列对齐/定位/背景值原本是借 home 页面的 .big-container 规则生效的，
    根类改名后必须自己声明（已用样式快照对比确认无视觉变化）。 */
@@ -58,67 +50,11 @@
     text-align: center;
 }
 
-.form {
-    position: relative;
-    width: 100%;
-}
-
-.form-group {
-    position: relative;
-    margin-bottom: 1.5rem;
-}
-
-.form__input {
-    width: 100%;
-    font-family: inherit;
-    font-size: 1rem;
-    padding: 0.8rem 1rem;
-    background: var(--color-card-soft);
-    color: var(--color-text);
-    border: 2px solid var(--color-divider);
-    border-radius: 0.5rem;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.form__input::-ms-reveal,
-.form__input::-ms-clear {
-    display: none;
-}
-
+/* 表单公共部分（.form / .form-group / .form__input / 标签浮动 等）
+   已抽到 src/assets/form.css，与登录/注册页共用 */
 .form__input:hover {
     border-color: var(--color-cyan-border);
     background: var(--color-card-bg);
-}
-
-.form__input:focus {
-    outline: none;
-    border-color: var(--color-cyan);
-    background: var(--color-card-bg);
-    box-shadow: 0 0 0 3px var(--color-cyan-soft);
-}
-
-.form__label {
-    position: absolute;
-    left: 1rem;
-    top: 0.8rem;
-    color: var(--color-text-muted);
-    cursor: text;
-    user-select: none;
-    background-color: transparent;
-    padding: 0 0.3rem;
-    transition: all 0.2s ease;
-    pointer-events: none;
-}
-
-.form__input:focus ~ .form__label,
-.form__input:not(:placeholder-shown) ~ .form__label {
-    top: -0.6rem;
-    left: 0.7rem;
-    font-size: 0.75rem;
-    color: var(--color-cyan);
-    background-color: var(--color-card-bg);
-    padding: 0 0.4rem;
 }
 
 .submit-btn {
@@ -139,10 +75,6 @@
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px var(--color-cyan-shadow);
-}
-
-.submit-btn:active {
-    transform: translateY(0);
 }
 
 .submit-btn:disabled {
@@ -190,27 +122,6 @@ html[data-theme="dark"] .alert-box.error {
     color: #ffd666;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.alert-icon {
-    font-size: 1.2rem;
-    flex-shrink: 0;
-}
-
-.alert-text {
-    flex: 1;
-}
-
 /* 验证码输入组 */
 .code-group .form__input {
     padding-right: 8.5rem;
@@ -251,57 +162,15 @@ html[data-theme="dark"] .alert-box.error {
     border-color: var(--color-divider);
 }
 
-/* 密码显示/隐藏：与登录页保持完全一致的交互与位置 */
-.password-group {
-    position: relative;
-}
-
 /* 只在输入框右侧留出图标空间，避免文字压到图标上 */
 .password-group .form__input {
     padding-right: 3rem;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-muted);
-    transition: color 0.3s ease;
-    z-index: 10;
-}
-
-.toggle-password:hover {
-    color: var(--color-cyan);
-}
-
-.toggle-password svg {
-    display: block;
 }
 
 .switch-mode {
     text-align: center;
     margin-top: 1.5rem;
     font-size: 0.9rem;
-}
-
-.link {
-    color: var(--color-cyan);
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.link:hover {
-    color: var(--color-cyan-hover);
-    text-decoration: underline;
 }
 
 @media (max-width: 640px) {

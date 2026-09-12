@@ -43,7 +43,9 @@
 
     function snapshot() {
         var out = {};
-        document.querySelectorAll('*').forEach(function (el, i) {
+        // key 用「body 内的索引」：head 里的 style/link 数量会被 Vite HMR 影响，
+        // 若用全文档索引，隔一段时间再对比就会整体错位。
+        document.body.querySelectorAll('*').forEach(function (el, i) {
             if (el.hasAttribute('data-snap-freeze')) return;
             var cs = getComputedStyle(el);
             var rec = { cls: (typeof el.className === 'string' ? el.className : el.getAttribute('class')) || '' };

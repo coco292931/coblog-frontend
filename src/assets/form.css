@@ -1,0 +1,153 @@
+/**
+ * 表单共享样式
+ *
+ * 使用方：regAlogin（/login、/register）与 forgotPassword（/forgot-password）。
+ *
+ * 这里只放「两个页面逐字相同」的规则。两边存在差异的 4 处
+ * （.form__input:hover、.submit-btn、.switch-mode、.alert-box）仍留在各自页面的
+ * CSS 里 —— 它们本身就不同，合并会改变观感，属于要单独决策的视觉问题。
+ *
+ * 用 :is(.page-login, .page-forgot-password) 包一层，避免将来别的页面
+ * 出现同名类时被这里误命中（项目的页面 CSS 是全局合并的）。
+ */
+
+:is(.page-login, .page-forgot-password) {
+
+    .form {
+        position: relative;
+        width: 100%;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .form__input {
+        width: 100%;
+        font-family: inherit;
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+        background: var(--color-card-soft);
+        color: var(--color-text);
+        border: 2px solid var(--color-divider);
+        border-radius: 0.5rem;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    /* 禁用浏览器默认的密码显示/隐藏按钮 */
+    .form__input::-ms-reveal,
+    .form__input::-ms-clear {
+        display: none;
+    }
+
+    .form__input:focus {
+        outline: none;
+        border-color: var(--color-cyan);
+        background: var(--color-card-bg);
+        box-shadow: 0 0 0 3px var(--color-cyan-soft);
+    }
+
+    .form__label {
+        position: absolute;
+        left: 1rem;
+        top: 0.8rem;
+        color: var(--color-text-muted);
+        cursor: text;
+        user-select: none;
+        background-color: transparent;
+        padding: 0 0.3rem;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .form__input:focus ~ .form__label,
+    .form__input:not(:placeholder-shown) ~ .form__label {
+        top: -0.6rem;
+        left: 0.7rem;
+        font-size: 0.75rem;
+        color: var(--color-cyan);
+        background-color: var(--color-card-bg);
+        padding: 0 0.4rem;
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .submit-btn:disabled:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .link {
+        color: var(--color-cyan);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .link:hover {
+        color: var(--color-cyan-hover);
+        text-decoration: underline;
+    }
+
+    .alert-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .alert-text {
+        flex: 1;
+    }
+
+    /* 密码显示/隐藏按钮 */
+    .password-group {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-muted);
+        transition: color 0.3s ease;
+        z-index: 10;
+    }
+
+    .toggle-password:hover {
+        color: var(--color-cyan);
+    }
+
+    .toggle-password svg {
+        display: block;
+    }
+}
+
+/* 警示/提示框的进场动画（两个页面共用） */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

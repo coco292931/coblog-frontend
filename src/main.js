@@ -2,6 +2,8 @@ import './assets/base.css'
 import './assets/main.css'
 // 文章正文共享样式：写作页预览与文章详情页共用同一套排版
 import './assets/article-prose.css'
+// 表单共享样式：登录/注册页与找回密码页共用
+import './assets/form.css'
 import router from './router/'
 import { createApp } from 'vue'
 import App from './App.vue'
