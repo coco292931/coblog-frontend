@@ -178,3 +178,19 @@ body {
     color 0.5s,
     background-color 0.5s;
 }
+
+/* 手动切换主题时的全局颜色过渡。
+   这个类由 useTheme 在切换瞬间临时挂上（约 400ms 后摘掉）——
+   平时不给元素挂 transition，既不影响渲染，也不会改掉各组件 hover 的手感。
+   用 !important 是为了在这一小会儿压过组件自身的 transition。 */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition:
+    background-color 0.35s ease,
+    background-image 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease !important;
+}
