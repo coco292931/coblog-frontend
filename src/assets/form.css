@@ -127,7 +127,11 @@
 
     .alert-icon {
         font-size: 1.2rem;
+        line-height: 1;
         flex-shrink: 0;
+        /* ⚠️/✅ 是 emoji，字形在行框里天然偏下，居中只居了行框；
+           上提一点让它在视觉上与右侧文字对齐 */
+        transform: translateY(-1px);
     }
 
     .alert-text {
@@ -191,9 +195,11 @@
     }
 
     .alert-box.success {
-        background-color: var(--color-cyan-soft);
+        /* 底色比原来淡一档，文字改用强调青（暗色下是 #4fe9e9）——
+           之前底 rgba(22,176,176,.14) + 字 #16b0b0，两个都是深青，暗色下看不清 */
+        background-color: color-mix(in srgb, var(--color-cyan) 10%, transparent);
         border: 1px solid var(--color-cyan-border);
-        color: var(--color-cyan);
+        color: var(--color-accent);
     }
 }
 
