@@ -41,6 +41,7 @@
 
                 .search-input {
                     flex: 1;
+                    min-width: 0;
                     border: none;
                     outline: none;
                     font-size: 16px;
@@ -54,6 +55,7 @@
                 }
 
                 .search-button {
+                    flex-shrink: 0;
                     background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
                     border: none;
                     border-radius: 40%;
@@ -74,6 +76,7 @@
                 }
 
                 .filter-toggle {
+                    flex-shrink: 0;
                     background: transparent;
                     border: none;
                     width: 38px;

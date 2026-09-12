@@ -75,11 +75,13 @@
 
 .cover-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
 }
 
 .cover-row input {
     flex: 1;
+    min-width: 0;
 }
 
 .cover-preview {

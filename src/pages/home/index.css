@@ -146,3 +146,12 @@
         }
     }
 }
+
+/*超窄屏（iPhone SE 一代 / 320px）：标语是 nowrap 的，需要再缩一档字号才放得下*/
+@media (max-width: 340px) {
+    .page-home .main-photo {
+        .welcome-text {
+            font-size: 24px;
+        }
+    }
+}

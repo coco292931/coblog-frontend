@@ -105,3 +105,17 @@
     align-items: center;
     gap: 1rem;
 }
+
+/* ===== 小屏适配 ===== */
+/* .login-box 有 min-width: 28rem（448px），手机宽度不够会横向溢出整页，
+   这里放开最小宽度并收一下内边距 —— 与找回密码页的媒体查询保持一致。 */
+@media (max-width: 640px) {
+    .login-container {
+        padding: 1rem;
+    }
+
+    .login-box {
+        min-width: 0;
+        padding: 1.75rem 1.25rem;
+    }
+}
