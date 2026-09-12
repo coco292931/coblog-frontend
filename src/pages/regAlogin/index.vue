@@ -90,8 +90,8 @@
                         注册成功后请使用邮件中的链接完成账户激活。
                     </p>
 
-                    <div class="alert-box" v-if="alertMessage">
-                        <span class="alert-icon">⚠️</span>
+                    <div class="alert-box" :class="alertType" v-if="alertMessage">
+                        <span class="alert-icon">{{ alertType === 'success' ? '✅' : '⚠️' }}</span>
                         <span class="alert-text">{{ alertMessage }}</span>
                     </div>
 
@@ -146,8 +146,15 @@ const formData = ref({
     rememberMe: false,
 });
 
-// 警示消息
+// 提示消息（type: 'error' | 'success'）
 const alertMessage = ref('');
+const alertType = ref('error');
+
+// 统一提示入口：成功与失败用不同样式，不再共用黄色警告框
+const showAlert = (msg, type = 'error') => {
+    alertMessage.value = msg;
+    alertType.value = type;
+};
 
 // 显示/隐藏密码
 const showPassword = ref(false);
@@ -184,7 +191,7 @@ const handleLoginSuccess = (data, msg) => {
     const storage = formData.value.rememberMe ? localStorage : sessionStorage;
     storage.setItem('userInfo', JSON.stringify(userInfo));
 
-    alertMessage.value = msg || '登录成功！';
+    showAlert(msg || '登录成功！', 'success');
 
     const target = redirectTarget.value || '/me';
     setTimeout(() => {
@@ -214,28 +221,28 @@ const handleSubmit = async () => {
             if (response.code === 200 && response.data) {
                 handleLoginSuccess(response.data, response.msg);
             } else {
-                alertMessage.value = response.msg || '登录失败！';
+                showAlert(response.msg || '登录失败！');
             }
         } catch (error) {
             console.error('登录失败:', error);
-            alertMessage.value = error.response?.data?.msg || '登录失败，请检查账号和密码！';
+            showAlert(error.response?.data?.msg || '登录失败，请检查账号和密码！');
         } finally {
             isSubmitting.value = false;
         }
     } else {
         // 注册逻辑
         if (!formData.value.username) {
-            alertMessage.value = '请输入用户名！';
+            showAlert('请输入用户名！');
             return;
         }
         
         if (formData.value.password !== formData.value.confirmPassword) {
-            alertMessage.value = '两次输入的密码不一致，请重新输入！';
+            showAlert('两次输入的密码不一致，请重新输入！');
             return;
         }
 
         if (formData.value.password.length < 6) {
-            alertMessage.value = '密码长度至少需要6位字符！';
+            showAlert('密码长度至少需要6位字符！');
             return;
         }
         
@@ -249,18 +256,18 @@ const handleSubmit = async () => {
             });
 
             if (response.code === 200) {
-                alertMessage.value = response.msg || '注册成功，激活邮件已发送！';
+                showAlert(response.msg || '注册成功，激活邮件已发送！', 'success');
 
                 setTimeout(() => {
 					router.push('/login');
                 }, 1200);
             } else {
-                alertMessage.value = response.msg || '注册失败，请稍后重试！';
+                showAlert(response.msg || '注册失败，请稍后重试！');
             }
             
         } catch (error) {
             console.error('注册失败:', error);
-            alertMessage.value = error.response?.data?.msg || '注册失败，请稍后重试！';
+            showAlert(error.response?.data?.msg || '注册失败，请稍后重试！');
         } finally {
             isSubmitting.value = false;
         }

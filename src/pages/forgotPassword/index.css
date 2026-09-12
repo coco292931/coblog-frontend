@@ -94,34 +94,6 @@
     color: var(--color-text-muted);
 }
 
-.alert-box {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1rem;
-    margin-bottom: 1rem;
-    border-radius: 0.5rem;
-    font-size: 0.9rem;
-    animation: slideDown 0.3s ease;
-}
-
-.alert-box.error {
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
-}
-
-.alert-box.success {
-    background-color: var(--color-cyan-soft);
-    border: 1px solid var(--color-cyan-border);
-    color: var(--color-cyan);
-}
-
-html[data-theme="dark"] .alert-box.error {
-    background-color: rgba(255, 193, 7, 0.12);
-    color: #ffd666;
-}
-
 /* 验证码输入组 */
 .code-group .form__input {
     padding-right: 8.5rem;
@@ -165,12 +137,6 @@ html[data-theme="dark"] .alert-box.error {
 /* 只在输入框右侧留出图标空间，避免文字压到图标上 */
 .password-group .form__input {
     padding-right: 3rem;
-}
-
-.switch-mode {
-    text-align: center;
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
 }
 
 @media (max-width: 640px) {

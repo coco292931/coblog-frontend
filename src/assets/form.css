@@ -42,6 +42,12 @@
         display: none;
     }
 
+    /* 悬停用较淡的边框色，focus 才用实青，保留 hover/focus 的层次感 */
+    .form__input:hover {
+        border-color: var(--color-cyan-border);
+        background: var(--color-card-bg);
+    }
+
     .form__input:focus {
         outline: none;
         border-color: var(--color-cyan);
@@ -70,6 +76,26 @@
         color: var(--color-cyan);
         background-color: var(--color-card-bg);
         padding: 0 0.4rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 0.9rem;
+        background: var(--color-cyan-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px var(--color-cyan-shadow);
     }
 
     .submit-btn:active {
@@ -137,6 +163,44 @@
     .toggle-password svg {
         display: block;
     }
+
+    .switch-mode {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--color-text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* 提示条：失败 = 黄色提醒，成功 = 青色。
+       以前登录/注册页不分类型，成功也弹黄色警告框，语义不对。 */
+    .alert-box {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        animation: slideDown 0.3s ease;
+    }
+
+    .alert-box.error {
+        background-color: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+    }
+
+    .alert-box.success {
+        background-color: var(--color-cyan-soft);
+        border: 1px solid var(--color-cyan-border);
+        color: var(--color-cyan);
+    }
+}
+
+/* 暗色主题下把错误提示的黄底压低一档，避免刺眼 */
+html[data-theme="dark"] :is(.page-login, .page-forgot-password) .alert-box.error {
+    background-color: rgba(255, 193, 7, 0.12);
+    color: #ffd666;
 }
 
 /* 警示/提示框的进场动画（两个页面共用） */

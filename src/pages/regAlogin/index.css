@@ -47,37 +47,6 @@
     right: 0;
 }
 
-.form__input:hover {
-    border-color: var(--color-cyan);
-    background: var(--color-card-bg);
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 0.9rem;
-    background: linear-gradient(135deg, var(--color-cyan) 0%, var(--color-cyan-hover) 100%);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 0.5rem;
-}
-
-.submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px var(--color-cyan-shadow);
-}
-
-.switch-mode {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
-}
-
 /* 登录选项（记住我 + 忘记密码） */
 .login-options {
     display: flex;
@@ -117,21 +86,6 @@
 .forgot-password:hover {
     color: var(--color-cyan-hover);
     text-decoration: underline;
-}
-
-/* 警示显示区（注册页面） */
-.alert-box {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1rem;
-    margin-bottom: 1rem;
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    border-radius: 0.5rem;
-    color: #856404;
-    font-size: 0.9rem;
-    animation: slideDown 0.3s ease;
 }
 
 .register-tip {
