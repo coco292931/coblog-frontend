@@ -132,12 +132,12 @@ onUnmounted(() => {
 .footer-container {
     width: 100%;
     background:
-        linear-gradient(180deg, rgba(31, 239, 239, 0.04) 0%, transparent 60%),
+        linear-gradient(180deg, color-mix(in srgb, var(--color-brand) 4%, transparent) 0%, transparent 60%),
         var(--color-background-soft);
     color: var(--color-text-secondary);
     padding: 32px 20px;
     margin-top: 60px;
-    border-top: 2px solid rgba(31, 239, 239, 0.5);
+    border-top: 2px solid color-mix(in srgb, var(--color-brand) 50%, transparent);
     box-sizing: border-box;
 }
 
@@ -158,7 +158,7 @@ onUnmounted(() => {
 
 .copyright::before {
     content: "⚓ ";
-    color: rgb(31, 239, 239);
+    color: var(--color-brand);
 }
 
 .stats {
@@ -176,7 +176,7 @@ onUnmounted(() => {
 }
 
 .separator {
-    color: rgba(31, 239, 239, 0.6);
+    color: color-mix(in srgb, var(--color-brand) 60%, transparent);
     display: inline-flex;
     align-items: center;
 }
@@ -195,7 +195,7 @@ onUnmounted(() => {
 
 .powered::after {
     content: "♥";
-    color: rgb(31, 239, 239);
+    color: var(--color-brand);
     font-style: normal;
 }
 
