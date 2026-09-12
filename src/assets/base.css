@@ -78,6 +78,18 @@ html[data-theme="light"] {
      亮色主题下用深青，否则原来的荧光青在半透明浅色导航栏上几乎看不清 */
   --color-brand: #0e9a9a;
 
+  /* 语义色：危险 / 成功 / 警告。
+     以前同一个删除按钮在 write 用 #e74c3c、在 me 用 #ff4d4f，
+     成功续有 #52c41a / #389e0d 两种，统一到这里。 */
+  --color-danger: #e74c3c;
+  --color-danger-hover: #cf3f30;
+  --color-danger-soft: rgba(231, 76, 60, 0.12);
+  --color-danger-border: rgba(231, 76, 60, 0.45);
+  --color-danger-shadow: rgba(231, 76, 60, 0.32);
+  --color-success: #52c41a;
+  --color-warning: #d48806;
+  --color-warning-soft: rgba(255, 153, 0, 0.16);
+
   --section-gap: 160px;
 }
 
@@ -121,6 +133,16 @@ html[data-theme="dark"] {
 
   /* 品牌青：暗色主题保留原来的荧光青（#1fefef，与旧硬编码值一致） */
   --color-brand: #1fefef;
+
+  /* 语义色（暗色下把色调亮一点，浅色底上的深红深绿在深底上会发闷） */
+  --color-danger: #ff6b5b;
+  --color-danger-hover: #ff8a7a;
+  --color-danger-soft: rgba(255, 107, 91, 0.14);
+  --color-danger-border: rgba(255, 107, 91, 0.42);
+  --color-danger-shadow: rgba(255, 107, 91, 0.28);
+  --color-success: #73d13d;
+  --color-warning: #ffc53d;
+  --color-warning-soft: rgba(255, 197, 61, 0.14);
 }
 
 /* 跟随系统：未手动指定主题时按系统偏好取深色 */
@@ -164,6 +186,16 @@ html[data-theme="dark"] {
 
     /* 品牌青（跟随系统深色） */
     --color-brand: #1fefef;
+
+    /* 语义色（跟随系统深色） */
+    --color-danger: #ff6b5b;
+    --color-danger-hover: #ff8a7a;
+    --color-danger-soft: rgba(255, 107, 91, 0.14);
+    --color-danger-border: rgba(255, 107, 91, 0.42);
+    --color-danger-shadow: rgba(255, 107, 91, 0.28);
+    --color-success: #73d13d;
+    --color-warning: #ffc53d;
+    --color-warning-soft: rgba(255, 197, 61, 0.14);
   }
 }
 

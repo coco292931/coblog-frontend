@@ -52,7 +52,7 @@
 }
 
 .required {
-    color: #e74c3c;
+    color: var(--color-danger);
 }
 
 .field input[type="text"],
@@ -401,28 +401,28 @@
 
 /* 危险操作（弹窗内实心） */
 .btn-danger {
-    background: #e74c3c;
+    background: var(--color-danger);
     color: #fff;
 }
 
 .btn-danger:hover:not(:disabled) {
-    background: #cf3f30;
-    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.35);
+    background: var(--color-danger-hover);
+    box-shadow: 0 6px 16px var(--color-danger-shadow);
 }
 
 /* 危险操作（页面上描边，避免默认就太抢眼） */
 .btn-danger-outline {
     background: transparent;
-    border-color: rgba(231, 76, 60, 0.5);
-    color: #e74c3c;
+    border-color: var(--color-danger-border);
+    color: var(--color-danger);
     min-height: 40px;
     padding: 0 22px;
     font-size: 14px;
 }
 
 .btn-danger-outline:hover:not(:disabled) {
-    background: #e74c3c;
-    border-color: #e74c3c;
+    background: var(--color-danger);
+    border-color: var(--color-danger);
     color: #fff;
 }
 
@@ -434,9 +434,9 @@
     gap: 16px;
     flex-wrap: wrap;
     padding: 16px 22px;
-    border: 1px dashed rgba(231, 76, 60, 0.4);
+    border: 1px dashed var(--color-danger-border);
     border-radius: 14px;
-    background: rgba(231, 76, 60, 0.04);
+    background: color-mix(in srgb, var(--color-danger) 4%, transparent);
 }
 
 .danger-info {
@@ -446,7 +446,7 @@
 .danger-title {
     font-size: 14px;
     font-weight: 700;
-    color: #e74c3c;
+    color: var(--color-danger);
     margin-bottom: 4px;
 }
 
@@ -528,8 +528,8 @@
 }
 
 .modal-input:focus {
-    border-color: #e74c3c;
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px var(--color-danger-soft);
 }
 
 .modal-actions {

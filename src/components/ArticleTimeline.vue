@@ -369,7 +369,7 @@ onUnmounted(() => {
     background-color: var(--color-background-soft);
     border: 3px solid var(--color-cyan-bright);
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(252, 60, 60, 0.2);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--color-danger) 20%, transparent);
     transition: all 0.3s ease;
     z-index: 2;
 }

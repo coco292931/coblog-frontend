@@ -350,7 +350,7 @@ const download = async () => {
 }
 
 .lb-close:hover {
-    background: rgba(231, 76, 60, 0.3);
+    background: color-mix(in srgb, var(--color-danger) 30%, transparent);
     color: #ff8a7a;
 }
 

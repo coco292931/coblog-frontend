@@ -75,12 +75,12 @@ const ICONS = {
 
 /* 错误：醒目红色 */
 .toast-error {
-    border-left-color: #e74c3c;
+    border-left-color: var(--color-danger);
 }
 
 /* 警告：琥珀色 */
 .toast-warning {
-    border-left-color: #e6a23c;
+    border-left-color: var(--color-warning);
 }
 
 /* 普通提示 */
