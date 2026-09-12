@@ -323,6 +323,41 @@ const toThumbUrl = (url) => {
 };
 
 /**
+ * 由压缩图地址反推原图地址（toThumbUrl 的逆）。
+ * 早期正文里存的是压缩图地址；_c.jpg 的原后缀无法确定，返回多个候选供逐个探测。
+ */
+const toOriginalCandidates = (url) => {
+    if (!url || !url.includes('/static/uploads/')) return [];
+
+    const matched = url.match(/_c\.(png|jpe?g)(\?.*)?$/i);
+    if (!matched) return [];
+
+    const exts = matched[1].toLowerCase() === 'png' ? ['png'] : ['jpg', 'jpeg', 'webp', 'gif'];
+    const base = url.slice(0, matched.index);
+    return exts.map((ext) => `${base}.${ext}${matched[2] || ''}`);
+};
+
+/** 探测原图是否存在。用 HEAD，<img>会下载 */
+const probeExists = async (url) => {
+    try {
+        const resp = await fetch(url, { method: 'HEAD', mode: 'cors', cache: 'no-cache' });
+        return resp.ok;
+    } catch {
+        return false;
+    }
+};
+
+/** 确认原图存在后才替换灯箱的 original，避免给出 404 链接 */
+const resolveOriginal = async (url) => {
+    for (const candidate of toOriginalCandidates(url)) {
+        if (!(await probeExists(candidate))) continue;
+        // 探测期间用户可能点开了别的图，避免结果写到新图上
+        if (lightboxOriginal.value === url) lightboxOriginal.value = candidate;
+        return;
+    }
+};
+
+/**
  * 正文点击事件委托：命中图片则打开灯箱。
  * 绑定在容器（而非图片本身），因此不受 v-html 重渲染影响。
  */
@@ -350,6 +385,7 @@ const openLightbox = (originalUrl, alt) => {
     // 先展示压缩图（外链图片没有压缩版本，与原图相同）
     lightboxSrc.value = toThumbUrl(originalUrl);
     lightboxOpen.value = true;
+    resolveOriginal(originalUrl);
 };
 
 // 格式化日期时间

@@ -34,9 +34,10 @@
                     </button>
                     <span class="lb-divider"></span>
                     <!-- 原图切换：无独立原图（外链图片）时不显示 -->
-                    <button v-if="hasDistinctOriginal" class="lb-btn lb-text-btn"
+                    <button v-if="hasDistinctOriginal" class="lb-btn lb-text-btn" :disabled="originalLoading"
                         :title="showingOriginal ? '查看压缩图' : '查看原图'" @click="toggleOriginal">
-                        {{ showingOriginal ? '压缩图' : '原图' }}
+                        <span v-if="originalLoading" class="lb-spinner"></span>
+                        <template v-else>{{ showingOriginal ? '压缩图' : '原图' }}</template>
                     </button>
                     <button class="lb-btn" :title="downloading ? '下载中…' : '下载原图'" :disabled="downloading"
                         @click="download">
@@ -57,17 +58,20 @@
                     </button>
                 </div>
 
-                <!-- 图片：单击关闭，按住左键拖动平移（位移超过阈值才算拖动） -->
+                <!-- 单击关闭，按住拖动平移；两张图都留在 DOM 里，只切可见性 -->
                 <div class="lightbox-stage" @click.self="close">
-                    <img ref="imgRef" :src="displaySrc" :alt="alt" class="lightbox-img"
-                        :class="{ dragging: isDragging }"
+                    <div ref="canvasRef" class="lightbox-canvas" :class="{ dragging: isDragging }"
                         :style="{ transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})` }"
-                        draggable="false"
                         @pointerdown="onPointerDown"
                         @pointermove="onPointerMove"
                         @pointerup="onPointerUp"
                         @pointercancel="onPointerUp"
-                        @click="onImageClick" />
+                        @click="onImageClick">
+                        <img :src="src" :alt="alt" class="lightbox-img" :class="{ 'is-hidden': showingOriginal }"
+                            draggable="false" />
+                        <img v-if="hasDistinctOriginal" ref="originalImgRef" :src="originalImgSrc" :alt="alt"
+                            class="lightbox-img" :class="{ 'is-hidden': !showingOriginal }" draggable="false" />
+                    </div>
                 </div>
 
                 <div class="lightbox-tip">单击关闭 · 按住拖动 · 滚轮缩放 · Esc 退出</div>
@@ -77,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { toast } from '../composables/useToast.js';
 
 const MIN_SCALE = 0.4;
@@ -101,8 +105,12 @@ const emit = defineEmits(['update:open']);
 
 const scale = ref(1);
 const downloading = ref(false);
-const imgRef = ref(null);
-// 当前是否正在看原图（无压缩图时始终为 true）
+const canvasRef = ref(null);
+// 原图元素（仅存在独立原图时渲染）
+const originalImgRef = ref(null);
+const originalLoading = ref(false);
+// 原图 src：首次切换时才赋值（undefined 时 Vue 不渲染该属性，不发请求）
+const originalImgSrc = ref(undefined);
 const showingOriginal = ref(false);
 
 // 下载与原图查看都以原图为准；没传 original 时退化为 src
@@ -133,7 +141,7 @@ let originOffsetY = 0;
  * 最多允许图片自身尺寸一半的位移，保证总有一半在视口内。
  */
 const clampOffset = () => {
-    const el = imgRef.value;
+    const el = canvasRef.value;
     if (!el) return;
     const maxX = (el.offsetWidth * scale.value) / 2;
     const maxY = (el.offsetHeight * scale.value) / 2;
@@ -202,7 +210,10 @@ watch(() => props.open, (open) => {
         isDragging.value = false;
         didDrag = false;
         pointerActive = false;
-        showingOriginal.value = !hasDistinctOriginal.value;
+        // 一律先看压缩图（原图是异步探测出来的，避免画面突然换大图）
+        showingOriginal.value = false;
+        originalImgSrc.value = undefined;
+        originalLoading.value = false;
     } else {
         // 关闭时复位交互状态，避免下次打开残留 didDrag 导致单击失效
         isDragging.value = false;
@@ -211,18 +222,46 @@ watch(() => props.open, (open) => {
     }
 });
 
-// 在压缩图与原图之间切换
-const toggleOriginal = () => {
-    if (!hasDistinctOriginal.value) return;
+/** 等某张图真的加载解码完成（已完成则直接返回） */
+const imageLoaded = (el) =>
+    new Promise((resolve) => {
+        if (!el) return resolve(false);
+        if (el.complete) return resolve(el.naturalWidth > 0);
+
+        const done = (ok) => {
+            el.removeEventListener('load', onLoad);
+            el.removeEventListener('error', onError);
+            resolve(ok);
+        };
+        const onLoad = () => done(true);
+        const onError = () => done(false);
+        el.addEventListener('load', onLoad);
+        el.addEventListener('error', onError);
+    });
+
+/** 切换压缩图/原图。首次切原图要等它加载完，否则会闪空白 */
+const toggleOriginal = async () => {
+    if (!hasDistinctOriginal.value || originalLoading.value) return;
+
+    if (!showingOriginal.value && originalImgSrc.value === undefined) {
+        originalLoading.value = true;
+        originalImgSrc.value = originalUrl.value;
+        await nextTick();
+        const ok = await imageLoaded(originalImgRef.value);
+        originalLoading.value = false;
+
+        if (!ok) {
+            originalImgSrc.value = undefined;
+            toast.warning('原图加载失败，仍显示压缩图');
+            return;
+        }
+    }
+
     showingOriginal.value = !showingOriginal.value;
-    // 切换图片尺寸后旧的平移偏移不再适用
+    // 两张图尺寸可能不同，旧的平移偏移不再适用
     offsetX.value = 0;
     offsetY.value = 0;
 };
-
-const displaySrc = computed(
-    () => (showingOriginal.value ? originalUrl.value : props.src)
-);
 
 const close = () => {
     emit('update:open', false);
@@ -245,17 +284,8 @@ const onWheel = (e) => {
     zoomBy(e.deltaY < 0 ? 0.15 : -0.15);
 };
 
-/**
- * 灯箱打开期间锁住页面滚动。
- *
- * ⚠️ 不能用 body { overflow: hidden }：main.css 给 html 设了 overflow-y: scroll，
- * 此时 body 的 overflow 不会传播到视口，改成 hidden 只是把 body 自己变成裁剪容器，
- * 文档可滚动高度会瞬间塌成一个视口，滚动位置被强制归零且关掉后无法恢复
- * （表现就是「看完图回到文章，位置跳回了顶部」）。
- *
- * 因此这里改成拦截输入：滚轮用模板上的 @wheel.prevent，
- * 触摸用样式里的 touch-action: none，滚动类按键在这里拦掉。
- */
+// 锁滚动靠拦输入：滚轮 @wheel.prevent、触摸 touch-action:none、滚动按键在这里拦。
+// 不用 body{overflow:hidden}：html 已是滚动容器，那会把文档高度塔陷、滚动位置被清零。
 const SCROLL_KEYS = [
     ' ', 'Spacebar', 'PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'Home', 'End',
 ];
@@ -266,7 +296,7 @@ const onKeydown = (e) => {
         close();
         return;
     }
-    // 遮罩下面就是文章正文，别让空格 / 方向键把背景滚走
+    // 遮罩下面就是正文，别让空格 / 方向键把背景滚走
     if (SCROLL_KEYS.includes(e.key)) e.preventDefault();
 };
 
@@ -286,7 +316,8 @@ const download = async () => {
     downloading.value = true;
     const loadingId = toast.loading('正在准备下载…');
     try {
-        const resp = await fetch(url, { mode: 'cors' });
+        // cache:'no-cache'：<img> 加载过的缓存响应不带 ACAO，直接 fetch 会 CORS 失败
+        const resp = await fetch(url, { mode: 'cors', cache: 'no-cache' });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const blob = await resp.blob();
 
@@ -294,8 +325,11 @@ const download = async () => {
         const a = document.createElement('a');
         a.href = objectUrl;
         // 文件名优先用 alt，回退到 URL 末段
-        const fallback = decodeURIComponent(url.split('/').pop().split('?')[0] || 'image');
-        a.download = props.alt ? `${props.alt}` : fallback;
+        const urlName = decodeURIComponent(url.split('/').pop().split('?')[0] || 'image');
+        const dot = urlName.lastIndexOf('.');
+        const name = (props.alt || '').trim() || urlName;
+        // alt 常是描述文字（没有后缀），补上图片自身的后缀
+        a.download = /\.[a-z0-9]+$/i.test(name) ? name : name + (dot > 0 ? urlName.slice(dot) : '');
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -422,24 +456,37 @@ const download = async () => {
     overflow: hidden;
 }
 
-.lightbox-img {
-    max-width: min(92vw, 1400px);
-    max-height: 82vh;
-    object-fit: contain;
-    border-radius: 6px;
+/* 变换挂在这里，两张图共用 */
+.lightbox-canvas {
+    position: relative;
     cursor: grab;
     transition: transform 0.18s ease;
     transform-origin: center center;
     user-select: none;
     /* 阻止拖动时触发系统手势或选中 */
     touch-action: none;
-    -webkit-user-drag: none;
 }
 
 /* 拖动中：取消过渡与 grab 光标，跟手感更好 */
-.lightbox-img.dragging {
+.lightbox-canvas.dragging {
     cursor: grabbing;
     transition: none;
+}
+
+.lightbox-img {
+    display: block;
+    max-width: min(92vw, 1400px);
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 6px;
+    -webkit-user-drag: none;
+}
+
+/* 隐藏的那张不占尺寸，切回来无需重新请求 */
+.lightbox-img.is-hidden {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
 }
 
 .lightbox-tip {
