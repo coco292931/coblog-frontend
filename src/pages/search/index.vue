@@ -42,26 +42,29 @@
                 </transition>
             </div>
 
-            <!-- 排序方式切换 -->
-            <div class="sort-bar">
-                <span class="sort-label">排序</span>
-                <div class="sort-options">
-                    <button type="button" class="sort-option" :class="{ active: sortKey === 'published' }"
-                        @click="setSortKey('published')">最新发布</button>
-                    <button type="button" class="sort-option" :class="{ active: sortKey === 'updated' }"
-                        @click="setSortKey('updated')">最近修改</button>
+            <!-- 结果统计 + 排序方式（同一水平行） -->
+            <div class="stats-bar">
+                <div class="search-stats">
+                    <template v-if="hasFetched">
+                        <span v-if="isLoading">加载中...</span>
+                        <span v-else>
+                            <template v-if="hasActiveFilter">符合条件的文章：</template>
+                            <template v-else>全部文章：</template>
+                            <strong>{{ total }}</strong> 篇
+                            <span v-if="activeFilterText" class="active-filter-text">（{{ activeFilterText }}）</span>
+                        </span>
+                    </template>
                 </div>
-            </div>
 
-            <!-- 结果统计 -->
-            <div v-if="hasFetched" class="search-stats">
-                <span v-if="isLoading">加载中...</span>
-                <span v-else>
-                    <template v-if="hasActiveFilter">符合条件的文章：</template>
-                    <template v-else>全部文章：</template>
-                    <strong>{{ total }}</strong> 篇
-                    <span v-if="activeFilterText" class="active-filter-text">（{{ activeFilterText }}）</span>
-                </span>
+                <div class="sort-bar">
+                    <span class="sort-label">排序</span>
+                    <div class="sort-options">
+                        <button type="button" class="sort-option" :class="{ active: sortKey === 'published' }"
+                            @click="setSortKey('published')">最新发布</button>
+                        <button type="button" class="sort-option" :class="{ active: sortKey === 'updated' }"
+                            @click="setSortKey('updated')">最近修改</button>
+                    </div>
+                </div>
             </div>
 
             <!-- 加载状态 -->

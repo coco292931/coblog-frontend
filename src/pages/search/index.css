@@ -183,70 +183,79 @@
             }
         }
 
-        /* ========== 排序方式切换 ========== */
-        .sort-bar {
+        /* ========== 结果统计 + 排序方式（同一水平行） ========== */
+        .stats-bar {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            /* 搜索栏容器自带 30px 下边距，这里回收一部分 */
-            margin: -12px 0 18px;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
 
-            .sort-label {
-                font-size: 13px;
-                color: var(--color-text-muted);
+            /* 结果统计信息 */
+            .search-stats {
+                font-size: 16px;
+                color: var(--color-text-secondary);
+                min-width: 0;
+
+                strong {
+                    color: var(--color-cyan);
+                    font-weight: bold;
+                }
+
+                .active-filter-text {
+                    font-size: 14px;
+                    color: var(--color-text-muted);
+                }
             }
 
-            .sort-options {
+            /* 排序切换 */
+            .sort-bar {
                 display: flex;
-                gap: 2px;
-                padding: 3px;
-                background: var(--color-card-soft);
-                border: 1px solid var(--color-divider);
-                border-radius: 999px;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+                /* 窄屏换行时仍靠右 */
+                margin-left: auto;
 
-                .sort-option {
-                    border: none;
-                    background: transparent;
-                    color: var(--color-text-secondary);
+                .sort-label {
                     font-size: 13px;
-                    line-height: 1.2;
-                    padding: 6px 16px;
+                    color: var(--color-text-muted);
+                }
+
+                .sort-options {
+                    display: flex;
+                    gap: 2px;
+                    padding: 3px;
+                    background: var(--color-card-soft);
+                    border: 1px solid var(--color-divider);
                     border-radius: 999px;
-                    cursor: pointer;
-                    transition: background 0.2s ease, color 0.2s ease;
 
-                    &:hover {
-                        color: var(--color-cyan);
-                    }
-
-                    &.active {
-                        background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
-                        color: white;
-                        font-weight: bold;
+                    .sort-option {
+                        border: none;
+                        background: transparent;
+                        color: var(--color-text-secondary);
+                        font-size: 13px;
+                        line-height: 1.2;
+                        padding: 6px 16px;
+                        border-radius: 999px;
+                        cursor: pointer;
+                        transition: background 0.2s ease, color 0.2s ease;
 
                         &:hover {
+                            color: var(--color-cyan);
+                        }
+
+                        &.active {
+                            background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
                             color: white;
+                            font-weight: bold;
+
+                            &:hover {
+                                color: white;
+                            }
                         }
                     }
                 }
-            }
-        }
-
-        /* ========== 搜索统计信息 ========== */
-        .search-stats {
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: var(--color-text-secondary);
-
-            strong {
-                color: var(--color-cyan);
-                font-weight: bold;
-            }
-
-            .active-filter-text {
-                font-size: 14px;
-                color: var(--color-text-muted);
             }
         }
 
@@ -306,6 +315,16 @@
 
             .search-bar-container .search-bar .search-input {
                 font-size: 14px;
+            }
+
+            /* 统计与排序放不下时换行，排序仍靠右 */
+            .stats-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+
+                .search-stats {
+                    font-size: 14px;
+                }
             }
         }
 
