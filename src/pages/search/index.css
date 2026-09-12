@@ -183,6 +183,56 @@
             }
         }
 
+        /* ========== 排序方式切换 ========== */
+        .sort-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            /* 搜索栏容器自带 30px 下边距，这里回收一部分 */
+            margin: -12px 0 18px;
+
+            .sort-label {
+                font-size: 13px;
+                color: var(--color-text-muted);
+            }
+
+            .sort-options {
+                display: flex;
+                gap: 2px;
+                padding: 3px;
+                background: var(--color-card-soft);
+                border: 1px solid var(--color-divider);
+                border-radius: 999px;
+
+                .sort-option {
+                    border: none;
+                    background: transparent;
+                    color: var(--color-text-secondary);
+                    font-size: 13px;
+                    line-height: 1.2;
+                    padding: 6px 16px;
+                    border-radius: 999px;
+                    cursor: pointer;
+                    transition: background 0.2s ease, color 0.2s ease;
+
+                    &:hover {
+                        color: var(--color-cyan);
+                    }
+
+                    &.active {
+                        background: linear-gradient(135deg, var(--color-cyan), var(--color-cyan-hover));
+                        color: white;
+                        font-weight: bold;
+
+                        &:hover {
+                            color: white;
+                        }
+                    }
+                }
+            }
+        }
+
         /* ========== 搜索统计信息 ========== */
         .search-stats {
             margin-bottom: 20px;

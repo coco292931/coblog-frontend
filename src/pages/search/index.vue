@@ -42,6 +42,17 @@
                 </transition>
             </div>
 
+            <!-- 排序方式切换 -->
+            <div class="sort-bar">
+                <span class="sort-label">排序</span>
+                <div class="sort-options">
+                    <button type="button" class="sort-option" :class="{ active: sortKey === 'published' }"
+                        @click="setSortKey('published')">最新发布</button>
+                    <button type="button" class="sort-option" :class="{ active: sortKey === 'updated' }"
+                        @click="setSortKey('updated')">最近修改</button>
+                </div>
+            </div>
+
             <!-- 结果统计 -->
             <div v-if="hasFetched" class="search-stats">
                 <span v-if="isLoading">加载中...</span>
@@ -60,7 +71,7 @@
 
             <!-- 文章列表 -->
             <div v-else-if="displayArticles.length > 0" class="search-results">
-                <ArticleTimeline :articles="displayArticles" />
+                <ArticleTimeline :articles="displayArticles" :date-key="activeDateKey" />
 
                 <!-- 触底加载更多状态 -->
                 <div class="load-more-status">
@@ -118,7 +129,18 @@ const isLoading = ref(false);    // 首次/重置加载
 const isLoadingMore = ref(false); // 追加加载
 const hasFetched = ref(false);
 
-const displayArticles = computed(() => articles.value);
+// 排序方式：published = 按发布时间（createdAt），updated = 按最后修改时间（updatedAt）
+const SORT_KEYS = { published: 'published_at', updated: 'updated_at' };
+const sortKey = computed(() => (route.query.sort === 'updated' ? 'updated' : 'published'));
+// 当前排序对应的时间字段，供 ArticleTimeline 展示日期
+const activeDateKey = computed(() => SORT_KEYS[sortKey.value]);
+
+// 按当前排序 key 降序排列（后端分页是「第 0 项最老」，故此处统一倒序展示）
+const displayArticles = computed(() => {
+    const key = activeDateKey.value;
+    const timeOf = (item) => new Date(item[key] || 0).getTime() || 0;
+    return [...articles.value].sort((a, b) => timeOf(b) - timeOf(a));
+});
 
 // 是否还有更多文章未加载
 const hasMore = computed(() => articles.value.length < total.value);
@@ -150,30 +172,25 @@ const syncInputsFromRoute = () => {
 
 // 把后端文章数据转换为 Timeline 所需格式
 const mapArticle = (article) => {
-    const updatedTime = new Date(article.updatedAt || 0).getTime();
     const createdTime = new Date(article.createdAt || 0).getTime();
-    const latestTime = !isNaN(updatedTime) && !isNaN(createdTime)
-        ? Math.max(updatedTime, createdTime)
-        : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
+    const updatedTime = new Date(article.updatedAt || 0).getTime();
+    const safeCreated = isNaN(createdTime) ? 0 : createdTime;
+    const safeUpdated = isNaN(updatedTime) ? 0 : updatedTime;
 
     return {
         id: article.id,
         cover_image: resolveImageUrl(article.cover_image || ''),
         title: article.title,
         description: article.summary || '',
-        published_at: new Date(latestTime).toISOString(),
+        // 发布时间（后端 createdAt）；修改时间（后端 updatedAt）。
+        // 两个字段各自独立，供「最新发布 / 最近修改」两种排序使用。
+        published_at: new Date(safeCreated || safeUpdated).toISOString(),
+        updated_at: new Date(safeUpdated || safeCreated).toISOString(),
         created_at: article.createdAt,
         categories: parseJsonArray(article.category),
         tags: parseJsonArray(article.tags),
     };
 };
-
-// 按发布时间降序排序
-const sortByLatest = (list) => list.sort((a, b) => {
-    const timeA = new Date(b.published_at).getTime();
-    const timeB = new Date(a.published_at).getTime();
-    return (!isNaN(timeA) && !isNaN(timeB)) ? (timeA - timeB) : 0;
-});
 
 // 从 API 获取文章数据
 // append=false：重置加载第一页；append=true：追加下一页
@@ -199,11 +216,11 @@ const fetchArticles = async (append = false) => {
             total.value = result.data.total ?? result.data.articles.length;
             const mapped = result.data.articles.map(mapArticle);
 
+            // 排序统一交给 displayArticles 计算属性，这里只负责合并数据
             if (append) {
-                // 追加并整体重新排序，保证时间线连续
-                articles.value = sortByLatest([...articles.value, ...mapped]);
+                articles.value = [...articles.value, ...mapped];
             } else {
-                articles.value = sortByLatest(mapped);
+                articles.value = mapped;
             }
         } else {
             throw new Error(result.msg || result.message || '数据格式错误');
@@ -257,6 +274,18 @@ const parseJsonArray = (value) => {
     return [];
 };
 
+// 切换排序方式：写进 URL（由 watch 统一触发重新加载）
+const setSortKey = (key) => {
+    if (key === sortKey.value) return;
+    const query = { ...route.query };
+    if (key === 'published') {
+        delete query.sort; // 默认排序不占用 URL
+    } else {
+        query.sort = key;
+    }
+    router.push({ path: route.path, query });
+};
+
 // 应用筛选：把输入框内容写进 URL（由 watch 统一触发请求）
 const applyFilters = () => {
     const query = {};
@@ -266,15 +295,18 @@ const applyFilters = () => {
     if (q) query.q = q;
     if (category) query.category = category;
     if (tag) query.tag = tag;
+    if (route.query.sort) query.sort = route.query.sort; // 保留当前排序方式
     router.push({ path: route.path, query });
 };
 
-// 重置所有筛选
+// 重置所有筛选（保留排序方式）
 const resetFilters = () => {
     searchInput.value = '';
     categoryInput.value = '';
     tagInput.value = '';
-    router.push({ path: route.path, query: {} });
+    const query = {};
+    if (route.query.sort) query.sort = route.query.sort;
+    router.push({ path: route.path, query });
 };
 
 // URL 查询参数变化时（提交、点击标签、前进后退）重置并重新加载第一页

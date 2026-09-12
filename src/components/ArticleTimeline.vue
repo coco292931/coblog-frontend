@@ -42,7 +42,7 @@
                     <div class="intro">{{ article.description }}</div>
                     <div class="info">
                         <div class="up-date">
-                            {{ formatDate(article.published_at || article.created_at) }}
+                            {{ formatDate(article[dateKey] || article.published_at || article.created_at) }}
                         </div>
                         <div class="tags" v-if="article.categories && article.categories.length">
                             <span v-for="cat in article.categories" :key="cat" class="tag"
@@ -67,6 +67,11 @@ const props = defineProps({
     articles: {
         type: Array,
         default: () => []
+    },
+    // 展示日期所用的字段名；/articles 页按排序方式传 published_at 或 updated_at
+    dateKey: {
+        type: String,
+        default: 'published_at'
     }
 });
 
@@ -128,7 +133,7 @@ const initYearMarkers = () => {
     let lastYear = null;
 
     props.articles.forEach((article, index) => {
-        const year = getYear(article.published_at || article.created_at);
+        const year = getYear(article[props.dateKey] || article.published_at || article.created_at);
 
         if (year !== lastYear && index > 0) {
             // 年份标签位置先设为0，等实际计算后更新
@@ -193,7 +198,7 @@ const updateYearMarkerPositions = () => {
     const yearPositions = new Map(); // 记录每个年份第一次出现的位置
 
     props.articles.forEach((article, index) => {
-        const year = getYear(article.published_at || article.created_at);
+        const year = getYear(article[props.dateKey] || article.published_at || article.created_at);
 
         // 如果这个年份还没记录过，就记录它第一次出现时的圆点位置
         if (!yearPositions.has(year) && dotRefs.value[index]) {
