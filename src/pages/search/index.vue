@@ -73,8 +73,8 @@
             </div>
 
             <!-- 文章列表 -->
-            <div v-else-if="displayArticles.length > 0" class="search-results">
-                <ArticleTimeline :articles="displayArticles" :date-key="activeDateKey" />
+            <div v-else-if="articles.length > 0" class="search-results">
+                <ArticleTimeline :articles="articles" :date-key="activeDateKey" />
 
                 <!-- 触底加载更多状态 -->
                 <div class="load-more-status">
@@ -132,18 +132,13 @@ const isLoading = ref(false);    // 首次/重置加载
 const isLoadingMore = ref(false); // 追加加载
 const hasFetched = ref(false);
 
-// 排序方式：published = 按发布时间（createdAt），updated = 按最后修改时间（updatedAt）
+// 排序方式：published = 按发布时间（createdAt），updated = 按最后修改时间（updatedAt）。
+// 顺序由后端负责（sort=updated → updated_at 倒序），前端不再本地重排：
+// 无限滚动是逐页追加的，本地排序只能在已加载的几页内生效。
 const SORT_KEYS = { published: 'published_at', updated: 'updated_at' };
 const sortKey = computed(() => (route.query.sort === 'updated' ? 'updated' : 'published'));
 // 当前排序对应的时间字段，供 ArticleTimeline 展示日期
 const activeDateKey = computed(() => SORT_KEYS[sortKey.value]);
-
-// 按当前排序 key 降序排列（后端分页是「第 0 项最老」，故此处统一倒序展示）
-const displayArticles = computed(() => {
-    const key = activeDateKey.value;
-    const timeOf = (item) => new Date(item[key] || 0).getTime() || 0;
-    return [...articles.value].sort((a, b) => timeOf(b) - timeOf(a));
-});
 
 // 是否还有更多文章未加载
 const hasMore = computed(() => articles.value.length < total.value);
@@ -211,6 +206,7 @@ const fetchArticles = async (append = false) => {
         if (route.query.q) query.q = route.query.q;
         if (route.query.category) query.category = route.query.category;
         if (route.query.tag) query.tag = route.query.tag;
+        if (route.query.sort) query.sort = route.query.sort; // 排序交给后端，保证跨页正确
 
         const search = new URLSearchParams(query).toString();
         const result = await api.get(`/api/articles?${search}`);
@@ -219,7 +215,7 @@ const fetchArticles = async (append = false) => {
             total.value = result.data.total ?? result.data.articles.length;
             const mapped = result.data.articles.map(mapArticle);
 
-            // 排序统一交给 displayArticles 计算属性，这里只负责合并数据
+            // 排序由后端保证，这里只负责合并数据
             if (append) {
                 articles.value = [...articles.value, ...mapped];
             } else {
