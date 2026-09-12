@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-article">
         <NavBar style="position: fixed;" />
         <!-- 文章封面区域 -->
         <div class="main-photo-article">

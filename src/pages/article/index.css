@@ -1,8 +1,12 @@
-/* 页面主容器，撑满视口高度，背景渐变 */
-.big-container {
+/* 页面主容器（页面专属根类），撑满视口高度，背景渐变 */
+.page-article {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    /* 下面三个值以前是借 home 页面的 .big-container 规则生效的，此处显式声明 */
+    align-items: center;
+    justify-content: center;
+    position: relative;
     background: var(--color-page-gradient);
 
     /* 文章封面区域 */
@@ -354,7 +358,7 @@
 
 /* 响应式设计 */
 @media (max-width: 1100px) {
-    .big-container {
+    .page-article {
         .main-photo-article .summary {
             max-width: 690px;
             width:88%;
@@ -387,7 +391,7 @@
 }
 
 @media (max-width: 800px) {
-    .big-container {
+    .page-article {
         .main-photo .summary {
             padding: 20px;
             width: 91%;

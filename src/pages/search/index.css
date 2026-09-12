@@ -1,9 +1,15 @@
-/* ========== 搜索页面主容器 ========== */
-.big-container {
+/* ========== 搜索/文章列表页面主容器（页面专属根类） ========== */
+.page-search {
     min-height: 100vh;
     width: 100%;
     display: flex;
     flex-direction: column;
+    /* 下面四个值以前是借 home 页面的 .big-container 规则生效的，
+       根类改名后必须自己声明，否则布局会变（已用样式快照对比验证）。 */
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--color-page-gradient);
 
     .search-page {
         width: 90%;

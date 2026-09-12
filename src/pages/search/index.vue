@@ -1,5 +1,5 @@
 <template>
-    <div class="big-container">
+    <div class="page-search">
         <NavBar />
         <div class="search-page">
             <!-- 搜索栏（常驻） -->
