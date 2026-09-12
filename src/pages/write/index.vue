@@ -1,5 +1,5 @@
 <template>
-    <div class="write-container">
+    <div class="page-write">
         <NavBar />
         <div class="write-page">
             <h1 class="page-title">{{ isEdit ? '编辑文章' : '写文章' }}</h1>

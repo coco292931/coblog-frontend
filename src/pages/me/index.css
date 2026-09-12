@@ -1,4 +1,5 @@
-.me-container {
+/* 页面专属根类（原来是专属名 .me-container，统一成 .page-* 约定） */
+.page-me {
     min-height: 100vh;
     display: flex;
     flex-direction: column;

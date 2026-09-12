@@ -123,7 +123,7 @@
 
 /* 响应式：小屏幕适配 */
 @media (max-width: 800px) {
-    .big-container {
+    .page-home {
         .triangle {
             width: 40px;
             height: 40px;
@@ -149,7 +149,7 @@
 
 /*隐藏图片*/
 @media (max-width: 600px) {
-    .big-container .main-photo {
+    .page-home .main-photo {
         .welcome-text {
             font-size: 29px;
         }

@@ -1,4 +1,5 @@
-.write-container {
+/* 页面专属根类（原来是专属名 .write-container，统一成 .page-* 约定） */
+.page-write {
     min-height: 100vh;
     display: flex;
     flex-direction: column;

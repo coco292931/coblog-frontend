@@ -1,5 +1,5 @@
 <template>
-    <div class="me-container">
+    <div class="page-me">
         <NavBar />
         <div class="me-page">
             <div v-if="loading" class="loading-container">
