@@ -50,44 +50,7 @@
     text-align: center;
 }
 
-/* 表单公共部分（.form / .form-group / .form__input / 标签浮动 等）
-   已抽到 src/assets/form.css，与登录/注册页共用 */
-.form__input:hover {
-    border-color: var(--color-cyan-border);
-    background: var(--color-card-bg);
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 0.9rem;
-    background: var(--color-cyan-gradient);
-    color: #fff;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 0.5rem;
-}
-
-.submit-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px var(--color-cyan-shadow);
-}
-
-.submit-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.submit-btn:disabled:hover {
-    transform: none;
-    box-shadow: none;
-}
-
+/* 表单公共部分（.form / .form__input / .submit-btn 等）已抽到 src/assets/form.css */
 .password-rule {
     margin: -0.75rem 0 1rem;
     font-size: 0.83rem;
