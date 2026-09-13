@@ -95,7 +95,8 @@
 
         <!-- 图片查看器：点击正文图片打开，支持缩放、查看原图与下载 -->
         <ImageLightbox v-model:open="lightboxOpen" :src="lightboxSrc" :original="lightboxOriginal"
-            :can-compare="lightboxCanCompare" :alt="lightboxAlt" />
+            :can-compare="lightboxCanCompare" :variant-pending="lightboxVariantPending"
+            :initial-variant="lightboxInitialVariant" :alt="lightboxAlt" />
     </div>
 </template>
 
@@ -109,7 +110,7 @@ import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
 import { isAuthenticated } from '../../utils/auth.js';
-import { thumbUrl, stripThumb } from '../../utils/image.js';
+import { thumbUrl, stripThumb, probeThumbVariant } from '../../utils/image.js';
 import ImageLightbox from '../../components/ImageLightbox.vue';
 import fallbackCover from '../../assets/image/homepage-background.jpg';
 
@@ -170,8 +171,12 @@ const lightboxOpen = ref(false);
 const lightboxSrc = ref('');
 const lightboxOriginal = ref('');
 const lightboxAlt = ref('');
+// 首帧显示哪一张：正文图已升级到原图时用 'original'（复用正文里那张已解码的图）
+const lightboxInitialVariant = ref('thumb');
 // 后端是否确认存在独立的压缩图（决定要不要显示「原图/压缩图」切换）
 const lightboxCanCompare = ref(false);
+// 是否还在向后端确认（灯箱里按钮先隐形占位，避免工具栏跳一下）
+const lightboxVariantPending = ref(false);
 
 // 滚动到指定章节
 const scrollToSection = (id) => {
@@ -288,8 +293,9 @@ const withThumbSrc = (html) =>
 /**
  * 处理正文图片：
  * 1. 懒加载：滚动到位置才开始请求（压缩图）
- * 2. 原图在后台加载完再替换上来，所以不依赖「点开 / 放大」才加载；
- *    原图地址同时留在 data-original 供灯箱使用
+ * 2. 正文只显示压缩图，**不在正文里预载原图**：正文栏宽最多 ~760px，
+ *    压缩图完全够看；而弱网下 N 张原图（1.5~2MB/张）会把正文的文本/CSS 挤掉。
+ *    原图地址留在 data-original 里，交给灯箱在用户已聚焦这张图之后按需加载。
  * 3. 点击放大：用容器上的事件委托（见 onContentClick），
  *    因为 v-html 的节点由 Vue 管理，逐个 addEventListener 会在重渲染后失效
  */
@@ -307,9 +313,10 @@ const setupContentImages = async () => {
 
         if (!thumb) return;
 
-        // src 已在渲染前换成压缩图，原图地址去掉参数即可还原
+        // src 已在渲染前换成压缩图，原图地址去掉参数即可还原（灯箱用它）
         const original = stripThumb(thumb);
         img.dataset.original = original;
+        // 外链图 / 本来就没有独立变体：没什么可回退的
         if (original === thumb) return;
 
         // 压缩图缺失（老数据等）时回退到原图，避免白图
@@ -317,26 +324,7 @@ const setupContentImages = async () => {
             img.removeEventListener('error', onThumbError);
             img.setAttribute('src', original);
         });
-
-        if (img.complete && img.naturalWidth > 0) {
-            upgradeToOriginal(img, original);
-        } else {
-            img.addEventListener('load', () => upgradeToOriginal(img, original), { once: true });
-        }
     });
-};
-
-/** 压缩图显示出来后，后台把原图拉下来替换（不用等到放大） */
-const upgradeToOriginal = (img, original) => {
-    if (img.dataset.upgraded === '1') return;
-    img.dataset.upgraded = '1';
-
-    const full = new Image();
-    full.onload = () => {
-        // 期间节点可能已被重渲染换掉
-        if (img.isConnected) img.setAttribute('src', original);
-    };
-    full.src = original;
 };
 
 /** 封面先缩略图打底，原图在后台加载，好了再换上 */
@@ -351,17 +339,17 @@ const preloadCover = (original) => {
     img.src = original;
 };
 
-/** 问后端确实有没有独立的压缩图（HEAD，零字节）；拿不到就不显示切换按钮 */
+/**
+ * 问后端确实有没有独立的压缩图（HEAD，零字节）；拿不到就不显示切换按钮。
+ * 探测结果按地址记忆（见 utils/image.js），同一张图反复打开灯箱不会重复请求。
+ */
 const confirmThumbVariant = async (baseUrl, probeUrl) => {
-    try {
-        const resp = await fetch(probeUrl, { method: 'HEAD', mode: 'cors', cache: 'no-cache' });
-        // 探测期间用户可能点开了别的图，避免结果写到新图上
-        if (lightboxOriginal.value === baseUrl) {
-            lightboxCanCompare.value = resp.headers.get('x-image-variant') === 'thumb';
-        }
-    } catch {
-        // 探测失败就保持没有对比，下载仍然指向原图
-    }
+    const canCompare = await probeThumbVariant(probeUrl);
+    // 探测期间用户可能点开了别的图，避免结果写到新图上
+    if (lightboxOriginal.value !== baseUrl) return;
+    // 确认结束：占位的按钮要么显形、要么消失
+    lightboxVariantPending.value = false;
+    if (canCompare !== null) lightboxCanCompare.value = canCompare;
 };
 
 /**
@@ -374,7 +362,8 @@ const onContentClick = (e) => {
         // 优先用原图；外链图片没有 data-original，回退到当前 src
         const original = target.dataset.original || target.getAttribute('src');
         if (original) {
-            openLightbox(original, target.getAttribute('alt') || '');
+            // 第三参是正文此刻实际显示的那张：它必然已加载解码，灯箱首帧复用它就不会黑屏
+            openLightbox(original, target.getAttribute('alt') || '', target.getAttribute('src') || '');
         }
     }
 };
@@ -386,13 +375,17 @@ const onContentError = (e) => {
     }
 };
 
-const openLightbox = (originalUrl, alt) => {
+const openLightbox = (originalUrl, alt, shownUrl) => {
     lightboxAlt.value = alt;
     // 下载与「查看原图」都用正文里存的原图地址
     lightboxOriginal.value = originalUrl;
     lightboxSrc.value = thumbUrl(originalUrl);
+    // 正文这张已经升级到原图 → 首帧就直接显示原图，复用正文里已解码的位图；
+    // 否则首帧显示压缩图（正文此刻显示的就是它）
+    lightboxInitialVariant.value = shownUrl && shownUrl === originalUrl ? 'original' : 'thumb';
     // 等后端确认确实有压缩图，再让「原图/压缩图」按钮出现
     lightboxCanCompare.value = false;
+    lightboxVariantPending.value = lightboxSrc.value !== originalUrl;
     lightboxOpen.value = true;
 
     if (lightboxSrc.value !== originalUrl) {

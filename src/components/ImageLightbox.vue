@@ -33,11 +33,13 @@
                         </svg>
                     </button>
                     <span class="lb-divider"></span>
-                    <!-- 原图切换：无独立原图（外链图片）时不显示 -->
-                    <button v-if="hasDistinctOriginal" class="lb-btn lb-text-btn" :disabled="originalLoading"
-                        :title="showingOriginal ? '查看压缩图' : '查看原图'" @click="toggleOriginal">
+                    <!-- 原图切换：无独立原图（外链图片 / 后端没有压缩图）时不显示。
+                         变体还在确认中时先隐形占位，避免按钮稍后出现让居中工具栏跳一下 -->
+                    <button v-if="showToggleSlot" class="lb-btn lb-text-btn" :class="{ 'lb-pending': variantPending }"
+                        :disabled="originalLoading" :title="showingOriginal ? '查看压缩图' : '查看原图'"
+                        @click="toggleOriginal">
                         <span v-if="originalLoading" class="lb-spinner"></span>
-                        <template v-else>{{ showingOriginal ? '压缩图' : '原图' }}</template>
+                        <template v-else>{{ showingOriginal ? '压缩图' : '加载原图' }}</template>
                     </button>
                     <button class="lb-btn" :title="downloading ? '下载中…' : '下载原图'" :disabled="downloading"
                         @click="download">
@@ -67,11 +69,15 @@
                         @pointerup="onPointerUp"
                         @pointercancel="onPointerUp"
                         @click="onImageClick">
-                        <img :src="src" :alt="alt" class="lightbox-img" :class="{ 'is-hidden': showingOriginal }"
-                            draggable="false" />
-                        <img v-if="hasDistinctOriginal" ref="originalImgRef" :src="originalImgSrc" :alt="alt"
-                            class="lightbox-img" :class="{ 'is-hidden': !showingOriginal }" draggable="false" />
+                        <img ref="thumbImgRef" :src="src" :alt="alt" class="lightbox-img"
+                            :class="{ 'is-hidden': showingOriginal }" draggable="false" @error="onThumbError" />
+                        <!-- 第二变体：地址不同就先渲染，但 src 首次切换才赋（否则等于预载原图） -->
+                        <img v-if="hasOriginalSrc" ref="originalImgRef" :src="originalImgSrc" :alt="alt"
+                            class="lightbox-img" :class="{ 'is-hidden': !showingOriginal }" draggable="false"
+                            @error="onOriginalError" />
                     </div>
+                    <!-- 两张都取不到时才提示，别让人对着纯黑猜 -->
+                    <div v-if="loadError" class="lightbox-error">图片加载失败，请关闭后重试</div>
                 </div>
 
                 <div class="lightbox-tip">单击关闭 · 按住拖动 · 滚轮缩放 · Esc 退出</div>
@@ -99,6 +105,11 @@ const props = defineProps({
     original: { type: String, default: '' },
     // 是否存在可对比的压缩图；false 时隐藏「原图/压缩图」切换
     canCompare: { type: Boolean, default: true },
+    // 首帧显示哪一张：'thumb'（默认，即 src）或 'original'。
+    // 正文图已经升级到原图时传 'original'，直接复用正文里那张已解码的图，避免黑屏。
+    initialVariant: { type: String, default: 'thumb' },
+    // 变体是否仍在向后端确认中：true 时切换按钮占位但不可见，工具栏宽度不跳
+    variantPending: { type: Boolean, default: false },
     // 无障碍描述与下载文件名
     alt: { type: String, default: '' },
 });
@@ -108,19 +119,25 @@ const emit = defineEmits(['update:open']);
 const scale = ref(1);
 const downloading = ref(false);
 const canvasRef = ref(null);
-// 原图元素（仅存在独立原图时渲染）
+// 第一张（首帧那张）元素
+const thumbImgRef = ref(null);
+// 原图元素（存在独立原图地址时渲染）
 const originalImgRef = ref(null);
 const originalLoading = ref(false);
 // 原图 src：首次切换时才赋值（undefined 时 Vue 不渲染该属性，不发请求）
 const originalImgSrc = ref(undefined);
 const showingOriginal = ref(false);
+// 两个变体都取不到时才为 true，显示提示而不是留一块纯黑
+const loadError = ref(false);
 
 // 下载与原图查看都以原图为准；没传 original 时退化为 src
 const originalUrl = computed(() => props.original || props.src);
-// 是否存在与显示图不同的原图
-const hasDistinctOriginal = computed(
-    () => props.canCompare && !!props.original && props.original !== props.src
-);
+// 是否存在与显示图不同的原图地址：纯地址判断，不依赖后端探测结果
+const hasOriginalSrc = computed(() => !!props.original && props.original !== props.src);
+// 是否显示「原图/压缩图」切换：地址不同 + 后端确认存在独立压缩图
+const hasDistinctOriginal = computed(() => hasOriginalSrc.value && props.canCompare);
+// 按钮是否需要占位（确认中先隐形占位，避免居中的工具栏宽度跳动）
+const showToggleSlot = computed(() => hasOriginalSrc.value && (props.canCompare || props.variantPending));
 
 // 拖动平移偏移
 const offsetX = ref(0);
@@ -129,6 +146,8 @@ const isDragging = ref(false);
 
 // 本次手势是否发生了拖动（用于抑制拖动结束后的 click）
 let didDrag = false;
+// 用户是否自己动过（拖动 / 缩放 / 点过切换）：动过之后就不再自动换图
+let userTouched = false;
 // 是否处于按下状态：未收到 pointerdown 就不允许拖动，
 // 否则一旦丢失 pointerdown，位移会被算成绝对坐标导致图片瞬间飞出
 let pointerActive = false;
@@ -156,6 +175,7 @@ const onPointerDown = (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
 
     didDrag = false;
+    userTouched = true;
     pointerActive = true;
     startX = e.clientX;
     startY = e.clientY;
@@ -203,6 +223,11 @@ const onImageClick = () => {
     close();
 };
 
+// 探测结果可能晚于「打开」到达：确认存在独立压缩图后再补原图
+watch(hasDistinctOriginal, (ok) => {
+    if (ok && props.open) autoUpgradeOriginal();
+});
+
 watch(() => props.open, (open) => {
     if (open) {
         // 每次打开重置缩放、平移与「原图」状态
@@ -212,10 +237,18 @@ watch(() => props.open, (open) => {
         isDragging.value = false;
         didDrag = false;
         pointerActive = false;
-        // 一律先看压缩图（原图是异步探测出来的，避免画面突然换大图）
-        showingOriginal.value = false;
-        originalImgSrc.value = undefined;
+        userTouched = false;
         originalLoading.value = false;
+        loadError.value = false;
+
+        // 首帧尽量复用「正文里正在显示的那张」：它已解码，画布能立刻有尺寸。
+        // 正文回退到原图时 initialVariant='original'，就直接显示原图。
+        const startWithOriginal = props.initialVariant === 'original' && hasOriginalSrc.value;
+        showingOriginal.value = startWithOriginal;
+        originalImgSrc.value = startWithOriginal ? originalUrl.value : undefined;
+
+        // 正文现在只下载压缩图（省弱网带宽），原图改在这个过程中按需补上
+        if (!startWithOriginal) autoUpgradeOriginal();
     } else {
         // 关闭时复位交互状态，避免下次打开残留 didDrag 导致单击失效
         isDragging.value = false;
@@ -241,9 +274,36 @@ const imageLoaded = (el) =>
         el.addEventListener('error', onError);
     });
 
+/**
+ * 打开灯箱后在后台把原图补上（正文已不再预载原图，见文章页 setupContentImages）。
+ * 只在后端确认存在独立压缩图、且用户还没自己动过时才自动切过来；
+ * 用户一旦拖动 / 缩放 / 点过切换，就交给他自己决定。
+ */
+const autoUpgradeOriginal = async () => {
+    if (!hasDistinctOriginal.value || showingOriginal.value || originalImgSrc.value !== undefined) return;
+
+    originalLoading.value = true;
+    originalImgSrc.value = originalUrl.value;
+    await nextTick();
+    const ok = await imageLoaded(originalImgRef.value);
+    originalLoading.value = false;
+
+    if (!ok) {
+        // 静默放弃：按钮还在，用户想看得自己点（那时会给出提示）
+        originalImgSrc.value = undefined;
+        return;
+    }
+    if (!props.open || userTouched || showingOriginal.value) return;
+
+    showingOriginal.value = true;
+    await nextTick();
+    clampOffset();
+};
+
 /** 切换压缩图/原图。首次切原图要等它加载完，否则会闪空白 */
 const toggleOriginal = async () => {
     if (!hasDistinctOriginal.value || originalLoading.value) return;
+    userTouched = true;
 
     if (!showingOriginal.value && originalImgSrc.value === undefined) {
         originalLoading.value = true;
@@ -260,9 +320,44 @@ const toggleOriginal = async () => {
     }
 
     showingOriginal.value = !showingOriginal.value;
-    // 两张图尺寸可能不同，旧的平移偏移不再适用
-    offsetX.value = 0;
-    offsetY.value = 0;
+    // 两张图尺寸可能不同：保留用户的缩放与平移（不重置回中心），
+    // 只等新尺寸生效后把偏移夹回可见范围
+    await nextTick();
+    clampOffset();
+};
+
+/**
+ * 首帧那张取不到时的兜底：先换另一变体（正文图也有同样的回退），
+ * 两张都不可用才显示提示 —— 否则用户只能对着纯黑猜。
+ */
+const onThumbError = async () => {
+    if (showingOriginal.value || loadError.value) return;
+
+    if (hasOriginalSrc.value && originalImgSrc.value === undefined) {
+        originalLoading.value = true;
+        originalImgSrc.value = originalUrl.value;
+        await nextTick();
+        const ok = await imageLoaded(originalImgRef.value);
+        originalLoading.value = false;
+
+        if (ok) {
+            showingOriginal.value = true;
+            await nextTick();
+            clampOffset();
+            return;
+        }
+        originalImgSrc.value = undefined;
+    }
+
+    loadError.value = true;
+};
+
+/** 原图失败就退回首帧那张；首帧那张也是坏的才提示 */
+const onOriginalError = () => {
+    if (!showingOriginal.value) return;
+
+    showingOriginal.value = false;
+    if (!thumbImgRef.value || thumbImgRef.value.naturalWidth === 0) loadError.value = true;
 };
 
 const close = () => {
@@ -271,11 +366,13 @@ const close = () => {
 
 const zoomBy = (delta) => {
     const target = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale.value + delta));
+    userTouched = true;
     scale.value = Number(target.toFixed(2));
     clampOffset();
 };
 
 const resetScale = () => {
+    userTouched = true;
     scale.value = 1;
     offsetX.value = 0;
     offsetY.value = 0;
@@ -417,6 +514,12 @@ const download = async () => {
     font-family: inherit;
 }
 
+/* 变体还没确认：先占位不显示，避免按钮稍后出现在居中工具栏里造成宽度跳动 */
+.lb-pending {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .lb-scale {
     min-width: 48px;
     text-align: center;
@@ -477,7 +580,8 @@ const download = async () => {
 
 .lightbox-img {
     display: block;
-    max-width: min(92vw, 1400px);
+    /* 48px = 遮罩左右 padding(20×2) + 滚动条占位(8)，否则窄屏会被 stage 的 overflow 裁掉 */
+    max-width: min(calc(100vw - 48px), 1400px);
     max-height: 82vh;
     object-fit: contain;
     border-radius: 6px;
@@ -497,6 +601,20 @@ const download = async () => {
     font-size: 0.78rem;
     color: rgba(255, 255, 255, 0.45);
     pointer-events: none;
+}
+
+/* 两个变体都加载失败时的提示（居中在遮罩上，画布此时是 0×0） */
+.lightbox-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: rgba(40, 40, 40, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
 }
 
 .lightbox-enter-active,
