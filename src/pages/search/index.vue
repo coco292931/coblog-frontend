@@ -104,6 +104,7 @@ import './index.css';
 import NavBar from '../../components/NavBar.vue';
 import Footer from '../../components/Footer.vue';
 import api from '../../api/index.js';
+import { thumbUrl } from '../../utils/image.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 const resolveImageUrl = (url) => {
@@ -177,7 +178,7 @@ const mapArticle = (article) => {
 
     return {
         id: article.id,
-        cover_image: resolveImageUrl(article.cover_image || ''),
+        cover_image: thumbUrl(resolveImageUrl(article.cover_image || '')),
         title: article.title,
         description: article.summary || '',
         // 发布时间（后端 createdAt）；修改时间（后端 updatedAt）。

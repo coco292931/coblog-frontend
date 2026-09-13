@@ -3,7 +3,7 @@
         <NavBar style="position: fixed;" />
         <!-- 文章封面区域 -->
         <div class="main-photo-article">
-            <img :src="coverImage" class='cover_image' @error="onCoverError" />
+            <img :src="coverDisplay" class='cover_image' @error="onCoverError" />
             <div class="summary">
                 <!-- 管理入口：登录用户可见，置于封面标题区右上角，不与统计信息混在一起 -->
                 <button v-if="loggedIn" class="manage-btn" @click="goToEdit" title="编辑这篇文章">
@@ -95,7 +95,7 @@
 
         <!-- 图片查看器：点击正文图片打开，支持缩放、查看原图与下载 -->
         <ImageLightbox v-model:open="lightboxOpen" :src="lightboxSrc" :original="lightboxOriginal"
-            :alt="lightboxAlt" />
+            :can-compare="lightboxCanCompare" :alt="lightboxAlt" />
     </div>
 </template>
 
@@ -109,6 +109,7 @@ import IconDocumentation from '../../components/icons/IconDocumentation.vue';
 import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
 import { isAuthenticated } from '../../utils/auth.js';
+import { thumbUrl, stripThumb } from '../../utils/image.js';
 import ImageLightbox from '../../components/ImageLightbox.vue';
 import fallbackCover from '../../assets/image/homepage-background.jpg';
 
@@ -143,6 +144,8 @@ watch(() => route.fullPath, () => {
 const articleTitle = ref('加载中...');
 const articleSubtitle = ref('');
 const coverImage = ref(fallbackCover);
+// 当前显示的封面：先缩略图打底，原图加载完再换上
+const coverDisplay = ref(fallbackCover);
 const createTime = ref('');
 const updateTime = ref('');
 const categories = ref([]);
@@ -167,6 +170,8 @@ const lightboxOpen = ref(false);
 const lightboxSrc = ref('');
 const lightboxOriginal = ref('');
 const lightboxAlt = ref('');
+// 后端是否确认存在独立的压缩图（决定要不要显示「原图/压缩图」切换）
+const lightboxCanCompare = ref(false);
 
 // 滚动到指定章节
 const scrollToSection = (id) => {
@@ -192,7 +197,9 @@ const fetchArticleData = async () => {
             articleTitle.value = data.title || '无标题';
             articleSubtitle.value = data.subtitle || '';
             coverImage.value = resolveImageUrl(data.cover_image || '') || fallbackCover;
-            articleHtml.value = data.content || '<p>暂无内容</p>';
+            coverDisplay.value = thumbUrl(coverImage.value);
+            preloadCover(coverImage.value);
+            articleHtml.value = withThumbSrc(data.content || '<p>暂无内容</p>');
 
             // 处理时间字段
             createTime.value = data.createdAt ? formatDateTime(data.createdAt) : '';
@@ -271,11 +278,18 @@ const configureExternalLinks = async () => {
 };
 
 /**
+ * 渲染前把正文里的 src 换成压缩图地址。
+ * 正文存的是原图地址，若不先改写，浏览器一解析到 <img src> 就会去拉原图，
+ * 既抢带宽、又会因随后改 src 被取消，白跑一次请求。
+ */
+const withThumbSrc = (html) =>
+    html.replace(/(<img\b[^>]*?\bsrc=)(["'])([^"']+)\2/gi, (all, pre, quote, url) => `${pre}${quote}${thumbUrl(url)}${quote}`);
+
+/**
  * 处理正文图片：
- * 1. 懒加载：滚动到位置才开始请求
- * 2. 显示压缩图：正文里存的是原图地址，这里换成后端生成的压缩图 `xxx_c.*`
- *    （后端规则：png 保持 png，其余格式统一转 jpg），首屏更省流量；
- *    原图地址保留在 data-original，供「查看大图 / 下载原图」使用
+ * 1. 懒加载：滚动到位置才开始请求（压缩图）
+ * 2. 原图在后台加载完再替换上来，所以不依赖「点开 / 放大」才加载；
+ *    原图地址同时留在 data-original 供灯箱使用
  * 3. 点击放大：用容器上的事件委托（见 onContentClick），
  *    因为 v-html 的节点由 Vue 管理，逐个 addEventListener 会在重渲染后失效
  */
@@ -286,74 +300,67 @@ const setupContentImages = async () => {
     if (!articleContent) return;
 
     articleContent.querySelectorAll('img').forEach((img) => {
-        const original = img.getAttribute('src');
+        const thumb = img.getAttribute('src');
         img.setAttribute('loading', 'lazy');
         img.setAttribute('decoding', 'async');
         img.classList.add('content-image');
 
-        if (!original) return;
-        img.dataset.original = original;
+        if (!thumb) return;
 
-        const thumb = toThumbUrl(original);
-        if (thumb !== original) {
-            img.setAttribute('src', thumb);
-            // 压缩图缺失（老数据等）时回退到原图，避免白图
-            img.addEventListener('error', function onThumbError() {
-                img.removeEventListener('error', onThumbError);
-                img.setAttribute('src', original);
-            });
+        // src 已在渲染前换成压缩图，原图地址去掉参数即可还原
+        const original = stripThumb(thumb);
+        img.dataset.original = original;
+        if (original === thumb) return;
+
+        // 压缩图缺失（老数据等）时回退到原图，避免白图
+        img.addEventListener('error', function onThumbError() {
+            img.removeEventListener('error', onThumbError);
+            img.setAttribute('src', original);
+        });
+
+        if (img.complete && img.naturalWidth > 0) {
+            upgradeToOriginal(img, original);
+        } else {
+            img.addEventListener('load', () => upgradeToOriginal(img, original), { once: true });
         }
     });
 };
 
-/**
- * 由原图地址推导后端生成的压缩图地址。
- * 与后端 fileService 的命名规则保持一致：
- *   - png 保持 png（保留透明通道）→ xxx.png  -> xxx_c.png
- *   - 其余格式统一转 jpg          → xxx.webp -> xxx_c.jpg
- * 已是压缩图则原样返回；外链图片没有对应的压缩版本，也原样返回。
- */
-const toThumbUrl = (url) => {
-    if (!url || !url.includes('/static/uploads/')) return url;
-    if (/_c\.(png|jpe?g|webp|gif)$/i.test(url)) return url;
+/** 压缩图显示出来后，后台把原图拉下来替换（不用等到放大） */
+const upgradeToOriginal = (img, original) => {
+    if (img.dataset.upgraded === '1') return;
+    img.dataset.upgraded = '1';
 
-    const isPng = /\.png(\?.*)?$/i.test(url);
-    const suffix = isPng ? '_c.png' : '_c.jpg';
-    return url.replace(/\.[a-zA-Z0-9]+(\?.*)?$/, suffix + '$1');
+    const full = new Image();
+    full.onload = () => {
+        // 期间节点可能已被重渲染换掉
+        if (img.isConnected) img.setAttribute('src', original);
+    };
+    full.src = original;
 };
 
-/**
- * 由压缩图地址反推原图地址（toThumbUrl 的逆）。
- * 早期正文里存的是压缩图地址；_c.jpg 的原后缀无法确定，返回多个候选供逐个探测。
- */
-const toOriginalCandidates = (url) => {
-    if (!url || !url.includes('/static/uploads/')) return [];
+/** 封面先缩略图打底，原图在后台加载，好了再换上 */
+const preloadCover = (original) => {
+    if (original === coverDisplay.value) return;
 
-    const matched = url.match(/_c\.(png|jpe?g)(\?.*)?$/i);
-    if (!matched) return [];
-
-    const exts = matched[1].toLowerCase() === 'png' ? ['png'] : ['jpg', 'jpeg', 'webp', 'gif'];
-    const base = url.slice(0, matched.index);
-    return exts.map((ext) => `${base}.${ext}${matched[2] || ''}`);
+    const img = new Image();
+    img.onload = () => {
+        // 期间可能已经切到别的文章
+        if (coverImage.value === original) coverDisplay.value = original;
+    };
+    img.src = original;
 };
 
-/** 探测原图是否存在。用 HEAD，<img>会下载 */
-const probeExists = async (url) => {
+/** 问后端确实有没有独立的压缩图（HEAD，零字节）；拿不到就不显示切换按钮 */
+const confirmThumbVariant = async (baseUrl, probeUrl) => {
     try {
-        const resp = await fetch(url, { method: 'HEAD', mode: 'cors', cache: 'no-cache' });
-        return resp.ok;
-    } catch {
-        return false;
-    }
-};
-
-/** 确认原图存在后才替换灯箱的 original，避免给出 404 链接 */
-const resolveOriginal = async (url) => {
-    for (const candidate of toOriginalCandidates(url)) {
-        if (!(await probeExists(candidate))) continue;
+        const resp = await fetch(probeUrl, { method: 'HEAD', mode: 'cors', cache: 'no-cache' });
         // 探测期间用户可能点开了别的图，避免结果写到新图上
-        if (lightboxOriginal.value === url) lightboxOriginal.value = candidate;
-        return;
+        if (lightboxOriginal.value === baseUrl) {
+            lightboxCanCompare.value = resp.headers.get('x-image-variant') === 'thumb';
+        }
+    } catch {
+        // 探测失败就保持没有对比，下载仍然指向原图
     }
 };
 
@@ -381,11 +388,16 @@ const onContentError = (e) => {
 
 const openLightbox = (originalUrl, alt) => {
     lightboxAlt.value = alt;
+    // 下载与「查看原图」都用正文里存的原图地址
     lightboxOriginal.value = originalUrl;
-    // 先展示压缩图（外链图片没有压缩版本，与原图相同）
-    lightboxSrc.value = toThumbUrl(originalUrl);
+    lightboxSrc.value = thumbUrl(originalUrl);
+    // 等后端确认确实有压缩图，再让「原图/压缩图」按钮出现
+    lightboxCanCompare.value = false;
     lightboxOpen.value = true;
-    resolveOriginal(originalUrl);
+
+    if (lightboxSrc.value !== originalUrl) {
+        confirmThumbVariant(originalUrl, lightboxSrc.value);
+    }
 };
 
 // 格式化日期时间
@@ -440,9 +452,12 @@ const goToEdit = () => {
 };
 
 const onCoverError = (e) => {
-    if (e.target.src !== fallbackCover) {
-        e.target.src = fallbackCover;
-    }
+    if (e.target.src === fallbackCover) return;
+
+    e.target.src = fallbackCover;
+    // 同步状态，避免后续重渲染又把坏地址写回去
+    coverImage.value = fallbackCover;
+    coverDisplay.value = fallbackCover;
 };
 
 onMounted(() => {

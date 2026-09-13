@@ -35,6 +35,7 @@ import Footer from '../../components/Footer.vue';
 import ArticleTimeline from '../../components/ArticleTimeline.vue';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import api from '../../api/index.js';
+import { thumbUrl } from '../../utils/image.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -73,7 +74,7 @@ const mapArticle = (article) => {
         : (!isNaN(createdTime) ? createdTime : (!isNaN(updatedTime) ? updatedTime : 0));
     return {
         id: article.id,
-        cover_image: resolveImageUrl(article.cover_image || ''),
+        cover_image: thumbUrl(resolveImageUrl(article.cover_image || '')),
         title: article.title,
         description: article.summary || '',
         published_at: new Date(latestTime).toISOString(),

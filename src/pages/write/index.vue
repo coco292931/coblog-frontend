@@ -340,7 +340,7 @@ const onCoverUpload = async (e) => {
         const result = await uploadImage(file);
         if (result.code === 200 && result.data) {
             // 封面用原图，避免压缩带来的画质损失
-            form.value.cover_image = result.data.original_url || result.data.url;
+            form.value.cover_image = result.data.url;
             toast.update(id, { type: 'success', text: '封面上传成功' });
         } else {
             toast.update(id, { type: 'error', text: result.msg || '封面上传失败' });
@@ -378,9 +378,9 @@ const uploadOneImage = async (file, indexLabel = '') => {
         const result = await uploadImage(file);
         if (result.code === 200 && result.data) {
             toast.update(loadingId, { type: 'success', text: `${file.name} 上传成功`, duration: 1600 });
-            // 正文里写入原图地址：文章页据此推导压缩图用于显示，
-            // 原图则保留给「查看大图 / 下载原图」使用。
-            return result.data.original_url || result.data.url;
+            // 正文里写入原图地址：展示时由后端按 ?thumb=1 换成压缩图，
+            // 原图留给「查看原图 / 下载原图」使用。
+            return result.data.url;
         }
         toast.update(loadingId, { type: 'error', text: result.msg || `${file.name} 上传失败` });
         return null;

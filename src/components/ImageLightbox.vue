@@ -97,6 +97,8 @@ const props = defineProps({
     src: { type: String, default: '' },
     // 原图地址：用于下载与「查看原图」。外链图片或没有压缩版本时与 src 相同
     original: { type: String, default: '' },
+    // 是否存在可对比的压缩图；false 时隐藏「原图/压缩图」切换
+    canCompare: { type: Boolean, default: true },
     // 无障碍描述与下载文件名
     alt: { type: String, default: '' },
 });
@@ -117,7 +119,7 @@ const showingOriginal = ref(false);
 const originalUrl = computed(() => props.original || props.src);
 // 是否存在与显示图不同的原图
 const hasDistinctOriginal = computed(
-    () => !!props.original && props.original !== props.src
+    () => props.canCompare && !!props.original && props.original !== props.src
 );
 
 // 拖动平移偏移
