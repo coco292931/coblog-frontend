@@ -44,7 +44,7 @@
                             <input v-model="form.cover_image" type="text" placeholder="图片 URL，或点击右侧上传" />
                             <label class="upload-btn">
                                 上传
-                                <input type="file" accept="image/*" hidden @change="onCoverUpload" />
+                                <input type="file" :accept="IMAGE_ACCEPT_ATTR" hidden @change="onCoverUpload" />
                             </label>
                         </div>
                         <img v-if="form.cover_image" :src="resolveImageUrl(form.cover_image)" class="cover-preview"
@@ -87,7 +87,7 @@
                             <!-- 插入图片：支持点击选择、拖拽、粘贴 -->
                             <label class="upload-btn small" :class="{ busy: uploading }">
                                 {{ uploading ? '上传中…' : '插入图片' }}
-                                <input type="file" accept="image/*" multiple hidden :disabled="uploading"
+                                <input type="file" :accept="IMAGE_ACCEPT_ATTR" multiple hidden :disabled="uploading"
                                     @change="onContentImageUpload" />
                             </label>
 
@@ -201,6 +201,7 @@ import {
     uploadImage,
 } from '../../api/article.js';
 import { toast } from '../../composables/useToast.js';
+import { IMAGE_ACCEPT_ATTR, validateImageFile } from '../../utils/image.js';
 import './index.css';
 
 const route = useRoute();
@@ -335,6 +336,13 @@ const onCoverUpload = async (e) => {
     e.target.value = '';
     if (!file) return;
 
+    // 与正文本地上传同一套校验：扩展名白名单 + MIME + 大小上限
+    const check = validateImageFile(file);
+    if (!check.ok) {
+        toast.error(check.message);
+        return;
+    }
+
     const id = toast.loading(`正在上传封面：${file.name}`);
     try {
         const result = await uploadImage(file);
@@ -363,13 +371,11 @@ const onCoverError = () => {
  * 返回 null 表示失败（错误已通过 toast 提示）。
  */
 const uploadOneImage = async (file, indexLabel = '') => {
-    if (!file.type.startsWith('image/')) {
-        toast.warning(`${file.name} 不是图片，已跳过`);
-        return null;
-    }
-    // 与后端限制保持一致：10 MiB
-    if (file.size > 10 * 1024 * 1024) {
-        toast.error(`${file.name} 超过 10MB 上限`);
+    // 扩展名白名单 + MIME + 大小（与后端限制保持一致）
+    const check = validateImageFile(file);
+    if (!check.ok) {
+        // 扩展名不支持属于用户明确选了错文件，用 error 更醒目
+        toast[check.reason === 'type' ? 'warning' : 'error'](check.message);
         return null;
     }
 
