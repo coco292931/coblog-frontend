@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    background: var(--color-page-gradient);
+    background: linear-gradient(to bottom, var(--color-page-grad-from) 0%, var(--color-page-grad-to) 100%);
 
     /* 文章封面区域 */
     .main-photo-article {

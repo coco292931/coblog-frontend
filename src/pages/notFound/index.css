@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    background: var(--color-page-gradient);
+    background: linear-gradient(to bottom, var(--color-page-grad-from) 0%, var(--color-page-grad-to) 100%);
 }
 
 .notfound-page {
@@ -34,7 +34,7 @@
     font-weight: 800;
     line-height: 1;
     letter-spacing: 4px;
-    background: var(--color-cyan-gradient);
+    background: linear-gradient(135deg, var(--color-cyan-grad-from) 0%, var(--color-cyan-grad-to) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

@@ -358,7 +358,7 @@
     padding: 10px 26px;
     border: none;
     border-radius: 999px;
-    background: var(--color-cyan-gradient);
+    background: linear-gradient(135deg, var(--color-cyan-grad-from) 0%, var(--color-cyan-grad-to) 100%);
     color: #fff;
     font-size: 14px;
     font-weight: 700;

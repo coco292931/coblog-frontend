@@ -3,7 +3,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--color-page-gradient);
+    background: linear-gradient(to bottom, var(--color-page-grad-from) 0%, var(--color-page-grad-to) 100%);
 }
 
 .write-page {
@@ -380,7 +380,7 @@
 
 /* 主操作：青色渐变，与站内其它新增交互一致 */
 .btn-primary {
-    background: var(--color-cyan-gradient);
+    background: linear-gradient(135deg, var(--color-cyan-grad-from) 0%, var(--color-cyan-grad-to) 100%);
     color: #fff;
 }
 

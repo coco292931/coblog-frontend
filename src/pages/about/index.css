@@ -9,7 +9,7 @@
        否则布局会变（已用样式快照对比验证过）。 */
     justify-content: center;
     position: relative;
-    background: var(--color-page-gradient);
+    background: linear-gradient(to bottom, var(--color-page-grad-from) 0%, var(--color-page-grad-to) 100%);
 
     .content-container {
         width: auto;

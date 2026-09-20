@@ -33,7 +33,7 @@
 
     .primary-link {
         color: #fff;
-        background: var(--color-cyan-gradient);
+        background: linear-gradient(135deg, var(--color-cyan-grad-from) 0%, var(--color-cyan-grad-to) 100%);
         box-shadow: 0 4px 12px var(--color-cyan-shadow);
     }
 

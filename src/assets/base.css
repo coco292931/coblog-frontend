@@ -52,7 +52,12 @@ html[data-theme="light"] {
 
   /* 页面级语义变量 */
   --color-page-bg: #f3f5f5;
-  --color-page-gradient: linear-gradient(to bottom, #f7f9f9 0%, #ffffff 100%);
+  /* 页面主背景渐变的两端。
+     ⚠️ 别写成一个 gradient 变量（--color-page-gradient: linear-gradient(...)）：
+     浏览器不对两个渐变做插值过渡，主题切换时整页底色会瞬间翻白/翻黑（大面积闪）。
+     拆成两个 <color> 变量后，色标本身会被 useTheme.js 插值 → 渐变每帧重算 → 平滑。 */
+  --color-page-grad-from: #f7f9f9;
+  --color-page-grad-to: #ffffff;
   --color-card-bg: #ffffff;
   --color-card-soft: #f6f8f8;
   --color-text-secondary: #555555;
@@ -83,7 +88,9 @@ html[data-theme="light"] {
   --color-cyan-soft: rgba(23, 190, 187, 0.12);
   --color-cyan-border: rgba(23, 190, 187, 0.38);
   --color-cyan-shadow: rgba(23, 190, 187, 0.22);
-  --color-cyan-gradient: linear-gradient(135deg, #1fefff 0%, #17bebb 100%);
+  /* 青色渐变按钮的两端（同上：拆成两个 <color> 变量才能平滑过渡） */
+  --color-cyan-grad-from: #1fefff;
+  --color-cyan-grad-to: #17bebb;
 
   /* 滚动条 thumb（main.css 用） */
   --color-scrollbar-thumb: rgba(14, 154, 154, 0.55);
@@ -124,7 +131,8 @@ html[data-theme="dark"] {
   --color-background-overlay: rgba(24, 24, 24, 0.98);
 
   --color-page-bg: #1a1a1a;
-  --color-page-gradient: linear-gradient(to bottom, #1e1e1e 0%, #181818 100%);
+  --color-page-grad-from: #1e1e1e;
+  --color-page-grad-to: #181818;
   --color-card-bg: #242424;
   --color-card-soft: #2a2a2a;
   --color-text-secondary: rgba(235, 235, 235, 0.64);
@@ -152,7 +160,8 @@ html[data-theme="dark"] {
   --color-cyan-soft: rgba(22, 176, 176, 0.14);
   --color-cyan-border: rgba(22, 176, 176, 0.36);
   --color-cyan-shadow: rgba(22, 176, 176, 0.24);
-  --color-cyan-gradient: linear-gradient(135deg, #29d6d6 0%, #0e9a9a 100%);
+  --color-cyan-grad-from: #29d6d6;
+  --color-cyan-grad-to: #0e9a9a;
 
   /* 滚动条 thumb（main.css 用） */
   --color-scrollbar-thumb: rgba(79, 233, 233, 0.45);
@@ -189,7 +198,8 @@ html[data-theme="dark"] {
     --color-background-overlay: rgba(24, 24, 24, 0.98);
 
     --color-page-bg: #1a1a1a;
-    --color-page-gradient: linear-gradient(to bottom, #1e1e1e 0%, #181818 100%);
+    --color-page-grad-from: #1e1e1e;
+    --color-page-grad-to: #181818;
     --color-card-bg: #242424;
     --color-card-soft: #2a2a2a;
     --color-text-secondary: rgba(235, 235, 235, 0.64);
@@ -217,7 +227,8 @@ html[data-theme="dark"] {
     --color-cyan-soft: rgba(22, 176, 176, 0.14);
     --color-cyan-border: rgba(22, 176, 176, 0.36);
     --color-cyan-shadow: rgba(22, 176, 176, 0.24);
-    --color-cyan-gradient: linear-gradient(135deg, #29d6d6 0%, #0e9a9a 100%);
+    --color-cyan-grad-from: #29d6d6;
+    --color-cyan-grad-to: #0e9a9a;
 
     /* 滚动条 thumb（main.css 用） */
     --color-scrollbar-thumb: rgba(79, 233, 233, 0.45);
@@ -245,23 +256,27 @@ html[data-theme="dark"] {
 body {
   color: var(--color-text);
   background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
+  /* 这里刻意不写 transition：主题切换的平滑由 useTheme.js 负责 ——
+     它把颜色变量注册成可插值的 <color> 自定义属性，并在 html 上给这些变量
+     挂过渡。若 body 自己也过渡，它会去追"变量插值中的中间值"，
+     尾巴会拖到 0.85s。详见 useTheme.js 里的注释。 */
 }
 
-/* 手动切换主题时的全局颜色过渡。
-   这个类由 useTheme 在切换瞬间临时挂上（约 400ms 后摘掉）——
-   平时不给元素挂 transition，既不影响渲染，也不会改掉各组件 hover 的手感。
-   用 !important 是为了在这一小会儿压过组件自身的 transition。 */
-html.theme-transitioning,
-html.theme-transitioning *,
-html.theme-transitioning *::before,
-html.theme-transitioning *::after {
-  transition:
-    background-color 0.35s ease,
-    background-image 0.35s ease,
-    color 0.35s ease,
-    border-color 0.35s ease,
-    box-shadow 0.35s ease !important;
+/* 主题切换期间的"过渡静默"（类由 useTheme.js 挂上，约 420ms 后摘掉）。
+   背景：useTheme.js 已经把颜色变量注册成可插值的 <color> 并在 html 上挂了过渡，
+   变量插值本身就负责平滑（350ms）。但各组件自己还写着
+   `transition: all 0.2s~0.3s` 之类的交互过渡（hover 用），它们会把
+   "变量每帧的新值"当成新目标去追 → 比背景晚 200~500ms 才变色。
+   实测：搜索框 630ms、筛选按钮 830ms、排序按钮 523ms 才收敛，而背景 346ms
+   就已经到位 —— 看起来就是"列表/输入框/按钮和背景不同步"。
+   所以切换期间临时把这些元素自身的 transition 关掉（让它们即时跟随变量插值），
+   切换结束再摘类，把 hover 手感还回去。
+   ⚠️ 只匹配后代元素：html 自己承载着"变量过渡"的内联 transition，不能受影响。
+   ⚠️ 旧版这里曾经是 `html.theme-transitioning *` 给所有元素**加**过渡 —— 方向相反，
+      这也是当时"末尾闪"的根源（继承属性层层重启过渡 + 400ms 硬取消），
+      所以换成了新类名 theme-switching，别把两者搞混。 */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
 }

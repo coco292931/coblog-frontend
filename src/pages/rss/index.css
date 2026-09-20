@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    background: var(--color-page-gradient);
+    background: linear-gradient(to bottom, var(--color-page-grad-from) 0%, var(--color-page-grad-to) 100%);
 }
 
 .rss-page {
@@ -94,7 +94,7 @@
     flex: 0 0 78px;
     padding: 0;
     border: none;
-    background: var(--color-cyan-gradient);
+    background: linear-gradient(135deg, var(--color-cyan-grad-from) 0%, var(--color-cyan-grad-to) 100%);
     color: #fff;
 }
 
