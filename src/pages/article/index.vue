@@ -44,8 +44,9 @@
                 <div class="toc-container">
                     <div class="toc-title">📑 目录</div>
                     <div class="toc-list">
-                        <div v-for="(item, index) in tocList" :key="index"
-                            :class="['toc-item', `toc-level-${item.level}`]" @click="scrollToSection(item.id)">
+                        <div v-for="item in tocList" :key="item.id"
+                            :class="['toc-item', `toc-level-${item.level}`, { 'is-active': item.id === activeHeadingId }]"
+                            @click="scrollToSection(item.id)">
                             {{ item.text }}
                         </div>
                     </div>
@@ -55,7 +56,7 @@
             <div class="main-content">
                 <!-- 文章内容：与写作页预览共用 article-prose 排版 -->
                 <div class="article-content" @click="onContentClick" @error.capture="onContentError">
-                    <div class="main-body article-prose" v-html="articleHtml">
+                    <div ref="proseRef" class="main-body article-prose" v-html="articleHtml">
                     </div>
                     <!-- 版权信息 -->
                     <div class="license-info">
@@ -101,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import './index.css';
 import NavBar from '../../components/NavBar.vue';
@@ -111,6 +112,7 @@ import IconHistory from '../../components/icons/IconHistory.vue';
 import api from '../../api/index.js';
 import { isAuthenticated } from '../../utils/auth.js';
 import { thumbUrl, stripThumb, probeThumbVariant } from '../../utils/image.js';
+import { enhanceProse } from '../../utils/prose.js';
 import ImageLightbox from '../../components/ImageLightbox.vue';
 import fallbackCover from '../../assets/image/homepage-background.jpg';
 
@@ -165,6 +167,11 @@ const comments = ref(0);
 
 // 目录数据
 const tocList = ref([]);
+// 当前所处章节，用于目录高亮（滚动联动）
+const activeHeadingId = ref('');
+
+// 正文（v-html）容器：渲染完成后的增强都从它取真实节点
+const proseRef = ref(null);
 
 // 图片查看器状态
 const lightboxOpen = ref(false);
@@ -180,10 +187,62 @@ const lightboxVariantPending = ref(false);
 
 // 滚动到指定章节
 const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+/**
+ * 目录滚动联动：判定带（视口上沿往下 80px~30% 的区域）里出现了哪些标题，
+ * 取文档顺序最靠前的那个作为「当前章节」。
+ * 用 IntersectionObserver 而不是 scroll 事件，省掉每帧的位置计算。
+ */
+let tocObserver = null;
+const observeHeadings = (headings) => {
+    tocObserver?.disconnect();
+    tocObserver = null;
+    activeHeadingId.value = '';
+    if (!headings.length) return;
+
+    const visible = new Set();
+    tocObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) visible.add(entry.target.id);
+            else visible.delete(entry.target.id);
+        });
+        const current = headings.find((heading) => visible.has(heading.id));
+        if (current) activeHeadingId.value = current.id;
+    }, { rootMargin: '-80px 0px -70% 0px' });   // 上沿 80px 对应固定导航栏的高度
+
+    headings.forEach((heading) => tocObserver.observe(heading));
+};
+
+/**
+ * 从渲染后的正文里提取标题生成目录。调用前需确保 v-html 的内容已就位。
+ * 标题 id 由后端渲染时就写好了（services/markdownService/headingID.go），
+ * 这里只做兜底：老文章入库时还没有 id，补一个位置编号，保证目录仍然可用。
+ */
+const buildToc = () => {
+    const container = proseRef.value;
+    if (!container) return;
+
+    const headings = [...container.querySelectorAll('h2, h3, h4')];
+    tocList.value = headings.map((heading, index) => {
+        if (!heading.id) heading.id = `heading-${index}`;
+        return {
+            id: heading.id,
+            text: heading.textContent.trim(),
+            level: parseInt(heading.tagName.substring(1), 10),
+        };
+    });
+    observeHeadings(headings);
+};
+
+/**
+ * 带 #锚点 打开时，正文是异步取回来的 —— 浏览器解析 HTML 那一刻找不到目标元素，
+ * 首次定位必然落空，所以正文渲染完再补一次跳转。
+ */
+const scrollToHashHeading = () => {
+    const id = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+    if (id) document.getElementById(id)?.scrollIntoView({ block: 'start' });
 };
 
 // 从后端获取文章数据
@@ -242,14 +301,11 @@ const fetchArticleData = async () => {
             likes.value = data.likes || 0;
             comments.value = data.commentsCount || data.comments_count || 0;
 
-            // 如果后端返回了目录数据，则使用；否则可以从 HTML 中提取
-            if (data.toc && Array.isArray(data.toc)) {
-                tocList.value = data.toc;
-            } else {
-                // 自动从 HTML 中提取标题生成目录
-                generateTocFromHtml();
-            }
-
+            // 正文由 v-html 渲染，下面几件事都依赖真实 DOM，先等一次更新
+            await nextTick();
+            buildToc();
+            scrollToHashHeading();
+            enhanceProse(proseRef.value);
             configureExternalLinks();
             setupContentImages();
 
@@ -408,30 +464,6 @@ const formatDateTime = (dateString) => {
     });
 };
 
-// 从 HTML 内容中提取标题生成目录
-const generateTocFromHtml = () => {
-    // 等待 DOM 更新后再提取
-    setTimeout(() => {
-        const articleContent = document.querySelector('.article-content');
-        if (!articleContent) return;
-
-        const headings = articleContent.querySelectorAll('h2, h3, h4');
-        const toc = [];
-
-        headings.forEach((heading, index) => {
-            const id = `heading-${index}`;
-            heading.id = id;
-
-            toc.push({
-                id: id,
-                text: heading.textContent,
-                level: parseInt(heading.tagName.substring(1))
-            });
-        });
-
-        tocList.value = toc;
-    }, 100);
-};
 // 点击分类：跳转到文章列表并按该分类筛选
 const goToCategory = (category) => {
     if (category) {
@@ -455,6 +487,11 @@ const onCoverError = (e) => {
 
 onMounted(() => {
     fetchArticleData();
+});
+
+onBeforeUnmount(() => {
+    tocObserver?.disconnect();
+    tocObserver = null;
 });
 </script>
 <style scoped></style>

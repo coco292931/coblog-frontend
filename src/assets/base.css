@@ -60,6 +60,17 @@ html[data-theme="light"] {
   --color-text-heading: #2c3e50;
   --color-text-subheading: #34495e;
   --color-code-inline-bg: #f4f4f4;
+  /* 代码块：亮色主题用浅底 —— 亮色页面里放一个深色大黑框太抢眼；
+     暗色主题仍用深底（见下面两个深色块）。
+     工具条按钮浮在代码底色之上，两套主题的底色不同，所以取值也要分开给。 */
+  --color-code-block-bg: #f6f8fa;
+  --color-code-block-text: #24292f;
+  --color-code-block-border: #d8dee4;
+  --color-code-toolbar-bg: rgba(27, 31, 36, 0.06);
+  --color-code-toolbar-bg-hover: rgba(27, 31, 36, 0.12);
+  --color-code-toolbar-text: #57606a;
+  --color-code-toolbar-text-hover: #24292f;
+  --color-code-toolbar-ok-text: #1a7f37;
   --color-divider: #e0e0e0;
   --color-shadow: rgba(0, 0, 0, 0.1);
   --color-shadow-soft: rgba(0, 0, 0, 0.08);
@@ -121,6 +132,14 @@ html[data-theme="dark"] {
   --color-text-heading: rgba(255, 255, 255, 0.87);
   --color-text-subheading: rgba(235, 235, 235, 0.72);
   --color-code-inline-bg: #2d2d2d;
+  --color-code-block-bg: #2d2d2d;
+  --color-code-block-text: #f8f8f2;
+  --color-code-block-border: transparent;
+  --color-code-toolbar-bg: rgba(255, 255, 255, 0.07);
+  --color-code-toolbar-bg-hover: rgba(255, 255, 255, 0.16);
+  --color-code-toolbar-text: rgba(248, 248, 242, 0.62);
+  --color-code-toolbar-text-hover: #f8f8f2;
+  --color-code-toolbar-ok-text: #73d13d;
   --color-divider: rgba(84, 84, 84, 0.48);
   --color-shadow: rgba(0, 0, 0, 0.4);
   --color-shadow-soft: rgba(0, 0, 0, 0.3);
@@ -178,6 +197,14 @@ html[data-theme="dark"] {
     --color-text-heading: rgba(255, 255, 255, 0.87);
     --color-text-subheading: rgba(235, 235, 235, 0.72);
     --color-code-inline-bg: #2d2d2d;
+    --color-code-block-bg: #2d2d2d;
+    --color-code-block-text: #f8f8f2;
+    --color-code-block-border: transparent;
+    --color-code-toolbar-bg: rgba(255, 255, 255, 0.07);
+    --color-code-toolbar-bg-hover: rgba(255, 255, 255, 0.16);
+    --color-code-toolbar-text: rgba(248, 248, 242, 0.62);
+    --color-code-toolbar-text-hover: #f8f8f2;
+    --color-code-toolbar-ok-text: #73d13d;
     --color-divider: rgba(84, 84, 84, 0.48);
     --color-shadow: rgba(0, 0, 0, 0.4);
     --color-shadow-soft: rgba(0, 0, 0, 0.3);

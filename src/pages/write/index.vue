@@ -128,7 +128,7 @@
 
                         <div v-show="viewMode !== 'edit'" class="preview-pane">
                             <div class="preview-scroll">
-                                <div class="article-prose" v-html="previewHtml"></div>
+                                <div ref="previewRef" class="article-prose" v-html="previewHtml"></div>
                             </div>
                         </div>
 
@@ -202,6 +202,7 @@ import {
 } from '../../api/article.js';
 import { toast } from '../../composables/useToast.js';
 import { IMAGE_ACCEPT_ATTR, validateImageFile } from '../../utils/image.js';
+import { enhanceProse } from '../../utils/prose.js';
 import './index.css';
 
 const route = useRoute();
@@ -242,6 +243,8 @@ const submitting = ref(false);
 const deleting = ref(false);
 const loadingArticle = ref(false);
 const editorRef = ref(null);
+// 预览容器：正文渲染后要在真实 DOM 上补代码块工具条（见 utils/prose.js）
+const previewRef = ref(null);
 
 const editorPlaceholder = computed(() =>
     contentType.value === 'md' ? '在这里用 Markdown 写作…' : '在这里粘贴 HTML…'
@@ -295,6 +298,12 @@ const updatePreview = () => {
 };
 
 watch([editorContent, contentType], updatePreview);
+
+// 预览内容变化后做一次正文增强（代码块的语言标签与复制按钮），与文章详情页保持一致
+watch(previewHtml, async () => {
+    await nextTick();
+    enhanceProse(previewRef.value);
+});
 
 /**
  * 导入本地文件（.md / .markdown / .txt / .html / .htm）

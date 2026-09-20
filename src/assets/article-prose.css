@@ -80,8 +80,10 @@
 }
 
 .article-prose pre {
-    background: #2d2d2d;
-    color: #f8f8f2;
+    background: var(--color-code-block-bg);
+    color: var(--color-code-block-text);
+    /* 亮色主题下浅底需要一个描边才不至于糊在页面上，暗色主题里该 token 是 transparent */
+    border: 1px solid var(--color-code-block-border);
     padding: 18px;
     border-radius: 10px;
     overflow-x: auto;
@@ -94,6 +96,96 @@
     padding: 0;
     color: inherit;
     font-size: 0.9rem;
+}
+
+/* ===== 代码块工具条（语言标签 + 复制按钮）=====
+   工具条由 utils/prose.js 在正文渲染完成后插入，结构是：
+   .code-block > pre + .code-toolbar */
+.article-prose .code-block {
+    position: relative;
+    margin: 20px 0;
+}
+
+/* 上下外边距收到容器上（避免与子元素折叠后工具条错位），
+   顶部留白给绝对定位的工具条让位 */
+.article-prose .code-block > pre {
+    margin: 0;
+    padding-top: 46px;
+}
+
+.article-prose .code-toolbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px 10px 18px;
+    font-size: 0.78rem;
+    /* 工具条自身不响应鼠标，否则会挡住代码的选中与横向滚动 */
+    pointer-events: none;
+}
+
+.article-prose .code-lang {
+    color: var(--color-code-toolbar-text);
+    font-family: 'Consolas', 'Monaco', monospace;
+    letter-spacing: 0.02em;
+}
+
+.article-prose .code-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border: none;
+    border-radius: 6px;
+    background: var(--color-code-toolbar-bg);
+    color: var(--color-code-toolbar-text);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background 0.2s, color 0.2s, opacity 0.2s, transform 0.2s;
+}
+
+.article-prose .code-copy:hover {
+    background: var(--color-code-toolbar-bg-hover);
+    color: var(--color-code-toolbar-text-hover);
+}
+
+.article-prose .code-copy:active {
+    transform: scale(0.94);
+}
+
+.article-prose .code-copy-icon {
+    display: inline-flex;
+}
+
+/* 复制/已复制两个图标叠在同一个按钮上，由 .is-copied 切换 */
+.article-prose .code-copy-icon + .code-copy-icon {
+    display: none;
+}
+
+.article-prose .code-copy.is-copied .code-copy-icon {
+    display: none;
+}
+
+.article-prose .code-copy.is-copied .code-copy-icon + .code-copy-icon {
+    display: inline-flex;
+    color: var(--color-code-toolbar-ok-text);
+}
+
+/* 只在有 hover 能力的设备上做「悬停显现」：触屏没有 hover，按钮必须常驻 */
+@media (hover: hover) {
+    .article-prose .code-copy {
+        opacity: 0;
+    }
+
+    .article-prose .code-block:hover .code-copy,
+    .article-prose .code-copy:focus-visible,
+    .article-prose .code-copy.is-copied {
+        opacity: 1;
+    }
 }
 
 /* ===== 引用 ===== */
@@ -250,6 +342,66 @@ html[data-theme="dark"] {
     font-size: 0.75em;
 }
 
+/* ===== 数学公式 =====
+   后端输出占位元素（.math-inline / .math-block，内容是原始 TeX），
+   前端 KaTeX 渲染后把内容换掉（见 utils/prose.js）。 */
+.article-prose .math-block {
+    display: block;
+    margin: 18px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* 尚未渲染时（KaTeX 还在加载、或 JS 被禁用）显示原始 TeX：
+   等宽字体至少能看清写了什么，不至于乱码 */
+.article-prose .math-inline:not([data-math-rendered]),
+.article-prose .math-block:not([data-math-rendered]) {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.92em;
+    color: var(--color-text-secondary);
+}
+
+/* KaTeX 的 display 公式自带 1em 上下外边距，这里归零，避免与 .math-block 叠加 */
+.article-prose .math-block .katex-display {
+    margin: 0;
+}
+
+/* ===== 脚注（goldmark extension.Footnote）===== */
+.article-prose .footnote-ref {
+    padding: 0 2px;
+    text-decoration: none;
+}
+
+.article-prose .footnotes {
+    margin-top: 28px;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+/* 脚注区顶部那条分隔线（goldmark 输出的 <hr>） */
+.article-prose .footnotes hr {
+    border: none;
+    border-top: 1px solid var(--color-divider);
+    margin: 0 0 12px;
+}
+
+.article-prose .footnotes ol {
+    padding-left: 22px;
+}
+
+.article-prose .footnotes li {
+    margin: 6px 0;
+}
+
+.article-prose .footnotes p {
+    margin: 4px 0;
+}
+
+.article-prose .footnote-backref {
+    text-decoration: none;
+    color: var(--color-text-muted);
+}
+
 /* ===== 手机端排版（<=640px）=====
    窄屏可读性优化，桌面端规则完全不受影响：
    - 标题字号整体降一档，避免 1.85rem 的 h2 在 375px 下撑满整行、失去层次；
@@ -298,6 +450,20 @@ html[data-theme="dark"] {
         padding: 14px;
         margin: 16px 0;
         border-radius: 8px;
+    }
+
+    /* 与上面的 pre 内边距对齐，只额外留出工具条的高度 */
+    .article-prose .code-block {
+        margin: 16px 0;
+    }
+
+    .article-prose .code-block > pre {
+        padding: 14px;
+        padding-top: 40px;
+    }
+
+    .article-prose .code-toolbar {
+        padding: 8px 10px 8px 14px;
     }
 
     .article-prose pre code {

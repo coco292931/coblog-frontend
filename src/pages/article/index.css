@@ -339,6 +339,13 @@
                             padding-left: 10px;
                         }
 
+                        /* 当前所处章节（滚动联动，见 index.vue 的 observeHeadings）。
+                           只改颜色：加粗会被 .toc-level-2 那条规则按选择器优先级压回去，
+                           不同层级表现还不一致。 */
+                        &.is-active {
+                            color: var(--color-accent);
+                        }
+
                         &.toc-level-2 {
                             font-weight: 500;
                         }
