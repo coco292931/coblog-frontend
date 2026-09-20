@@ -3,7 +3,8 @@
         <NavBar style="position: fixed;" />
         <!-- 文章封面区域 -->
         <div class="main-photo-article">
-            <img :src="coverDisplay" class='cover_image' @error="onCoverError" />
+            <!-- 没拿到封面地址时不渲染 img：空 src 会去请求当前页面，也会白闪一张默认封面 -->
+            <img v-if="coverDisplay" :src="coverDisplay" class='cover_image' @error="onCoverError" />
             <div class="summary">
                 <!-- 管理入口：登录用户可见，置于封面标题区右上角，不与统计信息混在一起 -->
                 <button v-if="loggedIn" class="manage-btn" @click="goToEdit" title="编辑这篇文章">
@@ -146,9 +147,10 @@ watch(() => route.fullPath, () => {
 // 文章基本信息
 const articleTitle = ref('加载中...');
 const articleSubtitle = ref('');
-const coverImage = ref(fallbackCover);
-// 当前显示的封面：先缩略图打底，原图加载完再换上
-const coverDisplay = ref(fallbackCover);
+// 封面原图地址（空 = 这篇文章没有封面），仅在加载失败时被替换成默认封面
+const coverImage = ref('');
+// 当前显示的封面：先缩略图打底，原图加载完再换上；为空表示还没确定封面，不渲染 img
+const coverDisplay = ref('');
 const createTime = ref('');
 const updateTime = ref('');
 const categories = ref([]);
@@ -260,9 +262,17 @@ const fetchArticleData = async () => {
             // 更新文章信息（使用驼峰命名）
             articleTitle.value = data.title || '无标题';
             articleSubtitle.value = data.subtitle || '';
-            coverImage.value = resolveImageUrl(data.cover_image || '') || fallbackCover;
-            coverDisplay.value = thumbUrl(coverImage.value);
-            preloadCover(coverImage.value);
+            // 有封面就用文章自己的封面；没有封面才退回默认图。
+            // 默认图不再作为初始值抢跑，避免「先请求默认封面、再换成真封面」白跑一次。
+            const cover = resolveImageUrl(data.cover_image || '');
+            if (cover) {
+                coverImage.value = cover;
+                coverDisplay.value = thumbUrl(cover);
+                preloadCover(cover);
+            } else {
+                coverImage.value = '';
+                coverDisplay.value = fallbackCover;
+            }
             articleHtml.value = withThumbSrc(data.content || '<p>暂无内容</p>');
 
             // 处理时间字段
