@@ -39,7 +39,7 @@
                         :disabled="originalLoading" :title="showingOriginal ? '查看压缩图' : '查看原图'"
                         @click="toggleOriginal">
                         <span v-if="originalLoading" class="lb-spinner"></span>
-                        <template v-else>{{ showingOriginal ? '压缩图' : '加载原图' }}</template>
+                        <template v-else>{{ showingOriginal ? '压缩图' : ' 原图 ' }}</template>
                     </button>
                     <button class="lb-btn" :title="downloading ? '下载中…' : '下载原图'" :disabled="downloading"
                         @click="download">
