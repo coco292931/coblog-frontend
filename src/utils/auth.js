@@ -45,9 +45,6 @@ export const removeToken = () => {
   localStorage.removeItem(RSS_TOKEN_KEY);
   sessionStorage.removeItem(RSS_TOKEN_KEY);
 
-  // 登录时后端还会种一份 HttpOnly 的 cookie（供 /lite 这类后端直出的页面识别身份），
-  // 那份 JS 删不掉，只能请后端清。不 await、不处理失败：
-  // 本地已经清干净了，网络不通时也不应该让登出卡住。
   if (API_BASE) {
     fetch(`${API_BASE}/api/auth/logout`, {
       method: 'POST',

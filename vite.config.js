@@ -21,9 +21,7 @@ export default defineConfig({
     proxy: {
       // 老设备只读页 /lite 由 Go 后端直出 HTML。
       // 本地联调时经 dev server 转发一次，好处是 Kindle 只需访问前端端口：
-      // 防火墙里 node.exe 已有入站放行规则，而 go run 的临时二进制每次路径都不同，
-      // 单独为 8080 开入站规则既麻烦又不会复用。
-      //
+      
       // 生产环境不用这段 —— 由 nginx 把 /lite/ 反代到后端（注意排除 SPA 的
       // try_files 回退，否则刷新 /lite/articles/1 会被打回 index.html）。
       '/lite': {
