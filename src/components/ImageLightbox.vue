@@ -61,8 +61,8 @@
                 </div>
 
                 <!-- 单击关闭，按住拖动平移；两张图都留在 DOM 里，只切可见性 -->
-                <div class="lightbox-stage" @click.self="close">
-                    <div ref="canvasRef" class="lightbox-canvas" :class="{ dragging: isDragging }"
+                <div ref="stageRef" class="lightbox-stage" @click.self="close">
+                    <div ref="canvasRef" class="lightbox-canvas" :class="{ dragging: isDragging || pinchActive }"
                         :style="{ transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})` }"
                         @pointerdown="onPointerDown"
                         @pointermove="onPointerMove"
@@ -80,7 +80,7 @@
                     <div v-if="loadError" class="lightbox-error">图片加载失败，请关闭后重试</div>
                 </div>
 
-                <div class="lightbox-tip">单击关闭 · 按住拖动 · 滚轮缩放 · Esc 退出</div>
+                <div class="lightbox-tip">单击关闭 · 按住拖动 · 滚轮/双指缩放 · Esc 退出</div>
             </div>
         </Transition>
     </Teleport>
@@ -119,6 +119,8 @@ const emit = defineEmits(['update:open']);
 const scale = ref(1);
 const downloading = ref(false);
 const canvasRef = ref(null);
+// 舞台元素：拿它的中心点作为「未平移时画布中心」的基准
+const stageRef = ref(null);
 // 第一张（首帧那张）元素
 const thumbImgRef = ref(null);
 // 原图元素（存在独立原图地址时渲染）
@@ -157,6 +159,18 @@ let startY = 0;
 let originOffsetX = 0;
 let originOffsetY = 0;
 
+// 双指缩放是否进行中
+const pinchActive = ref(false);
+// 当前按下的所有指针（id → 坐标）：多指时用来算两指距离与中点
+const pointers = new Map();
+// 捏合起始基准：两指距离、中点，以及那一刻的缩放与偏移
+let pinchStartDist = 0;
+let pinchStartMidX = 0;
+let pinchStartMidY = 0;
+let pinchStartScale = 1;
+let pinchStartOffsetX = 0;
+let pinchStartOffsetY = 0;
+
 /**
  * 限制平移范围：不让图片被拖到完全看不见。
  * 最多允许图片自身尺寸一半的位移，保证总有一半在视口内。
@@ -170,6 +184,56 @@ const clampOffset = () => {
     offsetY.value = Math.max(-maxY, Math.min(maxY, offsetY.value));
 };
 
+/** 舞台中心（屏幕坐标）：画布未平移时它的中心就在此处 */
+const stageCenter = () => {
+    const el = stageRef.value;
+    if (!el) return { x: 0, y: 0 };
+    const rect = el.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+};
+
+/** 记录单指/鼠标拖动的起点与当时的偏移 */
+const beginDrag = (x, y) => {
+    startX = x;
+    startY = y;
+    originOffsetX = offsetX.value;
+    originOffsetY = offsetY.value;
+};
+
+/** 双指落定（或增删一根手指）时重取基准，保证手势不跳变 */
+const beginPinch = () => {
+    const [a, b] = [...pointers.values()];
+    pinchStartDist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    pinchStartMidX = (a.x + b.x) / 2;
+    pinchStartMidY = (a.y + b.y) / 2;
+    pinchStartScale = scale.value;
+    pinchStartOffsetX = offsetX.value;
+    pinchStartOffsetY = offsetY.value;
+};
+
+/**
+ * 双指缩放：以两指中点为锚点。
+ * 保持「起点时两指中点下的那个像素」始终跟着当前中点走，
+ * 于是捏合缩放与双指平移能在同一条公式里自然完成（纯平移时 ratio=1）。
+ * 注意 offset 是相对「画布居中位置」的位移，所以基准取舞台中心。
+ */
+const applyPinch = () => {
+    const [a, b] = [...pointers.values()];
+    const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    const target = Math.min(MAX_SCALE, Math.max(MIN_SCALE, (pinchStartScale * dist) / pinchStartDist));
+    const ratio = target / pinchStartScale;
+
+    const base = stageCenter();
+    const midX = (a.x + b.x) / 2;
+    const midY = (a.y + b.y) / 2;
+    offsetX.value = midX - base.x - (pinchStartMidX - base.x - pinchStartOffsetX) * ratio;
+    offsetY.value = midY - base.y - (pinchStartMidY - base.y - pinchStartOffsetY) * ratio;
+    scale.value = Number(target.toFixed(3));
+
+    didDrag = true;
+    clampOffset();
+};
+
 const onPointerDown = (e) => {
     // 仅响应鼠标左键（触摸/笔的 button 为 0）
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -177,17 +241,36 @@ const onPointerDown = (e) => {
     didDrag = false;
     userTouched = true;
     pointerActive = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    originOffsetX = offsetX.value;
-    originOffsetY = offsetY.value;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     // 捕获指针，确保移出图片后仍能收到 move/up
     e.currentTarget.setPointerCapture?.(e.pointerId);
+
+    if (pointers.size === 1) {
+        beginDrag(e.clientX, e.clientY);
+    } else if (pointers.size === 2) {
+        // 第二根手指落下：中止单指拖动，转入双指缩放
+        isDragging.value = false;
+        pinchActive.value = true;
+        // 手势结束后浏览器仍可能派发 click，这里先标记，避免误判成「单击关闭」
+        didDrag = true;
+        beginPinch();
+    }
 };
 
 const onPointerMove = (e) => {
-    // 未按下时不处理：没有起点就无法计算相对位移
+    const pointer = pointers.get(e.pointerId);
+    // 未按下时不处理：没有起点就无法计算位移
+    if (!pointer) return;
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+
+    // 双指缩放：跳过拖动阈值，直接按手势计算
+    if (pointers.size >= 2) {
+        applyPinch();
+        return;
+    }
+
     if (!pointerActive) return;
     if (e.buttons === 0) {
         pointerActive = false;
@@ -209,6 +292,25 @@ const onPointerMove = (e) => {
 
 const onPointerUp = (e) => {
     e.currentTarget.releasePointerCapture?.(e.pointerId);
+    pointers.delete(e.pointerId);
+
+    if (pointers.size >= 2) {
+        // 还剩两根以上（如第三根抬起）：重取基准，避免画面跳变
+        beginPinch();
+        return;
+    }
+
+    if (pointers.size === 1) {
+        // 双指收成一指：以剩下那根手指为起点继续拖动
+        pinchActive.value = false;
+        const only = [...pointers.values()][0];
+        beginDrag(only.x, only.y);
+        isDragging.value = false;
+        pointerActive = true;
+        return;
+    }
+
+    pinchActive.value = false;
     pointerActive = false;
     isDragging.value = false;
     // didDrag 保留到 click 事件后再由下一次 pointerdown 重置
@@ -240,6 +342,9 @@ watch(() => props.open, (open) => {
         userTouched = false;
         originalLoading.value = false;
         loadError.value = false;
+        // 清掉上一轮遗留的手指，避免只剩一根时被当成双指
+        pointers.clear();
+        pinchActive.value = false;
 
         // 首帧尽量复用「正文里正在显示的那张」：它已解码，画布能立刻有尺寸。
         // 正文回退到原图时 initialVariant='original'，就直接显示原图。
@@ -254,6 +359,8 @@ watch(() => props.open, (open) => {
         isDragging.value = false;
         pointerActive = false;
         didDrag = false;
+        pointers.clear();
+        pinchActive.value = false;
     }
 });
 
@@ -572,7 +679,7 @@ const download = async () => {
     touch-action: none;
 }
 
-/* 拖动中：取消过渡与 grab 光标，跟手感更好 */
+/* 拖动 / 双指缩放中：取消过渡与 grab 光标，跟手感更好（缩放每帧都在改，0.18s 过渡会拖沓） */
 .lightbox-canvas.dragging {
     cursor: grabbing;
     transition: none;
