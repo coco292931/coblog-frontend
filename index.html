@@ -2,6 +2,35 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
+    <script>
+      // 老 Kindle（Paperwhite 3 一类，固件 5.16.2 / AppleWebKit 534）跑不动 Vue 运行时
+      // —— 缺 Proxy / Promise / Map / Set，SPA 在它上面只会白屏，而且这类设备没有
+      // devtools，白屏无从排查。所以在任何 module 脚本之前先嗅探一次，把它引到
+      // 后端直出的 /lite（内容写在 HTML 里，不依赖脚本）。
+      //
+      // 这段脚本自己必须是 ES5：老引擎在解析阶段就拒绝 let / const / 箭头函数 /
+      // 模板字符串，写了一个，整段脚本不执行，跳转随之失效、依旧是白屏。
+      (function () {
+        var ua = navigator.userAgent;
+
+        // 有 Chrome/xx 说明是新一代内核（固件 ≥5.16.4），放过。
+        if (/Chrome\//.test(ua)) return;
+
+        // 老 Kindle：只有 AppleWebKit/5xx 标记、没有 Chrome。
+        if (!/AppleWebKit\/5\d\d/.test(ua)) return;
+
+        // 用户主动选过「完整版」，之后不再自动跳转。
+        if (/coblog-lite-optout/.test(document.cookie)) return;
+
+        // /lite 页脚给了这个入口，点一次就记住选择。
+        if (/[?&]full=1(&|$)/.test(location.search)) {
+          document.cookie = 'coblog-lite-optout=1; path=/; max-age=31536000';
+          return;
+        }
+
+        location.replace('/lite' + location.pathname + location.search);
+      })();
+    </script>
     <link rel="icon" href="/src/assets/icon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coco の 避风港</title>
