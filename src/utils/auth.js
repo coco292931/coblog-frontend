@@ -6,6 +6,9 @@
 const TOKEN_KEY = 'token';
 const RSS_TOKEN_KEY = 'rss_token';
 
+// 后端根地址（与 api/index.js 的 baseURL 同源配置）
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
 /**
  * 获取认证Token
  * 优先从localStorage获取，其次从sessionStorage
@@ -41,6 +44,16 @@ export const removeToken = () => {
   sessionStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(RSS_TOKEN_KEY);
   sessionStorage.removeItem(RSS_TOKEN_KEY);
+
+  // 登录时后端还会种一份 HttpOnly 的 cookie（供 /lite 这类后端直出的页面识别身份），
+  // 那份 JS 删不掉，只能请后端清。不 await、不处理失败：
+  // 本地已经清干净了，网络不通时也不应该让登出卡住。
+  if (API_BASE) {
+    fetch(`${API_BASE}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {});
+  }
 };
 
 /**
