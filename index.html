@@ -57,27 +57,67 @@
         display: none;
       }
 
+      /* 全宽通栏、54px 高、白字深底。*/
       .lite-opted-out .lite-back {
         display: block;
         position: fixed;
-        right: 10px;
-        bottom: 10px;
+        left: 0;
+        right: 0;
+        top: 0;
         z-index: 2147483647;
-        padding: 9px 15px;
-        -webkit-border-radius: 999px;
-        border-radius: 999px;
-        background: #1a1a1a;
+
+        height: 60px;
+        line-height: 60px;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 0 18px;
+        overflow: hidden;
+        white-space: nowrap;
+
+        background: #0f5f63;
         color: #ffffff;
-        font-size: 13px;
-        line-height: 1;
+        font-size: 19px;
+        font-weight: bold;
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        text-align: center;
         text-decoration: none;
+      }
+
+      /* 导航栏是 position:sticky; top:0，不推开就会被通栏盖住。
+         组件里的 scoped 选择器带 data-v 属性，优先级与本条相当，所以必须 !important */
+      .lite-opted-out .navbar {
+        top: 60px !important;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
-    <a class="lite-back" href="?lite=1">切回精简版</a>
+    <!-- 这个链接在 #app 之外 —— 即使 Vue 报错白屏，它依然在页面上、依然能点。 -->
+    <a class="lite-back" href="?lite=1">← 切回精简版</a>
+
+    <!--
+      渲染失败就自己回去，不把活推给用户。
+
+      上面那个通栏是让用户「主动」点；但老 Kindle 上 Vue 大概率直接白屏，
+      让用户盯着空屏自己去找一个按钮，本身就不可靠。所以这里等 8 秒，
+      只要 #app 里还是空的（Vue 没挂上），就自动送回 /lite。
+
+      ⚠️ 只在 optout（用户点过「切换到完整版」）时生效：否则正常设备
+      访问首页、资源还没加载完，也会被当成失败误跳。
+      ⚠️ 必须是 ES5，且不能依赖 Vue —— 它就是为「Vue 挂了」准备的。
+    -->
+    <script>
+      (function () {
+        if (/^\/lite(\/|$)/.test(location.pathname)) return;
+        if (!/coblog-lite-optout/.test(document.cookie)) return;
+
+        setTimeout(function () {
+          var app = document.getElementById('app');
+          if (app && app.children.length > 0) return;
+          location.replace('/lite' + location.pathname);
+        }, 8000);
+      })();
+    </script>
   </body>
 </html>

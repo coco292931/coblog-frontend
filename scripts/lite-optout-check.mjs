@@ -145,6 +145,13 @@ for (const [name, ua, path, search, cookie, wantReplace, wantCookie] of cases) {
   }
 }
 
+const bannerHeightMatch = html.match(/\.lite-opted-out\s+\.lite-back\s*\{[\s\S]*?height:\s*(\d+)px/);
+const navTopMatch = html.match(/\.lite-opted-out\s+\.navbar\s*\{\s*top:\s*(\d+)px/);
+const bannerHeight = bannerHeightMatch ? Number(bannerHeightMatch[1]) : null;
+const navTop = navTopMatch ? Number(navTopMatch[1]) : null;
+const bannerFontMatch = html.match(/\.lite-opted-out\s+\.lite-back\s*\{[\s\S]*?font-size:\s*(\d+)px/);
+const bannerFont = bannerFontMatch ? Number(bannerFontMatch[1]) : null;
+
 // 「切回简版」救生圈 不能放在 Vue 组件里
 const htmlChecks = [
   ['index.html 里有不经过 Vue 的回程 <a>', /<a[^>]+class="lite-back"[^>]*>/.test(html)],
@@ -157,6 +164,16 @@ const htmlChecks = [
   ['样式默认隐藏', /\.lite-back\s*\{\s*display:\s*none/.test(html)],
   ['只有 .lite-opted-out 时才显示', /\.lite-opted-out\s+\.lite-back\s*\{[^}]*display:\s*block/.test(html)],
   ['Footer.vue 不再掺和这件事', !readFileSync(new URL('../src/components/Footer.vue', import.meta.url), 'utf8').includes('lite-opted-out')],
+
+  // 通栏的「显眼程度」—— 全部来自实测，不是拍脑袋
+  ['通栏固定在顶部（不是右下角小按钮）', /\.lite-opted-out\s+\.lite-back\s*\{[^}]*position:\s*fixed[^}]*left:\s*0[^}]*right:\s*0/.test(html)],
+  ['通栏高度 ≥ 48px（老设备触摸目标）', bannerHeight !== null && bannerHeight >= 48],
+  ['通栏字号 ≥ 16px', bannerFont !== null && bannerFont >= 16],
+  ['导航栏 top 与通栏高度一致（不等会露出 1px 重叠）', bannerHeight !== null && navTop === bannerHeight],
+
+  // 光有按钮不够：老设备上 Vue 白屏时页面是空的，得自己回去
+  ['有「Vue 没挂上就自动回退」的兜底', /getElementById\(.app.\)[\s\S]{0,200}?children\.length\s*>\s*0[^;]*return[\s\S]{0,120}?location\.replace\(.\/lite/.test(html)],
+  ['自动回退也只在 optout 时生效（否则正常设备会被误跳）', /lite-optout[\s\S]{0,200}?setTimeout/.test(html)],
 ];
 
 for (const [name, ok] of htmlChecks) {
