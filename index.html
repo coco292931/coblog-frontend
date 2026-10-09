@@ -66,13 +66,11 @@
         top: 0;
         z-index: 2147483647;
 
-        height: 60px;
-        line-height: 60px;
+        min-height: 76px;
         -webkit-box-sizing: border-box;
         box-sizing: border-box;
-        padding: 0 18px;
+        padding: 12px 18px;
         overflow: hidden;
-        white-space: nowrap;
 
         background: #0f5f63;
         color: #ffffff;
@@ -82,21 +80,31 @@
         text-align: center;
         text-decoration: none;
       }
+      
+      .lite-opted-out .lite-back-tip {
+        display: block;
+        margin-top: 4px;
+        font-size: 14px;
+        font-weight: normal;
+        line-height: 1.5;
+        color: #c6e6e6;
+      }
 
       /* 导航栏是 position:sticky; top:0，不推开就会被通栏盖住。
          组件里的 scoped 选择器带 data-v 属性，优先级与本条相当，所以必须 !important */
       .lite-opted-out .navbar {
-        top: 60px !important;
+        top: 76px !important;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
-    <!-- 这个链接在 #app 之外 —— 即使 Vue 报错白屏，它依然在页面上。 -->
-    <a class="lite-back" href="?lite=1">无法正常查看？ 切回精简版 →</a>
-    <p>如果页面显示不正常，可以点击上方链接手动切换到精简版。</p>
-    <p>8秒后将自动跳转到精简版…</p>
+    <!-- 这个链接在 #app 之外 —— 即使 Vue 报错白屏，它依然在页面上。-->
+    <a class="lite-back" href="?lite=1">
+      无法正常查看？ 切回精简版 →
+      <span class="lite-back-tip">页面显示不正常时可手动切换；此处 8 秒后仍未渲染完成会自动跳转</span>
+    </a>
     <!--
       渲染失败就自己回去
 
