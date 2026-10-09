@@ -146,9 +146,7 @@ for (const [name, ua, path, search, cookie, wantReplace, wantCookie] of cases) {
 }
 
 const bannerHeightMatch = html.match(/\.lite-opted-out\s+\.lite-back\s*\{[\s\S]*?height:\s*(\d+)px/);
-const navTopMatch = html.match(/\.lite-opted-out\s+\.navbar\s*\{\s*top:\s*(\d+)px/);
 const bannerHeight = bannerHeightMatch ? Number(bannerHeightMatch[1]) : null;
-const navTop = navTopMatch ? Number(navTopMatch[1]) : null;
 const bannerFontMatch = html.match(/\.lite-opted-out\s+\.lite-back\s*\{[\s\S]*?font-size:\s*(\d+)px/);
 const bannerFont = bannerFontMatch ? Number(bannerFontMatch[1]) : null;
 
@@ -169,7 +167,11 @@ const htmlChecks = [
   ['通栏固定在顶部（不是右下角小按钮）', /\.lite-opted-out\s+\.lite-back\s*\{[^}]*position:\s*fixed[^}]*left:\s*0[^}]*right:\s*0/.test(html)],
   ['通栏高度 ≥ 48px（老设备触摸目标）', bannerHeight !== null && bannerHeight >= 48],
   ['通栏字号 ≥ 16px', bannerFont !== null && bannerFont >= 16],
-  ['导航栏 top 与通栏高度一致（不等会露出 1px 重叠）', bannerHeight !== null && navTop === bannerHeight],
+  // ⚠️ 曾经把 navbar 的 top 在 CSS 里写死成与通栏同高，结果窄屏下通栏文案折行，
+  // 实测通栏 97px、写死的 76px → 露出 21px 重叠。CSS 里没有「用 fixed 元素的
+  // 实际高度驱动 sticky 元素的 top」这种机制，只能量。所以断言改成钉这个机制。
+  ['有「按通栏真实高度同步导航栏 top」的 JS', /setProperty\(\s*'top'[\s\S]{0,60}?important/.test(html)],
+  ['CSS 里那条 .navbar top 只作兜底（带 !important）', /\.lite-opted-out\s+\.navbar\s*\{\s*top:\s*\d+px\s*!important/.test(html)],
 
   // 光有按钮不够：老设备上 Vue 白屏时页面是空的，得自己回去
   ['有「Vue 没挂上就自动回退」的兜底', /getElementById\(.app.\)[\s\S]{0,200}?children\.length\s*>\s*0[^;]*return[\s\S]{0,120}?location\.replace\(.\/lite/.test(html)],

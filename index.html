@@ -128,5 +128,41 @@
         }, 8000);
       })();
     </script>
+
+    <!--
+      把导航栏推到通栏下面。
+
+      ⚠️ 不能像原来那样在 CSS 里把 .navbar 的 top 写死：通栏高度会随文案换行变化
+      （窄屏实测 97px，比写死的 76px 高，于是露出 21px 重叠）。CSS 里没
+      「让 fixed 元素的高度驱动 sticky 元素的 top」这种机制，只能量。
+      用 setProperty 带 important，压过 CSS 里那条兜底规则。
+
+      ⚠️ 导航栏是 Vue 渲染的，白屏时它永远不出现 —— 那就什么都不用推，
+      上面那个 8 秒自动回退会接手。
+    -->
+    <script>
+      (function () {
+        if (!/coblog-lite-optout/.test(document.cookie)) return;
+
+        function sync() {
+          var bar = document.querySelector('.lite-back');
+          var nav = document.querySelector('.navbar');
+          if (!bar || !nav) return;
+          var bottom = Math.round(bar.getBoundingClientRect().bottom);
+          if (nav.style.top === bottom + 'px') return;
+          nav.style.setProperty('top', bottom + 'px', 'important');
+        }
+
+        // 每 500ms 试一次，最多 60 秒 —— 等 Vue 把导航栏挂上来。
+        var tries = 0;
+        var timer = setInterval(function () {
+          sync();
+          if (++tries > 120) clearInterval(timer);
+        }, 500);
+
+        // 窗口尺寸变化会改变通栏的折行数，进而改变它的高度。
+        window.addEventListener('resize', sync);
+      })();
+    </script>
   </body>
 </html>
