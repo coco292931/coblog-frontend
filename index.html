@@ -13,6 +13,18 @@
       (function () {
         // 已经在 /lite 下
         if (/^\/lite(\/|$)/.test(location.pathname)) return;
+        // 点过「切换到完整版」的设备会看到一个浮在底部的「切回简版」口，
+        // 由 <body> 末尾那个原生 <a> 渲染
+        if (/coblog-lite-optout/.test(document.cookie)) {
+          document.documentElement.className += ' lite-opted-out';
+        }
+        // 「切回精简版」链接会带上它：清掉记忆并回 /lite。
+        // 这个分支放在 UA 判断之前 —— 它是显式指令，与设备无关。
+        if (/[?&]lite=1(&|$)/.test(location.search)) {
+          document.cookie = 'coblog-lite-optout=; path=/; max-age=0';
+          location.replace('/lite' + location.pathname);
+          return;
+        }
 
         var ua = navigator.userAgent;
 
@@ -22,12 +34,12 @@
         // 老 Kindle：只有 AppleWebKit/5xx 标记、没有 Chrome。
         if (!/AppleWebKit\/5\d\d/.test(ua)) return;
 
-        // 用户主动选过「完整版」，之后不再自动跳转。
+        // 用户主动选过「完整版」，暂时不再自动跳转。
         if (/coblog-lite-optout/.test(document.cookie)) return;
 
-        // /lite 页脚给了这个入口，点一次就记住选择。
+        // /lite 页脚给了这个入口，点一次就记住
         if (/[?&]full=1(&|$)/.test(location.search)) {
-          document.cookie = 'coblog-lite-optout=1; path=/; max-age=31536000';
+          document.cookie = 'coblog-lite-optout=1; path=/; max-age=21600';
           return;
         }
 
@@ -37,9 +49,35 @@
     <link rel="icon" href="/src/assets/icon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coco の 避风港</title>
+    <style>
+      /*
+        「切回简版」
+      */
+      .lite-back {
+        display: none;
+      }
+
+      .lite-opted-out .lite-back {
+        display: block;
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        z-index: 2147483647;
+        padding: 9px 15px;
+        -webkit-border-radius: 999px;
+        border-radius: 999px;
+        background: #1a1a1a;
+        color: #ffffff;
+        font-size: 13px;
+        line-height: 1;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        text-decoration: none;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+    <a class="lite-back" href="?lite=1">切回精简版</a>
   </body>
 </html>
