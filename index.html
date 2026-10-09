@@ -11,6 +11,9 @@
       // 这段脚本自己必须是 ES5：老引擎在解析阶段就拒绝 let / const / 箭头函数 /
       // 模板字符串，写了一个，整段脚本不执行，跳转随之失效、依旧是白屏。
       (function () {
+        // 已经在 /lite 下
+        if (/^\/lite(\/|$)/.test(location.pathname)) return;
+
         var ua = navigator.userAgent;
 
         // 有 Chrome/xx 说明是新一代内核（固件 ≥5.16.4），放过。
