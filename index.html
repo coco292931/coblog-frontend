@@ -107,14 +107,6 @@
     </a>
     <!--
       渲染失败就自己回去
-
-      上面那个通栏是让用户「主动」点；但老 Kindle 上 Vue 大概率直接白屏，
-      让用户盯着空屏自己去找一个按钮，本身就不可靠。所以这里等 8 秒，
-      只要 #app 里还是空的（Vue 没挂上），就自动送回 /lite。
-
-      ⚠️ 只在 optout（用户点过「切换到完整版」）时生效：否则正常设备
-      访问首页、资源还没加载完，也会被当成失败误跳。
-      ⚠️ 必须是 ES5，且不能依赖 Vue —— 它就是为「Vue 挂了」准备的。
     -->
     <script>
       (function () {
@@ -132,13 +124,9 @@
     <!--
       把导航栏推到通栏下面。
 
-      ⚠️ 不能像原来那样在 CSS 里把 .navbar 的 top 写死：通栏高度会随文案换行变化
-      （窄屏实测 97px，比写死的 76px 高，于是露出 21px 重叠）。CSS 里没
+      ⚠️ 不能像原来那样在 CSS 里把 .navbar 的 top 写死：通栏高度会随文案换行变化。CSS 里没
       「让 fixed 元素的高度驱动 sticky 元素的 top」这种机制，只能量。
       用 setProperty 带 important，压过 CSS 里那条兜底规则。
-
-      ⚠️ 导航栏是 Vue 渲染的，白屏时它永远不出现 —— 那就什么都不用推，
-      上面那个 8 秒自动回退会接手。
     -->
     <script>
       (function () {
@@ -153,7 +141,7 @@
           nav.style.setProperty('top', bottom + 'px', 'important');
         }
 
-        // 每 500ms 试一次，最多 60 秒 —— 等 Vue 把导航栏挂上来。
+        // 等 Vue 把导航栏挂上来。
         var tries = 0;
         var timer = setInterval(function () {
           sync();
