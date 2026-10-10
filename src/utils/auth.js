@@ -37,9 +37,24 @@ export const setToken = (token, rememberMe = false) => {
 };
 
 /**
+ * 替换认证Token，沿用原来的存储位置（改密后后端会换发新 token，旧的随即失效）
+ * @param {string} token - 新 Token
+ */
+export const replaceToken = (token) => {
+  if (localStorage.getItem(TOKEN_KEY)) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    sessionStorage.setItem(TOKEN_KEY, token);
+  }
+};
+
+/**
  * 移除认证Token（登出 / 登录失效）
  */
 export const removeToken = () => {
+  // 先取出再删：登出接口要靠它把这个 token 在服务端吊销
+  const token = getToken();
+
   localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(RSS_TOKEN_KEY);
@@ -49,6 +64,7 @@ export const removeToken = () => {
     fetch(`${API_BASE}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
+      headers: token ? { Authorization: token } : {},
     }).catch(() => {});
   }
 };

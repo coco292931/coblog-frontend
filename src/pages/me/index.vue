@@ -160,7 +160,7 @@ import Footer from '../../components/Footer.vue';
 import api from '../../api/index.js';
 import { resendActivationEmail, changePassword, resetRSSToken } from '../../api/auth.js';
 import { PASSWORD_RULE_TEXT, validateNewPassword } from '../../constants/account.js';
-import { removeToken, setRSSToken } from '../../utils/auth.js';
+import { removeToken, replaceToken, setRSSToken } from '../../utils/auth.js';
 import './index.css';
 
 const router = useRouter();
@@ -331,6 +331,10 @@ const handleChangePwd = async () => {
         });
 
         if (result.code === 200) {
+            // 改密后旧 token 全部失效，后端会换发一个新的给当前设备
+            if (result.data?.token) {
+                replaceToken(result.data.token);
+            }
             pwdMessage.value = result.msg || '密码修改成功';
             pwdMessageType.value = 'success';
             pwdForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' };
