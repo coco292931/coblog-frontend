@@ -4,7 +4,8 @@
         <!-- 文章封面区域 -->
         <div class="main-photo-article">
             <!-- 没拿到封面地址时不渲染 img：空 src 会去请求当前页面，也会白闪一张默认封面 -->
-            <img v-if="coverDisplay" :src="coverDisplay" class='cover_image' @error="onCoverError" />
+            <img v-if="coverDisplay" :src="coverDisplay" class="cover_image"
+                fetchpriority="high" decoding="async" :alt="articleTitle" @error="onCoverError" />
             <div class="summary">
                 <!-- 管理入口：登录用户可见，置于封面标题区右上角，不与统计信息混在一起 -->
                 <button v-if="loggedIn" class="manage-btn" @click="goToEdit" title="编辑这篇文章">

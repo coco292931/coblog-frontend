@@ -2,7 +2,9 @@
     <div class="page-home">
         <NavBar style="position: fixed;"/>
         <div class="main-photo">
-            <img src="../../assets/image/homepage-background.jpg" class='home-photo' />
+            <!-- 这张是首屏的 LCP 元素：抢优先级，不能挂着 loading="lazy" 等它被发现。 -->
+            <img src="../../assets/image/homepage-background.jpg" class="home-photo"
+                width="2360" height="1300" fetchpriority="high" decoding="async" alt="" />
             <div class="welcome-text">
                 海内存知己，天涯若比邻_
             </div>

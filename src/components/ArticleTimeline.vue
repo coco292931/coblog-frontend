@@ -33,9 +33,13 @@
             <div v-for="(article, index) in articles" :key="article.id" class="article"
                 :ref="el => setArticleRef(el, index)"
                 @click="goToArticle(article.id)">
+                <!-- width/height 必须写在属性上：只靠 CSS 的话浏览器要等图片回来才知道占多大，
+                     整条时间线会被后到的图挤下去（CLS）。alt 用标题，占位图是装饰性内容留空。 -->
                 <img v-if="article.cover_image" :src="article.cover_image" class="article-photo"
+                    width="165" height="110" loading="lazy" decoding="async" :alt="article.title"
                     @error="handleImageError" @load="updateDotPositions" />
                 <img v-else :src="placeholderImg" class="article-photo"
+                    width="165" height="110" loading="lazy" decoding="async" alt=""
                     @load="updateDotPositions" />
                 <div class="text">
                     <div class="title">{{ article.title }}</div>
