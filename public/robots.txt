@@ -1,0 +1,10 @@
+# 这个目录会被 Vite 原样拷进 dist/ 根目录。
+# 在它出现之前，nginx 的 `try_files $uri /index.html` 把 /robots.txt 当成未匹配路径
+# 兜底成了首页 HTML，再被 Cloudflare 的托管条款拼在前面，Lighthouse 记了 140 处语法错误。
+
+User-agent: *
+Allow: /
+# Kindle 精简版的直出页，内容与完整版重复，没必要让爬虫单独收录
+Disallow: /lite/
+
+Sitemap: https://blog.coco-29.wang/sitemap.xml
