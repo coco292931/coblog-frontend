@@ -90,9 +90,10 @@ export const resetRSSToken = () => {
 
 /**
  * 重发激活邮件
- * @param {string} email - 邮箱地址
+ * 不传 email 时后端按当前登录账号发信（未激活账户读不到 /api/user/info，拿不到邮箱）
+ * @param {string} [email] - 邮箱地址
  * @returns {Promise}
  */
 export const resendActivationEmail = (email) => {
-  return api.post('/api/auth/activate/resend', { email })
+  return api.post('/api/auth/activate/resend', email ? { email } : {})
 };

@@ -141,8 +141,19 @@
                         : (fetchError || '请稍后重试。') }}</p>
                 </div>
 
+                <p v-if="activationMessage" class="activation-message">{{ activationMessage }}</p>
+
                 <div class="activation-actions">
-                    <router-link to="/activate" class="activation-link-button">去激活账户</router-link>
+                    <button
+                        class="activation-button"
+                        @click="handleResendActivation"
+                        :disabled="resendLoading || resendCountdown > 0"
+                    >
+                        {{ resendCountdown > 0 ? `${resendCountdown}秒后可重发` : (resendLoading ? '发送中...' : '重新发送激活邮件') }}
+                    </button>
+                </div>
+
+                <div class="activation-actions">
                     <router-link to="/" class="activation-link-button">返回首页</router-link>
                     <button class="activation-link-button" @click="handleLogout">退出登录</button>
                 </div>
@@ -266,23 +277,21 @@ const handleResendActivation = async () => {
         return;
     }
 
-    if (!userInfo.value?.email) {
-        activationMessage.value = '缺少待激活邮箱，请重新注册或登录。';
-        return;
-    }
-
     try {
         resendLoading.value = true;
-        const result = await resendActivationEmail(userInfo.value.email);
+        // 未激活账户读不到 /api/user/info（1002），没有 email 时让后端按会话发信
+        const result = await resendActivationEmail(userInfo.value?.email || '');
 
         if (result.code === 200) {
             activationMessage.value = result.msg || '激活邮件已发送。';
             if (result.data?.alreadyActivated) {
-                userInfo.value = {
-                    ...userInfo.value,
-                    activated: true,
-                    permGroupID: 2,
-                };
+                if (userInfo.value) {
+                    userInfo.value = {
+                        ...userInfo.value,
+                        activated: true,
+                        permGroupID: 2,
+                    };
+                }
                 return;
             }
             startResendCountdown();
