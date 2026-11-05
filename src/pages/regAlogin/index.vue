@@ -90,6 +90,11 @@
                         注册成功后请使用邮件中的链接完成账户激活。
                     </p>
 
+                    <div class="alert-box success" v-if="needAuthNotice && !alertMessage">
+                        <span class="alert-icon">🔒</span>
+                        <span class="alert-text">请先登录{{ redirectTarget ? '，登录后会自动回到刚才的页面' : '' }}。</span>
+                    </div>
+
                     <div class="alert-box" :class="alertType" v-if="alertMessage">
                         <span class="alert-icon">{{ alertType === 'success' ? '✅' : '⚠️' }}</span>
                         <span class="alert-text">{{ alertMessage }}</span>
@@ -136,6 +141,9 @@ const redirectTarget = computed(() => {
     const target = route.query.redirect;
     return typeof target === 'string' && target ? target : '';
 });
+
+// 被登录守卫拦下来时（?needAuth=1）说明一句「为什么看到登录框」
+const needAuthNotice = computed(() => route.query.needAuth === '1');
 
 // 表单数据
 const formData = ref({

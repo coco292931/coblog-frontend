@@ -141,8 +141,9 @@ router.beforeEach((to, from, next) => {
   window.scrollTo(0, 0);
 
   // 需要登录的页面：未登录时跳登录页，并带上当前地址以便登录后回跳
+  // （needAuth 让登录页说明一句"请先登录"，而不是只弹一个空表单）
   if (to.meta.requiresAuth && !isAuthenticated()) {
-    next({ path: '/login', query: { redirect: to.fullPath } });
+    next({ path: '/login', query: { redirect: to.fullPath, needAuth: '1' } });
     return;
   }
 

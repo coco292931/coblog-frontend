@@ -4,9 +4,25 @@
         <div class="write-page">
             <h1 class="page-title">{{ isEdit ? '编辑文章' : '写文章' }}</h1>
 
-            <div v-if="loadingArticle" class="loading-container">
+            <div v-if="permChecking || loadingArticle" class="loading-container">
                 <div class="loading-spinner"></div>
-                <p>正在加载文章…</p>
+                <p>{{ permChecking ? '正在检查权限…' : '正在加载文章…' }}</p>
+            </div>
+
+            <!-- 没有发帖权限：前置拦截，别让用户写完一整篇才被拒 -->
+            <div v-else-if="!canWrite" class="perm-denied">
+                <div class="perm-denied-badge">权限不足</div>
+                <h2 class="perm-denied-title">当前账户还不能发布文章</h2>
+                <p class="perm-denied-text">
+                    {{ activated
+                        ? '你的账户已激活，但当前权限组没有发布文章的权限。如需开通，请联系站点管理员。'
+                        : '你的账户还没有完成邮箱激活。未激活的账户权限与访客一致，激活后即可正常发布。' }}
+                </p>
+                <div class="perm-denied-actions">
+                    <router-link v-if="!activated" to="/me" class="perm-btn primary">去「我的」重新发送激活邮件</router-link>
+                    <router-link to="/articles" class="perm-btn">浏览文章</router-link>
+                    <router-link to="/" class="perm-btn">返回首页</router-link>
+                </div>
             </div>
 
             <!-- 元信息 -->
@@ -203,6 +219,7 @@ import {
 import { toast } from '../../composables/useToast.js';
 import { IMAGE_ACCEPT_ATTR, validateImageFile } from '../../utils/image.js';
 import { enhanceProse } from '../../utils/prose.js';
+import { getMyPermissions } from '../../api/auth.js';
 import './index.css';
 
 const route = useRoute();
@@ -242,6 +259,34 @@ const previewHtml = ref('');
 const submitting = ref(false);
 const deleting = ref(false);
 const loadingArticle = ref(false);
+
+// 发帖权限前置检查：写权限不足时直接给拦截页，不让人写完才吃 1002
+const permChecking = ref(true);
+const canWrite = ref(false);
+// 登录时存在 storage 里的 activated 标记，用来区分「未激活」和「权限组不够」
+const activated = ref(true);
+try {
+    const raw = sessionStorage.getItem('userInfo') || localStorage.getItem('userInfo');
+    const info = raw ? JSON.parse(raw) : null;
+    if (info && info.activated === false) {
+        activated.value = false;
+    }
+} catch (e) {
+    // 解析不了就当已激活，按权限组不足提示
+}
+
+const checkWritePerm = async () => {
+    try {
+        const result = await getMyPermissions();
+        canWrite.value = !!(result && result.code === 200 && result.data && result.data.postPost);
+    } catch (e) {
+        // 接口异常时按「有权限」放行：真的没权限，提交/加载时后端仍会拒绝
+        console.error('获取权限失败:', e);
+        canWrite.value = true;
+    } finally {
+        permChecking.value = false;
+    }
+};
 const editorRef = ref(null);
 // 预览容器：正文渲染后要在真实 DOM 上补代码块工具条（见 utils/prose.js）
 const previewRef = ref(null);
@@ -511,6 +556,11 @@ const loadArticle = async () => {
     try {
         const result = await getArticleForEdit(articleId.value);
         if (result.code !== 200 || !result.data) {
+            // 1002 交给前置提示页，不再弹一个含义不明的 toast
+            if (result.code === 1002) {
+                canWrite.value = false;
+                return;
+            }
             toast.error(result.msg || '文章加载失败');
             return;
         }
@@ -674,4 +724,7 @@ watch(articleId, (id) => {
         editorContent.value = '';
     }
 }, { immediate: true });
+
+// 进页面先确认发帖权限（/write 与 /write/:id 共用本组件，权限不会中途变化）
+checkWritePerm();
 </script>

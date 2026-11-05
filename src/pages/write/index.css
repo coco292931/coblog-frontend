@@ -620,3 +620,85 @@
         width: 100%;
     }
 }
+
+/* ========== 无发帖权限的前置提示 ========== */
+.perm-denied {
+    background: var(--color-card-bg);
+    border-radius: 16px;
+    padding: 44px 28px;
+    box-shadow: 0 4px 20px var(--color-shadow-soft);
+    text-align: center;
+}
+
+.perm-denied-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-danger-border);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.perm-denied-title {
+    margin: 18px 0 12px;
+    font-size: 1.5rem;
+    color: var(--color-text-heading);
+}
+
+.perm-denied-text {
+    max-width: 620px;
+    margin: 0 auto 26px;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+}
+
+.perm-denied-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.perm-btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: 1px solid var(--color-divider);
+    background: transparent;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 15px;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.perm-btn:hover {
+    border-color: var(--color-text-secondary);
+    color: var(--color-text-heading);
+}
+
+.perm-btn.primary {
+    border-color: transparent;
+    background: var(--color-danger);
+    color: #fff;
+}
+
+.perm-btn.primary:hover {
+    background: var(--color-danger-hover);
+    color: #fff;
+}
+
+@media (max-width: 600px) {
+    .perm-denied {
+        padding: 32px 18px;
+    }
+
+    .perm-denied-actions {
+        flex-direction: column;
+    }
+
+    .perm-btn {
+        width: 100%;
+    }
+}

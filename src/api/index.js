@@ -5,7 +5,8 @@ import { getToken, removeToken } from '../utils/auth';
 // 1001 = 用户未登录，1006 = 用户登录无效
 const AUTH_FAIL_CODES = [1001, 1006];
 
-// 未登录时清理凭证并跳转登录页（带上 redirect 便于登录后回跳）
+// 未登录时清理凭证并跳转登录页（带上 redirect 便于登录后回跳，
+// needAuth 让登录页说明一句"请先登录"）
 const redirectToLogin = () => {
   removeToken();
   // 使用动态导入router避免循环依赖
@@ -14,7 +15,7 @@ const redirectToLogin = () => {
     if (current.startsWith('/login')) {
       return;
     }
-    router.push({ path: '/login', query: { redirect: current } });
+    router.push({ path: '/login', query: { redirect: current, needAuth: '1' } });
   });
 };
 

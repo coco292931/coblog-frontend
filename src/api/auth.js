@@ -97,3 +97,12 @@ export const resetRSSToken = () => {
 export const resendActivationEmail = (email) => {
   return api.post('/api/auth/activate/resend', email ? { email } : {})
 };
+
+/**
+ * 当前账号的权限开关（只要登录即可调用）
+ * 用于前置判断入口，避免写完整篇才被 1002 拒绝
+ * @returns {Promise<{code:number,msg:string,data:{postPost:boolean,uploadFile:boolean,getProfile:boolean,changePwd:boolean,updateProfile:boolean}}>}
+ */
+export const getMyPermissions = () => {
+  return api.get('/api/user/perm')
+};
