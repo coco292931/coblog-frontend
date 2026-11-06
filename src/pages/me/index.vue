@@ -231,8 +231,9 @@ const fetchUserInfo = async () => {
             // 1002 = 用户无此权限。账户本身是登录着的，只是权限组不允许读取个人信息
             // （例如未激活的 GUEST 账户）。此时绝不能清 token 或跳登录页，
             // 否则会出现“明明已登录却被踢回登录页”的假象。
+            // 文案固定写在模板里，不要把后端的内部错误原文（「用户无此权限」）贴给用户
             permDenied.value = true;
-            activationMessage.value = result.msg || '当前账户无权查看个人信息，请先完成邮箱激活。';
+            activationMessage.value = '';
         } else {
             // 其余业务错误：保留在页面上提示，交由 axios 拦截器处理登录态
             fetchError.value = result.msg || '获取用户信息失败';
