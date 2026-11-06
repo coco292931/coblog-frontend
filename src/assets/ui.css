@@ -94,3 +94,12 @@
         transform: rotate(360deg);
     }
 }
+
+/* 新加入场动画的降级：系统开启"减少动态效果"时直接跳过淡入*/
+@media (prefers-reduced-motion: reduce) {
+  .article,
+  .article-content.is-ready,
+  .main-photo-article .summary.is-ready {
+    animation: none !important;
+  }
+}

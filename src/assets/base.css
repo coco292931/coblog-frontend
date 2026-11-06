@@ -34,6 +34,12 @@
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 }
 
+:root {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
 /* 浅色主题语义变量（默认值） */
 :root,
 html[data-theme="light"] {
@@ -99,6 +105,12 @@ html[data-theme="light"] {
   /* 品牌青（导航栏品牌名/图标等强调处）：
      亮色主题下用深青，否则原来的荧光青在半透明浅色导航栏上几乎看不清 */
   --color-brand: #17bebb;
+  /* 站点标题专用色：暗色主题比 --color-brand 更亮一档（荧光青），亮色沿用品牌青。
+     单独立变量是为了让它在主题切换时也能插值（见 NavBar.vue .brand-link）。 */
+  --color-brand-title: #17bebb;
+  /* 标题文字阴影的两层颜色：亮色是黑色投影、暗色是青色辉光，互相交叉淡入淡出 */
+  --color-brand-ink: rgba(0, 0, 0, 0.12);
+  --color-brand-glow: rgba(0, 0, 0, 0);
 
   /* 语义色：危险 / 成功 / 警告。
      以前同一个删除按钮在 write 用 #e74c3c、在 me 用 #ff4d4f，
@@ -169,6 +181,9 @@ html[data-theme="dark"] {
 
   /* 品牌青：暗色主题保留原来的荧光青（#1fefef，与旧硬编码值一致） */
   --color-brand: #1fefef;
+  --color-brand-title: #50f5f5;
+  --color-brand-ink: rgba(0, 0, 0, 0);
+  --color-brand-glow: rgba(31, 239, 239, 0.55);
 
   /* 语义色（暗色下把色调亮一点，浅色底上的深红深绿在深底上会发闷） */
   --color-danger: #ff6b5b;
@@ -236,6 +251,9 @@ html[data-theme="dark"] {
 
     /* 品牌青（跟随系统深色） */
     --color-brand: #1fefef;
+  --color-brand-title: #50f5f5;
+  --color-brand-ink: rgba(0, 0, 0, 0);
+  --color-brand-glow: rgba(31, 239, 239, 0.55);
 
     /* 语义色（跟随系统深色） */
     --color-danger: #ff6b5b;
@@ -256,10 +274,20 @@ html[data-theme="dark"] {
 body {
   color: var(--color-text);
   background: var(--color-background);
+  font-family: var(--font-sans);
   /* 这里刻意不写 transition：主题切换的平滑由 useTheme.js 负责 ——
      它把颜色变量注册成可插值的 <color> 自定义属性，并在 html 上给这些变量
      挂过渡。若 body 自己也过渡，它会去追"变量插值中的中间值"，
      尾巴会拖到 0.85s。详见 useTheme.js 里的注释。 */
+}
+
+/* 表单控件不会自动继承 font-family（浏览器给的是自己的 UI 字体），
+   不显式继承的话，输入框/按钮会和正文用两套字体。 */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 /* 主题切换期间的"过渡静默"（类由 useTheme.js 挂上，约 420ms 后摘掉）。

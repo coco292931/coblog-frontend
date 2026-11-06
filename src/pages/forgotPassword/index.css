@@ -61,7 +61,7 @@
 .code-group .form__input {
     padding-right: 8.5rem;
     letter-spacing: 0.3em;
-    font-family: 'Consolas', 'Monaco', monospace;
+    font-family: var(--font-mono);
 }
 
 .send-code-btn {

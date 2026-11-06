@@ -74,3 +74,10 @@ html:has(.page-home)::-webkit-scrollbar {
 html:has(.page-home) .navbar {
     padding-right: 28px;
 }
+
+/* 移动端菜单展开时锁住页面滚动 */
+@media (max-width: 800px) {
+    html.menu-open {
+        overflow: hidden;
+    }
+}

@@ -75,7 +75,7 @@
                     <p class="password-rule">{{ PASSWORD_RULE_TEXT }}</p>
 
                     <div class="alert-box" v-if="alertMessage" :class="alertType">
-                        <span class="alert-icon">{{ alertType === 'success' ? '✅' : '⚠️' }}</span>
+                        <span class="alert-icon" aria-hidden="true">{{ alertType === 'success' ? '✅' : '⚠️' }}</span>
                         <span class="alert-text">{{ alertMessage }}</span>
                     </div>
 

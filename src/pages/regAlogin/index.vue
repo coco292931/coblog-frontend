@@ -91,12 +91,12 @@
                     </p>
 
                     <div class="alert-box success" v-if="needAuthNotice && !alertMessage">
-                        <span class="alert-icon">🔒</span>
+                        <span class="alert-icon" aria-hidden="true">🔒</span>
                         <span class="alert-text">请先登录{{ redirectTarget ? '，登录后会自动回到刚才的页面' : '' }}。</span>
                     </div>
 
                     <div class="alert-box" :class="alertType" v-if="alertMessage">
-                        <span class="alert-icon">{{ alertType === 'success' ? '✅' : '⚠️' }}</span>
+                        <span class="alert-icon" aria-hidden="true">{{ alertType === 'success' ? '✅' : '⚠️' }}</span>
                         <span class="alert-text">{{ alertMessage }}</span>
                     </div>
 

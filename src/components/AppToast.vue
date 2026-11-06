@@ -4,7 +4,7 @@
             <TransitionGroup name="toast">
                 <div v-for="item in toasts" :key="item.id" class="toast" :class="`toast-${item.type}`" role="status"
                     @click="dismissToast(item.id)">
-                    <span class="toast-icon">{{ ICONS[item.type] || ICONS.info }}</span>
+                    <span class="toast-icon" aria-hidden="true">{{ ICONS[item.type] || ICONS.info }}</span>
                     <span class="toast-text">{{ item.text }}</span>
                 </div>
             </TransitionGroup>

@@ -45,6 +45,11 @@
             border-radius: 20px 20px 0 0;
             backdrop-filter: blur(10px);
 
+            /* 数据到达时淡入（类是在内容落地后的下一帧加上的，动画才作用在真实文字上） */
+            &.is-ready {
+                animation: article-content-in 0.4s ease;
+            }
+
             /* 编辑入口：固定在封面标题区右上角，半透明玻璃质感，不抢标题视线 */
             .manage-btn {
                 position: absolute;
@@ -179,6 +184,10 @@
                 border-radius: 20px;
                 box-shadow: 0 10px 40px var(--color-shadow);
                 margin-bottom: 20px;
+
+                &.is-ready {
+                    animation: article-content-in 0.4s ease;
+                }
 
                 /* 正文排版统一由 src/assets/article-prose.css 提供，
                    此处只放图片交互相关的增量样式 */
@@ -573,5 +582,17 @@
                 }
             }
         }
+    }
+}
+
+/* 摘要卡与正文的入场动画：数据回来时淡入，替代「加载中 → 内容」的硬切。
+   只动 opacity，不动 transform —— 摘要卡靠 translateX(-50%) 定位，动 transform 会打乱它的定位。 */
+@keyframes article-content-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }

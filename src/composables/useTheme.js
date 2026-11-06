@@ -1,4 +1,4 @@
-import { ref, watchEffect } from 'vue';
+﻿import { ref, watchEffect } from 'vue';
 
 const STORAGE_KEY = 'coblog-theme';
 
@@ -41,15 +41,25 @@ watchEffect(() => {
    新做法：把"颜色变量本身"注册成可插值的 <color> 自定义属性，只给 html 上的
    这些变量挂过渡。这样所有 var(--x) 的使用者（含靠继承拿颜色的子元素）读到的
    都是"同一个正在插值中的值"，一次过渡内同步完成：既不会逐层延迟，
-   也不会被中途打断。不支持 CSS.registerProperty 的浏览器降级为瞬时切换。 */
-const THEME_COLOR_VARS = [
+   也不会被中途打断。不支持 CSS.registerProperty 的浏览器降级为瞬时切换。
+
+   ⚠️ 但"中性墨色"（正文/标题/次级文字）绝不能插值。
+
+   原因是个几何问题：亮色主题是"深墨 + 浅底"，暗色主题是"浅墨 + 深底"——
+   墨色和底色的明暗关系是反的。两者同时插值，就必须在中途相交。
+
+   把中性墨色改成瞬时切换后，底色独自移动，对比度就变成单调上升：
+   墨色跳变的那一帧恰好与底色同亮（看不见），随后底色走开、文字"浮现"出来。
+   跳变被低对比度遮住 → 观感上是一次淡入，而不是闪黑。
+
+   强调色（品牌青 / 链接 / 语义色）仍保留插值：它们在两套主题里的亮度接近，
+   直接硬跳会看到明显的"色跳"；而且它们多为短标签或图标，
+   底色扫过其亮度的那一瞬间比整段正文一起消失要轻得多。 */
+const FADE_VARS = [
+    // 背景 / 卡片 / 渐变端点
     '--color-background',
     '--color-background-soft',
     '--color-background-mute',
-    '--color-border',
-    '--color-border-hover',
-    '--color-heading',
-    '--color-text',
     '--color-background-glass',
     '--color-background-overlay',
     '--color-page-bg',
@@ -57,61 +67,77 @@ const THEME_COLOR_VARS = [
     '--color-page-grad-to',
     '--color-card-bg',
     '--color-card-soft',
-    '--color-text-secondary',
-    '--color-text-muted',
-    '--color-text-heading',
-    '--color-text-subheading',
+    // 代码块底色（文字色属于墨色，见下面的说明）
     '--color-code-inline-bg',
     '--color-code-block-bg',
-    '--color-code-block-text',
     '--color-code-block-border',
     '--color-code-toolbar-bg',
     '--color-code-toolbar-bg-hover',
-    '--color-code-toolbar-text',
-    '--color-code-toolbar-text-hover',
-    '--color-code-toolbar-ok-text',
+    // 描边 / 分隔 / 阴影 / 滚动条
+    '--color-border',
+    '--color-border-hover',
     '--color-divider',
     '--color-shadow',
     '--color-shadow-soft',
-    '--color-accent',
-    '--color-cyan',
-    '--color-cyan-hover',
+    '--color-scrollbar-thumb',
+    '--color-scrollbar-thumb-hover',
+    // 装饰性青色（底色/描边/发光/渐变），不是文字
     '--color-cyan-bright',
     '--color-cyan-soft',
     '--color-cyan-border',
     '--color-cyan-shadow',
     '--color-cyan-grad-from',
     '--color-cyan-grad-to',
-    '--color-scrollbar-thumb',
-    '--color-scrollbar-thumb-hover',
-    '--color-brand',
-    '--color-danger',
-    '--color-danger-hover',
+    // 语义色的底色/描边/发光
     '--color-danger-soft',
     '--color-danger-border',
     '--color-danger-shadow',
+    '--color-warning-soft',
+    // 强调色（文字/图标/链接）：亮度接近，插值不会闪，硬跳反而有色跳
+    '--color-brand',
+    '--color-brand-title',
+    '--color-brand-ink',
+    '--color-brand-glow',
+    '--color-accent',
+    '--color-cyan',
+    '--color-cyan-hover',
+    '--color-danger',
+    '--color-danger-hover',
     '--color-success',
     '--color-warning',
-    '--color-warning-soft',
-    // 正文链接色（article-prose.css）：亮色是硬编码值、暗色引用 --color-cyan
+    '--color-code-toolbar-text',
+    '--color-code-toolbar-text-hover',
+    '--color-code-toolbar-ok-text',
+    // 正文链接色（article-prose.css）
     '--prose-link',
     '--prose-link-hover',
     '--prose-link-glow',
 ];
 
-const TRANSITION_MS = 350;
+/* 以下变量**不进**过渡列表，主题切换时瞬时生效（原因见上）：
+     --color-text  --color-text-secondary  --color-text-muted
+     --color-text-heading  --color-text-subheading  --color-heading
+     --color-code-block-text
+   改主题时如果新增了"要在深底上读的正文色"，记得往这里加而不是加进 FADE_VARS。 */
+
+const TRANSITION_MS = 300;
+
+/* 参与过渡的颜色用一条「先快后慢」的曲线：
+   中性墨色跳变的那一帧与旧底色同亮、文字暂时看不见，底色必须**尽快**离开这个亮度。
+   但也不能一味求快 —— 曲线太陡会让底色自己"跳一下"。*/
+const FADE_EASING = 'cubic-bezier(0.1, 0.75, 0.15, 1)';
 
 /* 切换期间挂这个类，把各元素**自身**的 transition 关掉（规则见 base.css）。
-   时长略长于变量插值，保证摘类时变量早就到位了，否则摘类会让它们瞬间跳一下。 */
+   时长略长于变量插值（300ms），保证摘类时变量早就到位了，否则摘类会让它们瞬间跳一下。 */
 const SWITCH_CLASS = 'theme-switching';
-const SWITCH_CLASS_MS = 420;
+const SWITCH_CLASS_MS = 380;
 let switchTimer = null;
 
 const canInterpolateVars =
     typeof CSS !== 'undefined' && typeof CSS.registerProperty === 'function';
 
 if (canInterpolateVars) {
-    for (const name of THEME_COLOR_VARS) {
+    for (const name of FADE_VARS) {
         try {
             CSS.registerProperty({
                 name,
@@ -127,8 +153,8 @@ if (canInterpolateVars) {
     // 等首帧之后再挂过渡：否则初始化写 data-theme（读上次选择或跟随系统）时
     // 也会被算作"变化"，暗色用户会看到首屏由亮变暗。
     requestAnimationFrame(() => {
-        document.documentElement.style.transition = THEME_COLOR_VARS
-            .map((name) => `${name} ${TRANSITION_MS}ms ease`)
+        document.documentElement.style.transition = FADE_VARS
+            .map((name) => `${name} ${TRANSITION_MS}ms ${FADE_EASING}`)
             .join(', ');
     });
 }

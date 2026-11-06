@@ -416,6 +416,41 @@ onUnmounted(() => {
     box-shadow: 0 2px 8px var(--color-shadow-soft);
     transition: all 0.3s ease;
     cursor: pointer;
+    /* 数据到达时淡入，避免「空白 → 一屏卡片」的硬切。
+       只动 opacity：时间线的圆点是按卡片 getBoundingClientRect 定位的，
+       带 transform 的入场动画会让测量结果偏移。
+       fill-mode 用 backwards，动画结束后交还样式，:hover 的位移才不会被压制。 */
+    animation: article-fade-in 0.32s ease backwards;
+}
+
+.article:nth-child(2) {
+    animation-delay: 0.04s;
+}
+
+.article:nth-child(3) {
+    animation-delay: 0.08s;
+}
+
+.article:nth-child(4) {
+    animation-delay: 0.12s;
+}
+
+.article:nth-child(5) {
+    animation-delay: 0.16s;
+}
+
+.article:nth-child(n + 6) {
+    animation-delay: 0.2s;
+}
+
+@keyframes article-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .article:hover {
@@ -479,12 +514,10 @@ onUnmounted(() => {
 
 .tag {
     background: var(--color-background-mute);
-    padding: 3px 7px;
-    /* 4px * 0.66 ≈ 3px, 10px * 0.66 ≈ 7px */
+    padding: 3px 8px;
     border-radius: 8px;
-    /* 12px * 0.66 ≈ 8px */
-    font-size: 8px;
-    /* 12px * 0.66 ≈ 8px */
+    font-size: 11px;
+    line-height: 1.5;
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -528,32 +561,55 @@ onUnmounted(() => {
     }
 
     .title {
-        font-size: 12px;
-        /* 18px * 0.66 ≈ 12px */
+        font-size: 16px;
     }
 
     .intro {
-        font-size: 11px;
-        /* 16px * 0.66 ≈ 11px */
+        font-size: 13px;
     }
 
     .info {
-        font-size: 9px;
-        /* 14px * 0.66 ≈ 9px */
+        font-size: 11px;
     }
 }
 
 @media (max-width: 600px) {
-    .text {
-        gap: 5px;
+    .article {
+        padding: 6px 10px;
     }
 
     .article-photo {
-        display: none;
+        display: block;
+        width: 88px;
+        height: 62px;
+        border-radius: 8px;
     }
 
     .text {
-        margin-left: 0;
+        margin-left: 10px;
+        gap: 5px;
+    }
+
+    .title {
+        font-size: 15px;
+        line-height: 1.35;
+    }
+
+    .intro {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .info {
+        font-size: 11px;
+        gap: 8px;
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+
+    .tag {
+        font-size: 10px;
+        padding: 2px 7px;
     }
 }
 </style>

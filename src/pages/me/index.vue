@@ -39,33 +39,33 @@
 
                 <div class="user-details">
                     <div class="info-item">
-                        <span class="info-label">📧 邮箱：</span>
+                        <span class="info-label"><span aria-hidden="true">📧</span> 邮箱：</span>
                         <span class="info-value">{{ userInfo.email }}</span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">✅ 账户激活状态：</span>
+                        <span class="info-label"><span aria-hidden="true">✅</span> 账户激活状态：</span>
                         <span class="info-value" :class="userInfo.activated ? 'status-enabled' : 'status-disabled'">
                             {{ userInfo.activated ? '已激活' : '未激活' }}
                         </span>
                     </div>
                     
                     <div class="info-item">
-                        <span class="info-label">📝 深度模式权限：</span>
+                        <span class="info-label"><span aria-hidden="true">📝</span> 深度模式权限：</span>
                         <span class="info-value" :class="{ 'status-enabled': userInfo.deepable || userInfo.can_enable_depth, 'status-disabled': !(userInfo.deepable || userInfo.can_enable_depth) }">
                             {{ (userInfo.deepable || userInfo.can_enable_depth) ? '已开通' : '未开通' }}
                         </span>
                     </div>
                     
                     <div class="info-item">
-                        <span class="info-label">🔓 深度模式状态：</span>
+                        <span class="info-label"><span aria-hidden="true">🔓</span> 深度模式状态：</span>
                         <span class="info-value" :class="{ 'status-enabled': userInfo.isDeep || userInfo.depth_enabled, 'status-disabled': !(userInfo.isDeep || userInfo.depth_enabled) }">
                             {{ (userInfo.isDeep || userInfo.depth_enabled) ? '已启用' : '未启用' }}
                         </span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">🔑 RSS Token：</span>
+                        <span class="info-label"><span aria-hidden="true">🔑</span> RSS Token：</span>
                         <span class="info-value rss-token">{{ userInfo.rssToken || '暂无' }}</span>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                 <!-- 账户安全：修改密码 -->
                 <div class="security-section">
                     <button class="security-toggle" @click="toggleSection('password')">
-                        <span>🔒 修改密码</span>
+                        <span><span aria-hidden="true">🔒</span> 修改密码</span>
                         <span class="security-arrow" :class="{ open: openSection === 'password' }">›</span>
                     </button>
 
@@ -110,7 +110,7 @@
                 <!-- 账户安全：重置 RSS Token -->
                 <div class="security-section">
                     <button class="security-toggle" @click="toggleSection('rss')">
-                        <span>🔄 重置 RSS Token</span>
+                        <span><span aria-hidden="true">🔄</span> 重置 RSS Token</span>
                         <span class="security-arrow" :class="{ open: openSection === 'rss' }">›</span>
                     </button>
 
@@ -231,7 +231,7 @@ const fetchUserInfo = async () => {
             // 1002 = 用户无此权限。账户本身是登录着的，只是权限组不允许读取个人信息
             // （例如未激活的 GUEST 账户）。此时绝不能清 token 或跳登录页，
             // 否则会出现“明明已登录却被踢回登录页”的假象。
-            // 文案固定写在模板里，不要把后端的内部错误原文（「用户无此权限」）贴给用户
+            // 文案固定写在模板里，不要把后端的内部错误原文贴给用户
             permDenied.value = true;
             activationMessage.value = '';
         } else {

@@ -2,18 +2,18 @@
     <div class="footer-container">
         <div class="footer-content">
             <div class="copyright">
-                © 2025-2026 coco_29. All Rights Reserved.
+                <span class="brand-glyph copyright-anchor" aria-hidden="true">⚓</span>© 2025-2026 coco_29. All Rights Reserved.
             </div>
             <div class="stats">
-                <span class="stat-item">🖊️ 站点总字数 ≈ {{ formatNumber(siteStats.total_words) }}</span>
+                <span class="stat-item"><span class="stat-emoji" aria-hidden="true">🖊️</span>站点总字数 ≈ {{ statsReady ? formatNumber(siteStats.total_words) : '—' }}</span>
                 <span class="separator">|</span>
-                <span class="stat-item">🍵 阅读时长 ≈ {{ readingTime }}</span>
+                <span class="stat-item"><span class="stat-emoji" aria-hidden="true">🍵</span>阅读时长 ≈ {{ statsReady ? readingTime : '—' }}</span>
             </div>
             <div class="uptime" >
                 {{ uptimeDisplay }}
             </div>
             <div class="powered">
-                Powered by Vue & GO
+                Powered by Vue & GO<span class="brand-glyph powered-heart" aria-hidden="true">♥</span>
             </div>
         </div>
     </div>
@@ -32,6 +32,9 @@ const siteStats = ref({
     uptime: '',
     started_time: ''
 });
+
+// 统计拿到之前显示占位符，避免所有页面都先闪一下「0 字 / 0:00」再跳到真实值
+const statsReady = ref(false);
 
 // 当前时间（用于计算运行时长）
 const currentTime = ref(new Date());
@@ -108,6 +111,8 @@ const fetchSiteStats = async () => {
             uptime: '',
             started_time: '' // 空字符串时使用默认开放时间 2025-12-20
         };
+    } finally {
+        statsReady.value = true;
     }
 };
 
@@ -156,9 +161,12 @@ onUnmounted(() => {
     color: var(--color-text);
 }
 
-.copyright::before {
-    content: "⚓ ";
+.brand-glyph {
     color: var(--color-brand);
+}
+
+.copyright-anchor {
+    margin-right: 5px;
 }
 
 .stats {
@@ -173,6 +181,7 @@ onUnmounted(() => {
 .stat-item {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
 }
 
 .separator {
@@ -184,7 +193,7 @@ onUnmounted(() => {
 .uptime {
     font-size: 13px;
     color: var(--color-text-secondary);
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono);
 }
 
 .powered {
@@ -193,9 +202,8 @@ onUnmounted(() => {
     font-style: italic;
 }
 
-.powered::after {
-    content: "♥";
-    color: var(--color-brand);
+.powered-heart {
+    margin-left: 2px;
     font-style: normal;
 }
 

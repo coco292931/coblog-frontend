@@ -203,7 +203,7 @@
 }
 
 .rss-token {
-    font-family: monospace;
+    font-family: var(--font-mono);
     font-size: 14px;
     color: var(--color-cyan);
     word-break: break-all;

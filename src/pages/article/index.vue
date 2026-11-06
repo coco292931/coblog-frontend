@@ -6,10 +6,10 @@
             <!-- 没拿到封面地址时不渲染 img：空 src 会去请求当前页面，也会白闪一张默认封面 -->
             <img v-if="coverDisplay" :src="coverDisplay" class="cover_image"
                 fetchpriority="high" decoding="async" :alt="articleTitle" @error="onCoverError" />
-            <div class="summary">
+            <div class="summary" :class="{ 'is-ready': contentReady }">
                 <!-- 管理入口：登录用户可见，置于封面标题区右上角，不与统计信息混在一起 -->
                 <button v-if="loggedIn" class="manage-btn" @click="goToEdit" title="编辑这篇文章">
-                    ✏️ 编辑
+                    <span aria-hidden="true">✏️</span> 编辑
                 </button>
                 <div class="title">{{ articleTitle }}</div>
                 <div class="subtitle">{{ articleSubtitle }}</div>
@@ -44,7 +44,7 @@
             <!-- 侧边栏目录 -->
             <div class="side-content">
                 <div class="toc-container">
-                    <div class="toc-title">📑 目录</div>
+                    <div class="toc-title"><span aria-hidden="true">📑</span> 目录</div>
                     <div class="toc-list">
                         <div v-for="item in tocList" :key="item.id"
                             :class="['toc-item', `toc-level-${item.level}`, { 'is-active': item.id === activeHeadingId }]"
@@ -57,12 +57,13 @@
 
             <div class="main-content">
                 <!-- 文章内容：与写作页预览共用 article-prose 排版 -->
-                <div class="article-content" @click="onContentClick" @error.capture="onContentError">
+                <div class="article-content" :class="{ 'is-ready': contentReady }" @click="onContentClick"
+                    @error.capture="onContentError">
                     <div ref="proseRef" class="main-body article-prose" v-html="articleHtml">
                     </div>
                     <!-- 版权信息 -->
                     <div class="license-info">
-                        <div class="license-icon">📄</div>
+                        <div class="license-icon" aria-hidden="true">📄</div>
                         <div class="license-body">
                             <div class="license-title">版权声明</div>
                             <div class="license-text">
@@ -76,18 +77,18 @@
 
                 <!-- 文章统计信息 -->
                 <div class="article-info">
-                    <div class="info-title">📊 文章统计</div>
+                    <div class="info-title"><span aria-hidden="true">📊</span> 文章统计</div>
                     <div class="info-items">
                         <div class="info-item">
-                            <span class="info-label">👁️ 浏览量：</span>
+                            <span class="info-label"><span aria-hidden="true">👁️</span> 浏览量：</span>
                             <span class="info-value">{{ views }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">👍 点赞量：</span>
+                            <span class="info-label"><span aria-hidden="true">👍</span> 点赞量：</span>
                             <span class="info-value">{{ likes }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">💬 评论数：</span>
+                            <span class="info-label"><span aria-hidden="true">💬</span> 评论数：</span>
                             <span class="info-value">{{ comments }}</span>
                         </div>
                     </div>
@@ -162,6 +163,10 @@ const articleUrl = ref(window.location.href);
 
 // 文章内容（后端返回的HTML）
 const articleHtml = ref('<p>加载中...</p>');
+
+// 数据回来后置 true：模板据此给摘要卡与正文挂上入场动画，
+// 让「加载中 → 正文」的切换是淡入而不是硬切
+const contentReady = ref(false);
 
 // 统计信息
 const views = ref(0);
@@ -328,6 +333,10 @@ const fetchArticleData = async () => {
         console.error('获取文章数据失败:', error);
         articleTitle.value = '加载失败';
         articleHtml.value = `<p style="color: red;">加载文章失败，请稍后重试。</p><p>错误信息：${error.message}</p>`;
+    } finally {
+        // 等这一帧的 DOM 落地再加类，动画才会作用在真实内容上
+        await nextTick();
+        contentReady.value = true;
     }
 };
 
